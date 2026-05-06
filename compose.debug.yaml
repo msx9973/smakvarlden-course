@@ -1,0 +1,6 @@
+services:
+  smakvarldensourceareplit:
+    image: smakvarldensourceareplit
+    build:
+      context: .
+      dockerfile: ./Dockerfile

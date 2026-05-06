@@ -1,0 +1,335 @@
+import {
+  useGetDashboardSummary,
+  useGetDashboardRecentActivity,
+  useGetTopPerformingRecipes,
+  useGetIngredientCategoryBreakdown,
+  getGetDashboardSummaryQueryKey,
+  getGetDashboardRecentActivityQueryKey,
+  getGetTopPerformingRecipesQueryKey,
+  getGetIngredientCategoryBreakdownQueryKey,
+} from "@workspace/api-client-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  TrendingUp, BookOpen, Leaf, Users, AlertTriangle, Share2, ChefHat, ArrowRight, Zap, BarChart2, Trash2,
+} from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
+import { useAuth } from "@/lib/auth";
+import { Link } from "wouter";
+import { ResponsiveContainer, BarChart, Bar, Cell, Tooltip, XAxis, YAxis } from "recharts";
+
+/* ── Stat card ── */
+function StatCard({
+  label, value, icon: Icon, sub, gradient, iconColor,
+}: {
+  label: string; value: string | number; icon: React.ElementType;
+  sub?: string; gradient: string; iconColor: string;
+}) {
+  return (
+    <div className="rounded-2xl p-5 flex flex-col gap-3 transition-all hover:-translate-y-0.5"
+      style={{
+        background: "var(--sv-surface)",
+        boxShadow: "0 2px 10px var(--sv-shadow)",
+      }}>
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "var(--sv-text-2)" }}>{label}</p>
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: gradient }}>
+          <Icon className="w-4 h-4" style={{ color: iconColor }} />
+        </div>
+      </div>
+      <p className="text-3xl font-serif font-bold tracking-tight" style={{ color: "var(--sv-text)" }}>{value}</p>
+      {sub && <p className="text-[12px]" style={{ color: "var(--sv-text-2)" }}>{sub}</p>}
+    </div>
+  );
+}
+
+/* ── Activity icon ── */
+function ActivityIcon({ type }: { type: string }) {
+  const map: Record<string, { bg: string; icon: React.ElementType; color: string }> = {
+    recipe_created: { bg: "rgba(59,130,246,.12)",  icon: BookOpen,    color: "#3b82f6" },
+    recipe_updated: { bg: "rgba(245,158,11,.12)",  icon: ChefHat,     color: "#d97706" },
+    price_change:   { bg: "rgba(239,68,68,.12)",   icon: TrendingUp,  color: "#ef4444" },
+    recipe_shared:  { bg: "rgba(16,185,129,.12)",  icon: Share2,      color: "#10b981" },
+  };
+  const e = map[type] ?? { bg: "var(--sv-muted)", icon: ChefHat, color: "var(--sv-text-2)" };
+  const Icon = e.icon;
+  return (
+    <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: e.bg }}>
+      <Icon className="w-3.5 h-3.5" style={{ color: e.color }} />
+    </div>
+  );
+}
+
+const MEDAL_COLORS = ["hsl(44 58% 48%)", "hsl(220 10% 58%)", "hsl(25 58% 42%)"];
+const CAT_COLORS = ["hsl(44 50% 46%)","#3b82f6","#10b981","#8b5cf6","#ef4444","#06b6d4","#ec4899","#84cc16"];
+
+/* ── Stats sidebar ── */
+function StatsSidebar({ summary, catBreakdown }: {
+  summary: ReturnType<typeof useGetDashboardSummary>["data"];
+  catBreakdown: { category: string; count: number; avgPriceSek: number; totalPriceSek: number }[];
+}) {
+  const topCats = catBreakdown.slice(0, 6).map((c, i) => ({
+    name: c.category.length > 10 ? c.category.slice(0, 9) + "…" : c.category,
+    value: c.count,
+    color: CAT_COLORS[i % CAT_COLORS.length],
+  }));
+
+  return (
+    <aside className="flex flex-col gap-5">
+
+      {/* Margin health */}
+      <div className="rounded-2xl p-5" style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(16,185,129,.12)" }}>
+            <Zap className="w-3.5 h-3.5" style={{ color: "#10b981" }} />
+          </div>
+          <h3 className="text-[13px] font-bold" style={{ color: "var(--sv-text)" }}>Marginalstatus</h3>
+        </div>
+        <div className="flex flex-col gap-3">
+          {[
+            { label: "Bra (>60%)",  pct: 72, color: "#10b981", bg: "rgba(16,185,129,.15)" },
+            { label: "OK (45–60%)", pct: 20, color: "#d97706", bg: "rgba(217,119,6,.15)"  },
+            { label: "Låg (<45%)",  pct: 8,  color: "#ef4444", bg: "rgba(239,68,68,.15)"  },
+          ].map(({ label, pct, color, bg }) => (
+            <div key={label}>
+              <div className="flex justify-between mb-1.5">
+                <span className="text-[11px] font-medium" style={{ color: "var(--sv-text-2)" }}>{label}</span>
+                <span className="text-[11px] font-bold" style={{ color }}>{pct}%</span>
+              </div>
+              <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--sv-muted)" }}>
+                <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <Link href="/calculator"
+          className="flex items-center gap-1.5 mt-4 text-[12px] font-semibold"
+          style={{ color: "var(--sv-gold)" }}>
+          Se fullständig analys <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+
+      {/* KPI list */}
+      <div className="rounded-2xl p-5" style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(59,130,246,.12)" }}>
+            <BarChart2 className="w-3.5 h-3.5" style={{ color: "#3b82f6" }} />
+          </div>
+          <h3 className="text-[13px] font-bold" style={{ color: "var(--sv-text)" }}>Nyckeltal</h3>
+        </div>
+        <div className="flex flex-col">
+          {[
+            { label: "Snitt marginal",   value: summary ? `${summary.avgProfitMarginPct.toFixed(1)}%` : "–" },
+            { label: "Snitt receptkost", value: summary ? `${summary.avgRecipeCostSek.toFixed(0)} kr` : "–" },
+            { label: "Prisvarningar",    value: summary ? `${summary.priceAlerts} st` : "–" },
+            { label: "Delade recept",    value: summary ? `${summary.sharedRecipes} st` : "–" },
+          ].map(({ label, value }, i, arr) => (
+            <div key={label} className="flex items-center justify-between py-2.5"
+              style={{ borderBottom: i < arr.length - 1 ? `1px solid var(--sv-border)` : "none" }}>
+              <span className="text-[12px]" style={{ color: "var(--sv-text-2)" }}>{label}</span>
+              <span className="text-[13px] font-bold" style={{ color: "var(--sv-text)" }}>{value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Category mini bar */}
+      {topCats.length > 0 && (
+        <div className="rounded-2xl p-5" style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(201,168,76,.15)" }}>
+              <Leaf className="w-3.5 h-3.5" style={{ color: "var(--sv-gold)" }} />
+            </div>
+            <h3 className="text-[13px] font-bold" style={{ color: "var(--sv-text)" }}>Ingredienser / kategori</h3>
+          </div>
+          <ResponsiveContainer width="100%" height={130}>
+            <BarChart data={topCats} margin={{ top: 4, right: 4, bottom: 24, left: -20 }}>
+              <XAxis dataKey="name" tick={{ fontSize: 9, fill: "var(--sv-text-2)" }}
+                angle={-28} textAnchor="end" axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: "var(--sv-text-2)" }} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{ background: "var(--sv-surface)", border: "1px solid var(--sv-border)", borderRadius: 8, fontSize: 11, color: "var(--sv-text)" }}
+                cursor={{ fill: "var(--sv-muted)" }} />
+              <Bar dataKey="value" radius={[4,4,0,0]}>
+                {topCats.map((c, i) => <Cell key={i} fill={c.color} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Svinn link */}
+      <Link href="/svinn"
+        className="rounded-2xl p-5 flex items-center gap-4 transition-all hover:-translate-y-0.5 group"
+        style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(239,68,68,.12)" }}>
+          <Trash2 className="w-5 h-5" style={{ color: "#ef4444" }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[13px] font-bold" style={{ color: "var(--sv-text)" }}>Svinnanalys</p>
+          <p className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>Reducera matsvinn och öka vinst</p>
+        </div>
+        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" style={{ color: "var(--sv-text-2)" }} />
+      </Link>
+    </aside>
+  );
+}
+
+export default function Dashboard() {
+  const { user } = useAuth();
+  const summary      = useGetDashboardSummary({ query: { queryKey: getGetDashboardSummaryQueryKey() } });
+  const activity     = useGetDashboardRecentActivity({ limit: 8 }, { query: { queryKey: getGetDashboardRecentActivityQueryKey({ limit: 8 }) } });
+  const topRecipes   = useGetTopPerformingRecipes({ limit: 5 }, { query: { queryKey: getGetTopPerformingRecipesQueryKey({ limit: 5 }) } });
+  const catBreakdown = useGetIngredientCategoryBreakdown({ query: { queryKey: getGetIngredientCategoryBreakdownQueryKey() } });
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "God morgon" : hour < 17 ? "God eftermiddag" : "God kväll";
+
+  return (
+    <div className="flex gap-7 max-w-[1400px]">
+
+      {/* ── Main column ── */}
+      <div className="flex-1 min-w-0 flex flex-col gap-7">
+
+        {/* Hero */}
+        <div className="relative rounded-2xl overflow-hidden px-7 py-8"
+          style={{
+            background: "linear-gradient(135deg, hsl(17 47% 13%) 0%, hsl(17 37% 20%) 100%)",
+            boxShadow: "0 8px 32px rgba(44,24,16,.22)",
+          }}>
+          <div className="absolute -right-12 -top-12 w-56 h-56 rounded-full opacity-[.07]"
+            style={{ border: "40px solid hsl(44 54% 54%)" }} />
+          <div className="absolute -right-4 top-8 w-28 h-28 rounded-full opacity-[.05]"
+            style={{ border: "20px solid hsl(44 54% 54%)" }} />
+
+          <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: "hsl(44 60% 60%)" }}>{greeting}</p>
+              <h1 className="font-serif text-2xl font-bold text-white">
+                {user ? user.name : "Välkommen till Smakvärlden"}
+              </h1>
+              <p className="text-[13px] mt-1" style={{ color: "rgba(250,248,244,.55)" }}>
+                {user ? "Här är din köksöversikt för idag" : "Logga in för att komma igång"}
+              </p>
+            </div>
+            <div className="flex gap-2 shrink-0 flex-wrap">
+              <Link href="/recipes" className="px-4 py-2 rounded-full text-[13px] font-semibold transition-all"
+                style={{ background: "hsl(44 54% 54%)", color: "hsl(17 47% 10%)" }}>
+                Öppna recept
+              </Link>
+              <Link href="/calculator" className="px-4 py-2 rounded-full text-[13px] font-medium transition-all border"
+                style={{ borderColor: "rgba(255,255,255,.2)", color: "rgba(255,255,255,.8)" }}>
+                Kalkylator
+              </Link>
+              <Link href="/svinn" className="px-4 py-2 rounded-full text-[13px] font-medium transition-all"
+                style={{ background: "rgba(239,68,68,.18)", color: "#fca5a5" }}>
+                Svinnanalys
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Stat cards */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {summary.isLoading
+            ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)
+            : summary.data ? (
+              <>
+                <StatCard label="Recept" value={summary.data.totalRecipes} icon={BookOpen} sub="I din kokbok"
+                  gradient="rgba(59,130,246,.14)" iconColor="#3b82f6" />
+                <StatCard label="Ingredienser" value={summary.data.totalIngredients} icon={Leaf} sub="Spårade råvaror"
+                  gradient="rgba(16,185,129,.14)" iconColor="#10b981" />
+                <StatCard label="Snitt marginal" value={`${summary.data.avgProfitMarginPct.toFixed(1)}%`}
+                  icon={TrendingUp} sub="Vinstmarginal"
+                  gradient="rgba(201,168,76,.18)" iconColor="hsl(44 50% 44%)" />
+                <StatCard label="Prisvarningar" value={summary.data.priceAlerts}
+                  icon={AlertTriangle} sub="Råvaror med >5% ändring"
+                  gradient={summary.data.priceAlerts > 0 ? "rgba(239,68,68,.14)" : "rgba(16,185,129,.10)"}
+                  iconColor={summary.data.priceAlerts > 0 ? "#ef4444" : "#10b981"} />
+              </>
+            ) : null}
+        </div>
+
+        {/* Bottom panels */}
+        <div className="grid gap-5 lg:grid-cols-5">
+
+          {/* Activity feed 3/5 */}
+          <div className="lg:col-span-3 rounded-2xl overflow-hidden"
+            style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
+            <div className="px-6 py-4 flex items-center justify-between"
+              style={{ borderBottom: "1px solid var(--sv-border)" }}>
+              <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>Senaste aktivitet</h2>
+              <span className="text-[11px] font-medium px-2 py-0.5 rounded-full"
+                style={{ background: "var(--sv-accent)", color: "var(--sv-gold)" }}>Live</span>
+            </div>
+            <div>
+              {activity.isLoading
+                ? Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="px-6 py-3 flex gap-3 items-center"
+                      style={{ borderBottom: "1px solid var(--sv-border)" }}>
+                      <Skeleton className="w-8 h-8 rounded-xl shrink-0" />
+                      <div className="flex-1 space-y-1.5"><Skeleton className="h-3 w-3/4" /><Skeleton className="h-2.5 w-1/2" /></div>
+                    </div>
+                  ))
+                : (activity.data ?? []).map((entry, i, arr) => (
+                    <div key={entry.id} className="px-6 py-3 flex items-center gap-3 transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.03]"
+                      style={{ borderBottom: i < arr.length - 1 ? `1px solid var(--sv-border)` : "none" }}>
+                      <ActivityIcon type={entry.type} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-medium truncate" style={{ color: "var(--sv-text)" }}>{entry.title}</p>
+                        <p className="text-[12px] truncate" style={{ color: "var(--sv-text-2)" }}>{entry.subtitle}</p>
+                      </div>
+                      <span className="text-[11px] whitespace-nowrap shrink-0" style={{ color: "var(--sv-text-2)" }}>
+                        {formatDistanceToNow(new Date(entry.timestamp), { addSuffix: true, locale: sv })}
+                      </span>
+                    </div>
+                  ))
+              }
+            </div>
+          </div>
+
+          {/* Top recipes 2/5 */}
+          <div className="lg:col-span-2 rounded-2xl overflow-hidden"
+            style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
+            <div className="px-5 py-4 flex items-center justify-between"
+              style={{ borderBottom: "1px solid var(--sv-border)" }}>
+              <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>Toprecept</h2>
+              <Link href="/recipes" className="text-[11px] font-semibold flex items-center gap-1"
+                style={{ color: "var(--sv-gold)" }}>
+                Alla <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+            <div className="p-4 flex flex-col gap-2">
+              {topRecipes.isLoading
+                ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-xl" />)
+                : (topRecipes.data ?? []).map((recipe, idx) => (
+                    <div key={recipe.id}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.03]">
+                      <span className="font-serif font-bold text-base w-5 text-center shrink-0"
+                        style={{ color: MEDAL_COLORS[idx] ?? "var(--sv-text-2)" }}>
+                        {idx + 1}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-semibold truncate" style={{ color: "var(--sv-text)" }}>{recipe.name}</p>
+                        <p className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>
+                          {recipe.category} · {recipe.totalCostSek.toFixed(0)} kr
+                        </p>
+                      </div>
+                      <p className="text-[13px] font-bold shrink-0" style={{ color: "#10b981" }}>
+                        {recipe.profitMarginPct.toFixed(1)}%
+                      </p>
+                    </div>
+                  ))
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Stats sidebar ── */}
+      <div className="w-72 shrink-0 hidden xl:block">
+        <StatsSidebar summary={summary.data} catBreakdown={catBreakdown.data ?? []} />
+      </div>
+    </div>
+  );
+}

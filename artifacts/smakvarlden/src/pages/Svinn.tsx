@@ -1,0 +1,332 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Trash2, TrendingDown, AlertTriangle, Leaf, Lightbulb, BarChart2, Calendar, DollarSign,
+} from "lucide-react";
+import {
+  RadialBarChart, RadialBar, ResponsiveContainer, Cell, BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip,
+} from "recharts";
+
+interface CategorySvinn {
+  category: string;
+  svinnRatePct: number;
+  ingredientCount: number;
+  avgPriceSek: number;
+  totalIngredientCostSek: number;
+  wasteCostSek: number;
+  estimatedWeeklyWasteSek: number;
+}
+interface SvinnSummary {
+  totalWasteCostSek: number;
+  weeklyWasteSek: number;
+  monthlyWasteSek: number;
+  yearlyWasteSek: number;
+  avgWasteRatePct: number;
+  totalIngredientCostSek: number;
+  avgRecipeCostSek: number;
+  totalRecipes: number;
+  categorySvinn: CategorySvinn[];
+  tips: { icon: string; title: string; desc: string }[];
+}
+
+const RATE_COLOR = (rate: number) => {
+  if (rate <= 5) return "#10b981";
+  if (rate <= 12) return "#f59e0b";
+  return "#ef4444";
+};
+const RATE_BG = (rate: number) => {
+  if (rate <= 5) return "rgba(16,185,129,.1)";
+  if (rate <= 12) return "rgba(245,158,11,.1)";
+  return "rgba(239,68,68,.1)";
+};
+
+const BAR_COLORS = [
+  "#ef4444","#f97316","#f59e0b","hsl(44 54% 54%)","#84cc16",
+  "#10b981","#06b6d4","#3b82f6","#8b5cf6","#ec4899",
+];
+
+function StatBox({
+  label, value, sub, icon: Icon, color, bg,
+}: {
+  label: string; value: string; sub: string;
+  icon: React.ElementType; color: string; bg: string;
+}) {
+  return (
+    <div className="bg-white rounded-2xl p-5 flex flex-col gap-3 transition-all hover:-translate-y-0.5"
+      style={{ boxShadow: "0 2px 12px rgba(44,24,16,.07)" }}>
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "hsl(20 20% 58%)" }}>{label}</p>
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: bg }}>
+          <Icon className="w-4 h-4" style={{ color }} />
+        </div>
+      </div>
+      <p className="text-2xl font-serif font-bold" style={{ color: "hsl(17 47% 13%)" }}>{value}</p>
+      <p className="text-[12px]" style={{ color: "hsl(20 20% 62%)" }}>{sub}</p>
+    </div>
+  );
+}
+
+export default function Svinn() {
+  const [view, setView] = useState<"table" | "chart">("table");
+
+  const { data, isLoading } = useQuery<SvinnSummary>({
+    queryKey: ["svinn-summary"],
+    queryFn: () => fetch("/api/svinn/summary").then((r) => r.json()),
+    staleTime: 60_000,
+  });
+
+  const chartData = (data?.categorySvinn ?? [])
+    .slice(0, 10)
+    .map((c) => ({ name: c.category, svinn: c.svinnRatePct, cost: c.wasteCostSek }));
+
+  return (
+    <div className="flex flex-col gap-7 max-w-6xl">
+
+      {/* Page header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-serif text-2xl font-bold tracking-tight" style={{ color: "hsl(17 47% 13%)" }}>
+            Svinnanalys
+          </h1>
+          <p className="text-[13px] mt-1" style={{ color: "hsl(20 20% 58%)" }}>
+            Matsvinn, kostnad och besparingsmöjligheter per råvarukategori
+          </p>
+        </div>
+        <div className="flex items-center gap-1.5 p-1 rounded-xl" style={{ background: "hsl(36 27% 94%)" }}>
+          {(["table", "chart"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className="px-3.5 py-1.5 rounded-lg text-[12px] font-semibold transition-all"
+              style={view === v ? {
+                background: "hsl(17 47% 13%)",
+                color: "#FAF8F4",
+                boxShadow: "0 2px 8px rgba(44,24,16,.18)",
+              } : { color: "hsl(20 20% 55%)" }}
+            >
+              {v === "table" ? "Tabell" : "Diagram"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Hero warning banner */}
+      {!isLoading && data && (
+        <div className="relative rounded-2xl overflow-hidden px-7 py-6"
+          style={{
+            background: "linear-gradient(135deg,#7f1d1d 0%,#991b1b 50%,#b91c1c 100%)",
+            boxShadow: "0 8px 32px rgba(185,28,28,.2)",
+          }}>
+          <div className="absolute -right-8 -top-8 w-44 h-44 rounded-full opacity-[.08]"
+            style={{ border: "36px solid #fff" }} />
+          <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
+              style={{ background: "rgba(255,255,255,.15)" }}>
+              <Trash2 className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-red-200 mb-1">Observera</p>
+              <p className="text-white font-serif text-lg font-semibold">
+                Uppskattad svinnomsättning: <span className="text-yellow-300">{data.yearlyWasteSek.toFixed(0)} kr/år</span>
+              </p>
+              <p className="text-red-200 text-[13px] mt-1">
+                Baserat på {data.categorySvinn.length} ingredientskategorier · Branschsnittlig svinnfrekvens {data.avgWasteRatePct}%
+              </p>
+            </div>
+            <div className="shrink-0 text-right">
+              <p className="text-red-200 text-[11px] font-bold uppercase tracking-widest">Möjlig besparing</p>
+              <p className="text-white font-serif text-2xl font-bold">{(data.yearlyWasteSek * 0.4).toFixed(0)} kr</p>
+              <p className="text-red-200 text-[12px]">med bättre rutiner</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Stat cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)
+        ) : data ? (
+          <>
+            <StatBox label="Svinn per vecka" value={`${data.weeklyWasteSek.toFixed(0)} kr`}
+              sub="Baserat på 40 portioner/dag"
+              icon={Calendar} color="#f59e0b" bg="rgba(245,158,11,.1)" />
+            <StatBox label="Svinn per månad" value={`${data.monthlyWasteSek.toFixed(0)} kr`}
+              sub="4.33 veckor per månad"
+              icon={DollarSign} color="#ef4444" bg="rgba(239,68,68,.1)" />
+            <StatBox label="Svinn per år" value={`${data.yearlyWasteSek.toFixed(0)} kr`}
+              sub="Stor besparingsmöjlighet"
+              icon={TrendingDown} color="#8b5cf6" bg="rgba(139,92,246,.1)" />
+            <StatBox label="Snitt svinnfrekvens" value={`${data.avgWasteRatePct}%`}
+              sub={data.avgWasteRatePct > 10 ? "Ovanför branschsnitt" : "Under branschsnitt"}
+              icon={AlertTriangle}
+              color={data.avgWasteRatePct > 10 ? "#ef4444" : "#10b981"}
+              bg={data.avgWasteRatePct > 10 ? "rgba(239,68,68,.1)" : "rgba(16,185,129,.1)"} />
+          </>
+        ) : null}
+      </div>
+
+      {/* Main content */}
+      <div className="grid gap-6 lg:grid-cols-3">
+
+        {/* Category breakdown — 2/3 */}
+        <div className="lg:col-span-2 bg-white rounded-2xl overflow-hidden"
+          style={{ boxShadow: "0 2px 12px rgba(44,24,16,.07)" }}>
+          <div className="px-6 py-4 border-b border-border flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+              style={{ background: "rgba(239,68,68,.1)" }}>
+              <BarChart2 className="w-4 h-4" style={{ color: "#ef4444" }} />
+            </div>
+            <h2 className="font-serif text-base font-semibold" style={{ color: "hsl(17 47% 13%)" }}>
+              Svinn per kategori
+            </h2>
+          </div>
+
+          {isLoading ? (
+            <div className="p-5 space-y-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-xl" />)}</div>
+          ) : view === "table" ? (
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ borderBottom: "1px solid hsl(33 28% 90%)", background: "hsl(36 27% 97%)" }}>
+                  {["Kategori", "Råvaror", "Svinnfrekvens", "Svinncost", "Est. per vecka"].map((h, i) => (
+                    <th key={h}
+                      className={`px-5 py-3 text-[10px] font-bold uppercase tracking-widest${i > 1 ? " text-right" : " text-left"}`}
+                      style={{ color: "hsl(20 20% 60%)" }}>
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(data?.categorySvinn ?? []).map((cat, i) => (
+                  <tr key={cat.category}
+                    className="hover:bg-muted/25 transition-colors"
+                    style={{ borderTop: i === 0 ? "none" : "1px solid hsl(33 28% 92%)" }}>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                          style={{ background: RATE_BG(cat.svinnRatePct) }}>
+                          <Leaf className="w-3.5 h-3.5" style={{ color: RATE_COLOR(cat.svinnRatePct) }} />
+                        </div>
+                        <span className="text-[13px] font-semibold" style={{ color: "hsl(17 47% 13%)" }}>{cat.category}</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5 text-[13px]" style={{ color: "hsl(20 20% 55%)" }}>
+                      {cat.ingredientCount} st
+                    </td>
+                    <td className="px-5 py-3.5 text-right">
+                      <span className="text-[12px] font-bold px-2.5 py-1 rounded-full"
+                        style={{ background: RATE_BG(cat.svinnRatePct), color: RATE_COLOR(cat.svinnRatePct) }}>
+                        {cat.svinnRatePct}%
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5 text-right text-[13px] font-semibold"
+                      style={{ color: "hsl(17 47% 13%)" }}>
+                      {cat.wasteCostSek.toFixed(0)} kr
+                    </td>
+                    <td className="px-5 py-3.5 text-right text-[13px]" style={{ color: "#ef4444" }}>
+                      {cat.estimatedWeeklyWasteSek.toFixed(0)} kr
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="p-6">
+              <ResponsiveContainer width="100%" height={320}>
+                <BarChart data={chartData} margin={{ top: 4, right: 4, bottom: 50, left: 4 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(33 28% 91%)" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(20 20% 62%)" }}
+                    angle={-38} textAnchor="end" axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: "hsl(20 20% 62%)" }} axisLine={false} tickLine={false}
+                    tickFormatter={(v) => `${v}%`} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "#fff",
+                      border: "1px solid hsl(33 28% 89%)",
+                      borderRadius: 12,
+                      fontSize: 12,
+                      boxShadow: "0 4px 16px rgba(44,24,16,.10)",
+                    }}
+                    formatter={(val: number) => [`${val}%`, "Svinnfrekvens"]}
+                    cursor={{ fill: "hsl(36 27% 95%)" }}
+                  />
+                  <Bar dataKey="svinn" radius={[6, 6, 0, 0]}>
+                    {chartData.map((entry, i) => (
+                      <Cell key={i} fill={RATE_COLOR(entry.svinn)} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+
+        {/* Tips panel — 1/3 */}
+        <div className="bg-white rounded-2xl overflow-hidden"
+          style={{ boxShadow: "0 2px 12px rgba(44,24,16,.07)" }}>
+          <div className="px-5 py-4 border-b border-border flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+              style={{ background: "rgba(201,168,76,.15)" }}>
+              <Lightbulb className="w-4 h-4" style={{ color: "hsl(44 54% 50%)" }} />
+            </div>
+            <h2 className="font-serif text-base font-semibold" style={{ color: "hsl(17 47% 13%)" }}>
+              Spartips
+            </h2>
+          </div>
+          <div className="p-4 flex flex-col gap-3">
+            {isLoading
+              ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)
+              : (data?.tips ?? []).map((tip, i) => (
+                  <div key={i} className="p-3.5 rounded-xl transition-colors hover:bg-muted/30"
+                    style={{ background: i % 2 === 0 ? "hsl(36 27% 97%)" : "#fff", border: "1px solid hsl(33 28% 91%)" }}>
+                    <div className="flex items-start gap-3">
+                      <span className="text-xl shrink-0">{tip.icon}</span>
+                      <div>
+                        <p className="text-[12px] font-bold mb-0.5" style={{ color: "hsl(17 47% 13%)" }}>{tip.title}</p>
+                        <p className="text-[11px] leading-relaxed" style={{ color: "hsl(20 20% 55%)" }}>{tip.desc}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+            }
+          </div>
+        </div>
+      </div>
+
+      {/* Industry benchmarks */}
+      <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(44,24,16,.07)" }}>
+        <h2 className="font-serif text-base font-semibold mb-5" style={{ color: "hsl(17 47% 13%)" }}>
+          Branschjämförelse — Svinnfrekvenser
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { label: "Grönsaker & örter", rate: "15–25%", your: 20, icon: "🥦", tip: "Hög svinn pga peeling och trimning" },
+            { label: "Fisk & skaldjur", rate: "15–20%", your: 18, icon: "🐟", tip: "Ben, skal och skin ger naturligt svinn" },
+            { label: "Kött & fågel", rate: "8–15%", your: 12, icon: "🥩", tip: "Trimspill och benandel" },
+            { label: "Mejeri & ägg", rate: "2–5%", your: 3, icon: "🧀", tip: "Lågt svinn med god lagring" },
+          ].map((b) => (
+            <div key={b.label} className="rounded-xl p-4"
+              style={{ background: "hsl(36 27% 97%)", border: "1px solid hsl(33 28% 91%)" }}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-2xl">{b.icon}</span>
+                <div>
+                  <p className="text-[12px] font-bold" style={{ color: "hsl(17 47% 13%)" }}>{b.label}</p>
+                  <p className="text-[11px]" style={{ color: "hsl(44 54% 50%)" }}>Bransch: {b.rate}</p>
+                </div>
+              </div>
+              <div className="h-2 rounded-full overflow-hidden mb-2" style={{ background: "hsl(33 28% 90%)" }}>
+                <div className="h-full rounded-full"
+                  style={{ width: `${Math.min(b.your, 25) * 4}%`, background: RATE_COLOR(b.your) }} />
+              </div>
+              <p className="text-[11px]" style={{ color: "hsl(20 20% 60%)" }}>{b.tip}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  );
+}

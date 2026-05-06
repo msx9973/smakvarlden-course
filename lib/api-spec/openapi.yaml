@@ -1,0 +1,836 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Smakvärlden API — recipe costs, ingredients, and chef statistics
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication
+  - name: recipes
+    description: Recipe management
+  - name: ingredients
+    description: Ingredient management
+  - name: dashboard
+    description: Dashboard statistics and summaries
+  - name: community
+    description: Community posts and shared recipes
+  - name: ai
+    description: AI assistant
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: authRegister
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterBody"
+      responses:
+        "201":
+          description: Registered and token returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error or email taken
+
+  /auth/login:
+    post:
+      operationId: authLogin
+      tags: [auth]
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+
+  /auth/me:
+    get:
+      operationId: authMe
+      tags: [auth]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          description: Not authenticated
+
+  /recipes:
+    get:
+      operationId: listRecipes
+      tags: [recipes]
+      summary: List all recipes
+      parameters:
+        - in: query
+          name: category
+          schema:
+            type: string
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of recipes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Recipe"
+    post:
+      operationId: createRecipe
+      tags: [recipes]
+      summary: Create a recipe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRecipeBody"
+      responses:
+        "201":
+          description: Created recipe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Recipe"
+
+  /recipes/{id}:
+    get:
+      operationId: getRecipe
+      tags: [recipes]
+      summary: Get a recipe by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Recipe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecipeDetail"
+        "404":
+          description: Not found
+    put:
+      operationId: updateRecipe
+      tags: [recipes]
+      summary: Update a recipe
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRecipeBody"
+      responses:
+        "200":
+          description: Updated recipe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Recipe"
+    delete:
+      operationId: deleteRecipe
+      tags: [recipes]
+      summary: Delete a recipe
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /recipes/top-performing:
+    get:
+      operationId: getTopPerformingRecipes
+      tags: [recipes]
+      summary: Get top performing recipes by profit margin
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 5
+      responses:
+        "200":
+          description: Top performing recipes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecipePerformance"
+
+  /ingredients:
+    get:
+      operationId: listIngredients
+      tags: [ingredients]
+      summary: List all ingredients
+      parameters:
+        - in: query
+          name: category
+          schema:
+            type: string
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of ingredients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ingredient"
+    post:
+      operationId: createIngredient
+      tags: [ingredients]
+      summary: Create an ingredient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateIngredientBody"
+      responses:
+        "201":
+          description: Created ingredient
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ingredient"
+
+  /ingredients/{id}:
+    get:
+      operationId: getIngredient
+      tags: [ingredients]
+      summary: Get ingredient by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Ingredient
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ingredient"
+    put:
+      operationId: updateIngredient
+      tags: [ingredients]
+      summary: Update an ingredient
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateIngredientBody"
+      responses:
+        "200":
+          description: Updated ingredient
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ingredient"
+    delete:
+      operationId: deleteIngredient
+      tags: [ingredients]
+      summary: Delete an ingredient
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /ingredients/price-trends:
+    get:
+      operationId: getIngredientPriceTrends
+      tags: [ingredients]
+      summary: Get recent price trend entries for all ingredients
+      responses:
+        "200":
+          description: Price trend data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PriceTrendEntry"
+
+  /ingredients/category-breakdown:
+    get:
+      operationId: getIngredientCategoryBreakdown
+      tags: [ingredients]
+      summary: Ingredient count and average price by category
+      responses:
+        "200":
+          description: Category breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryBreakdown"
+
+  /ingredients/sync-scb:
+    post:
+      operationId: syncScbPrices
+      tags: [ingredients]
+      summary: Fetch latest food price indexes from SCB and update ingredient prices
+      responses:
+        "200":
+          description: Sync result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScbSyncResult"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Overall chef dashboard stats
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getDashboardRecentActivity
+      tags: [dashboard]
+      summary: Recent activity feed (recipe updates, price changes)
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityEntry"
+
+  /community/posts:
+    get:
+      operationId: listCommunityPosts
+      tags: [community]
+      summary: List community posts / shared recipes
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Community posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CommunityPost"
+    post:
+      operationId: createCommunityPost
+      tags: [community]
+      summary: Share a recipe to the community
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCommunityPostBody"
+      responses:
+        "201":
+          description: Created post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommunityPost"
+
+  /community/posts/{id}/like:
+    post:
+      operationId: likeCommunityPost
+      tags: [community]
+      summary: Like a community post
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated like count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommunityPost"
+
+  /ai/chat:
+    post:
+      operationId: aiChat
+      tags: [ai]
+      summary: Chat with the AI chef assistant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiChatBody"
+      responses:
+        "200":
+          description: AI response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiChatResponse"
+
+  /ai/suggest:
+    post:
+      operationId: aiSuggestRecipe
+      tags: [ai]
+      summary: AI recipe suggestions based on ingredients
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiSuggestBody"
+      responses:
+        "200":
+          description: AI suggestions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiChatResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    RegisterBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+      required: [name, email, password]
+
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required: [email, password]
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/UserProfile"
+      required: [token, user]
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [user, admin]
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, name, email, role, createdAt]
+
+    Recipe:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        cuisine:
+          type: string
+        emoji:
+          type: string
+        servings:
+          type: integer
+        totalCostSek:
+          type: number
+        sellingPriceSek:
+          type: number
+        profitMarginPct:
+          type: number
+        isShared:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, name, category, servings, totalCostSek, sellingPriceSek, profitMarginPct, isShared, createdAt, updatedAt]
+
+    RecipeDetail:
+      allOf:
+        - $ref: "#/components/schemas/Recipe"
+        - type: object
+          properties:
+            ingredients:
+              type: array
+              items:
+                $ref: "#/components/schemas/RecipeIngredientItem"
+          required: [ingredients]
+
+    RecipeIngredientItem:
+      type: object
+      properties:
+        ingredientId:
+          type: integer
+        ingredientName:
+          type: string
+        quantity:
+          type: number
+        unit:
+          type: string
+        unitPriceSek:
+          type: number
+        lineCostSek:
+          type: number
+      required: [ingredientId, ingredientName, quantity, unit, unitPriceSek, lineCostSek]
+
+    CreateRecipeBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        cuisine:
+          type: string
+        emoji:
+          type: string
+        servings:
+          type: integer
+        sellingPriceSek:
+          type: number
+        isShared:
+          type: boolean
+        ingredients:
+          type: array
+          items:
+            type: object
+            properties:
+              ingredientId:
+                type: integer
+              quantity:
+                type: number
+              unit:
+                type: string
+            required: [ingredientId, quantity, unit]
+      required: [name, category, servings, sellingPriceSek]
+
+    RecipePerformance:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        totalCostSek:
+          type: number
+        sellingPriceSek:
+          type: number
+        profitMarginPct:
+          type: number
+        profitSek:
+          type: number
+      required: [id, name, category, totalCostSek, sellingPriceSek, profitMarginPct, profitSek]
+
+    Ingredient:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        unit:
+          type: string
+        currentPriceSek:
+          type: number
+        priceChangePct:
+          type: number
+        supplier:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, name, category, unit, currentPriceSek, priceChangePct, updatedAt]
+
+    CreateIngredientBody:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        unit:
+          type: string
+        currentPriceSek:
+          type: number
+        supplier:
+          type: string
+      required: [name, category, unit, currentPriceSek]
+
+    PriceTrendEntry:
+      type: object
+      properties:
+        ingredientId:
+          type: integer
+        ingredientName:
+          type: string
+        date:
+          type: string
+        priceSek:
+          type: number
+      required: [ingredientId, ingredientName, date, priceSek]
+
+    CategoryBreakdown:
+      type: object
+      properties:
+        category:
+          type: string
+        count:
+          type: integer
+        avgPriceSek:
+          type: number
+        totalPriceSek:
+          type: number
+      required: [category, count, avgPriceSek, totalPriceSek]
+
+    ScbSyncResult:
+      type: object
+      properties:
+        updated:
+          type: integer
+        lastUpdated:
+          type: string
+        message:
+          type: string
+      required: [updated, message]
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalRecipes:
+          type: integer
+        totalIngredients:
+          type: integer
+        avgRecipeCostSek:
+          type: number
+        avgProfitMarginPct:
+          type: number
+        totalCommunityPosts:
+          type: integer
+        topCategory:
+          type: string
+        priceAlerts:
+          type: integer
+        sharedRecipes:
+          type: integer
+      required: [totalRecipes, totalIngredients, avgRecipeCostSek, avgProfitMarginPct, totalCommunityPosts, topCategory, priceAlerts, sharedRecipes]
+
+    ActivityEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [recipe_created, recipe_updated, price_change, recipe_shared]
+        title:
+          type: string
+        subtitle:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+      required: [id, type, title, subtitle, timestamp]
+
+    CommunityPost:
+      type: object
+      properties:
+        id:
+          type: integer
+        recipeName:
+          type: string
+        chefName:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        costSek:
+          type: number
+        likes:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, recipeName, chefName, description, category, costSek, likes, createdAt]
+
+    CreateCommunityPostBody:
+      type: object
+      properties:
+        recipeName:
+          type: string
+        chefName:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        costSek:
+          type: number
+      required: [recipeName, chefName, description, category, costSek]
+
+    AiChatBody:
+      type: object
+      properties:
+        message:
+          type: string
+        history:
+          type: array
+          items:
+            type: object
+            properties:
+              role:
+                type: string
+                enum: [user, assistant]
+              content:
+                type: string
+            required: [role, content]
+      required: [message]
+
+    AiSuggestBody:
+      type: object
+      properties:
+        ingredients:
+          type: array
+          items:
+            type: string
+        budget:
+          type: number
+        servings:
+          type: integer
+      required: [ingredients]
+
+    AiChatResponse:
+      type: object
+      properties:
+        reply:
+          type: string
+        tokensUsed:
+          type: integer
+      required: [reply]
