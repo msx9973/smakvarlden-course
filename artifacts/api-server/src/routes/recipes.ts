@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, recipesTable, recipeIngredientsTable, ingredientsTable, activityLogTable } from "@workspace/db";
+import { db, hasDatabase, recipesTable, recipeIngredientsTable, ingredientsTable, activityLogTable } from "@workspace/db";
 import { eq, ilike, and, desc, sql } from "drizzle-orm";
 import { demoRecipes, hasDemoFallbackError, type DemoRecipe } from "../lib/demo-data";
 import {
@@ -74,6 +74,31 @@ router.post("/", async (req, res) => {
   if (!parsed.success) return res.status(400).json({ error: "Invalid body", details: parsed.error });
 
   const { name, description, category, servings, sellingPriceSek, isShared, ingredients } = parsed.data;
+  if (!hasDatabase) {
+    const totalCostSek = 0;
+    const profitMarginPct = sellingPriceSek > 0 ? ((sellingPriceSek - totalCostSek) / sellingPriceSek) * 100 : 0;
+    const recipe: DemoRecipe = {
+      id: Math.max(0, ...demoRecipes.map((item) => item.id)) + 1,
+      name,
+      description: description ?? "",
+      category,
+      cuisine: "Egen",
+      servings,
+      totalCostSek,
+      sellingPriceSek,
+      profitMarginPct: Math.round(profitMarginPct * 100) / 100,
+      isShared: isShared ?? false,
+      dietaryTags: [],
+      allergens: [],
+      allergyVersions: [],
+      languageVersions: buildRecipeLanguageVersions(name, description ?? ""),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ingredients: [],
+    };
+    demoRecipes.unshift(recipe);
+    return res.status(201).json(formatDemoRecipe(recipe));
+  }
 
   let totalCostSek = 0;
   if (ingredients && ingredients.length > 0) {
@@ -166,6 +191,22 @@ router.put("/:id", async (req, res) => {
   const paramParsed = UpdateRecipeParams.safeParse({ id: Number(req.params.id) });
   const bodyParsed = UpdateRecipeBody.safeParse(req.body);
   if (!paramParsed.success || !bodyParsed.success) return res.status(400).json({ error: "Invalid input" });
+  if (!hasDatabase) {
+    const recipe = demoRecipes.find((item) => item.id === paramParsed.data.id);
+    if (!recipe) return res.status(404).json({ error: "Not found" });
+    recipe.name = bodyParsed.data.name ?? recipe.name;
+    recipe.description = bodyParsed.data.description ?? recipe.description;
+    recipe.category = bodyParsed.data.category ?? recipe.category;
+    recipe.servings = bodyParsed.data.servings ?? recipe.servings;
+    recipe.sellingPriceSek = bodyParsed.data.sellingPriceSek ?? recipe.sellingPriceSek;
+    recipe.profitMarginPct = recipe.sellingPriceSek > 0
+      ? Math.round(((recipe.sellingPriceSek - recipe.totalCostSek) / recipe.sellingPriceSek) * 10000) / 100
+      : 0;
+    recipe.isShared = bodyParsed.data.isShared ?? recipe.isShared;
+    recipe.languageVersions = buildRecipeLanguageVersions(recipe.name, recipe.description ?? "");
+    recipe.updatedAt = new Date();
+    return res.json(formatDemoRecipe(recipe));
+  }
 
   const [existing] = await db.select().from(recipesTable).where(eq(recipesTable.id, paramParsed.data.id));
   if (!existing) return res.status(404).json({ error: "Not found" });
@@ -195,6 +236,12 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   const parsed = DeleteRecipeParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
+  if (!hasDatabase) {
+    const index = demoRecipes.findIndex((recipe) => recipe.id === parsed.data.id);
+    if (index === -1) return res.status(404).json({ error: "Not found" });
+    demoRecipes.splice(index, 1);
+    return res.status(204).send();
+  }
   await db.delete(recipesTable).where(eq(recipesTable.id, parsed.data.id));
   return res.status(204).send();
 });
@@ -223,6 +270,17 @@ function formatRecipe(r: typeof recipesTable.$inferSelect) {
     },
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
+  };
+}
+
+function buildRecipeLanguageVersions(name: string, description: string) {
+  return {
+    sv: { name, description },
+    en: { name, description },
+    es: { name, description },
+    de: { name, description },
+    fr: { name, description },
+    fi: { name, description },
   };
 }
 

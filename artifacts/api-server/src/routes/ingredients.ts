@@ -52,6 +52,20 @@ router.post("/", async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({ error: "Invalid body" });
   }
+  if (!hasDatabase) {
+    const row: DemoIngredient = {
+      id: Math.max(0, ...demoIngredients.map((ingredient) => ingredient.id)) + 1,
+      name: parsed.data.name,
+      category: parsed.data.category,
+      unit: parsed.data.unit,
+      currentPriceSek: parsed.data.currentPriceSek,
+      priceChangePct: 0,
+      supplier: parsed.data.supplier ?? "Manuellt tillagd",
+      updatedAt: new Date(),
+    };
+    demoIngredients.push(row);
+    return res.status(201).json(formatDemoIngredient(row));
+  }
   const [row] = await db.insert(ingredientsTable).values({
     name: parsed.data.name,
     category: parsed.data.category,
@@ -227,6 +241,20 @@ router.put("/:id", async (req, res) => {
   const paramParsed = UpdateIngredientParams.safeParse({ id: Number(req.params.id) });
   const bodyParsed = UpdateIngredientBody.safeParse(req.body);
   if (!paramParsed.success || !bodyParsed.success) return res.status(400).json({ error: "Invalid input" });
+  if (!hasDatabase) {
+    const row = demoIngredients.find((ingredient) => ingredient.id === paramParsed.data.id);
+    if (!row) return res.status(404).json({ error: "Not found" });
+    const oldPrice = row.currentPriceSek;
+    const newPrice = bodyParsed.data.currentPriceSek ?? oldPrice;
+    row.name = bodyParsed.data.name ?? row.name;
+    row.category = bodyParsed.data.category ?? row.category;
+    row.unit = bodyParsed.data.unit ?? row.unit;
+    row.currentPriceSek = newPrice;
+    row.priceChangePct = oldPrice > 0 ? Math.round(((newPrice - oldPrice) / oldPrice) * 10000) / 100 : 0;
+    row.supplier = bodyParsed.data.supplier ?? row.supplier;
+    row.updatedAt = new Date();
+    return res.json(formatDemoIngredient(row));
+  }
   const existing = await db.select().from(ingredientsTable).where(eq(ingredientsTable.id, paramParsed.data.id));
   if (!existing.length) return res.status(404).json({ error: "Not found" });
   const oldPrice = parseFloat(String(existing[0].currentPriceSek));
@@ -257,6 +285,12 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   const parsed = DeleteIngredientParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
+  if (!hasDatabase) {
+    const index = demoIngredients.findIndex((ingredient) => ingredient.id === parsed.data.id);
+    if (index === -1) return res.status(404).json({ error: "Not found" });
+    demoIngredients.splice(index, 1);
+    return res.status(204).send();
+  }
   await db.delete(ingredientsTable).where(eq(ingredientsTable.id, parsed.data.id));
   return res.status(204).send();
 });

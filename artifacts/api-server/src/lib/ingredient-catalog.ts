@@ -11,7 +11,7 @@ export type IngredientCatalogItem = {
 
 export const catalogUpdatedAt = new Date("2026-05-07T00:00:00.000Z");
 
-export const ingredientCatalog: IngredientCatalogItem[] = [
+const baseIngredientCatalog: IngredientCatalogItem[] = [
   { name: "Kycklingfile", category: "Kott", unit: "kg", priceSek: 95, priceChangePct: 4.1, supplier: "Public market estimate", source: "market_estimate", confidence: "medium" },
   { name: "Kycklinglarfile", category: "Kott", unit: "kg", priceSek: 82, priceChangePct: 3.4, supplier: "Public market estimate", source: "market_estimate", confidence: "medium" },
   { name: "Hel kyckling", category: "Kott", unit: "kg", priceSek: 58, priceChangePct: 2.1, supplier: "Public market estimate", source: "market_estimate", confidence: "medium" },
@@ -138,4 +138,167 @@ export const ingredientCatalog: IngredientCatalogItem[] = [
   { name: "Vitt vin matlagning", category: "Drycker", unit: "liter", priceSek: 90, priceChangePct: 1.0, supplier: "Public market estimate", source: "market_estimate", confidence: "medium" },
   { name: "Rott vin matlagning", category: "Drycker", unit: "liter", priceSek: 95, priceChangePct: 1.0, supplier: "Public market estimate", source: "market_estimate", confidence: "medium" },
   { name: "Appeljuice", category: "Drycker", unit: "liter", priceSek: 18, priceChangePct: 1.4, supplier: "Public market estimate", source: "market_estimate", confidence: "medium" },
+];
+
+const expandedCategorySeeds: Record<string, { unit: string; basePrice: number; names: string[] }> = {
+  "Kott": {
+    unit: "kg",
+    basePrice: 110,
+    names: ["Ankbrost", "Kalkonfile", "Kalvbog", "Kalvfile", "Lammytterfile", "Lammrack", "Oxkind", "Oxsvans", "Flasksida", "Flasklagg", "Vildsvin", "Reninnanlar", "Algstek", "Radjursadel", "Kaninkott", "Guanciale", "Pancetta", "Salsiccia", "Iberico secreto", "Wagyu trim"],
+  },
+  "Fisk & skaldjur": {
+    unit: "kg",
+    basePrice: 150,
+    names: ["Halleflundra", "Roding", "Makrill", "Sillfile", "Havsabborre", "Dorade", "Gos", "Kolja", "Hummer", "Krabba", "Kungskrabba", "Krabbkott", "Kammusslor", "Blamusslor", "Hjartmusslor", "Ostron", "Sjogurka", "Bläckfisk", "Calamari", "Langoustine"],
+  },
+  "Mejeri": {
+    unit: "kg",
+    basePrice: 55,
+    names: ["Getost", "Chevre", "Halloumi", "Ricotta", "Mascarpone", "Gorgonzola", "Gruyere", "Comte", "Vasterbottensost", "Brie", "Camembert", "Keso", "Kvarg", "Laktosfri gradde", "Laktosfri mjolk", "Havregrädde", "Soyayoghurt", "Kokosyoghurt", "Vegansk ost", "Brynt smor"],
+  },
+  "Gronsaker": {
+    unit: "kg",
+    basePrice: 26,
+    names: ["Sotpotatis", "Palsternacka", "Rotselleri", "Stjalkselleri", "Fankal", "Purjolok", "Sparris", "Sugar snaps", "Haricots verts", "Pak choi", "Mangold", "Grönkål", "Savoykål", "Romanesco", "Kronartskocka", "Okra", "Cassava", "Jordärtskocka", "Daikon", "Lotusrot"],
+  },
+  "Frukt": {
+    unit: "kg",
+    basePrice: 32,
+    names: ["Apelsin", "Blodapelsin", "Grapefrukt", "Kiwi", "Ananas", "Papaya", "Passionsfrukt", "Granatapple", "Fikon", "Dadlar", "Aprikos", "Persika", "Nektarin", "Plommon", "Körsbär", "Hallon", "Blabar", "Björnbär", "Hjortron", "Litchi"],
+  },
+  "Svamp & vilt": {
+    unit: "kg",
+    basePrice: 95,
+    names: ["Shiitake", "Enoki", "Ostronskivling", "Karljohan", "Murklor", "Tryffel svart", "Tryffel vit", "Torkad porcini", "Skogschampinjon", "Nameko", "Hjortinnanlar", "Fasan", "Ripa", "Vaktel", "Duvbrost", "Hare", "Viltfond", "Renfile", "Algfars", "Vildandsbrost"],
+  },
+  "Orter": {
+    unit: "kg",
+    basePrice: 140,
+    names: ["Dragon", "Salvia", "Oregano", "Mejram", "Gräslök", "Körvel", "Citronmeliss", "Ramslök", "Shiso", "Thaibasilika", "Curryblad", "Limeblad", "Dillkronor", "Lavendel", "Rosmarinblomma", "Ängssyra", "Vattenkrasse", "Mizuna", "Krasse", "Fänkålsdill"],
+  },
+  "Oljor": {
+    unit: "liter",
+    basePrice: 70,
+    names: ["Avokadoolja", "Druvkärneolja", "Valnotsolja", "Hasselnötsolja", "Pumpakärnolja", "Chiliolja", "Tryffelolja", "Vitlöksolja", "Citronolja", "Basilikaolja", "Kallpressad rapsolja", "Jordnötsolja", "Kokosolja", "Ghee", "Ankfett", "Nötfett", "Sojaolja", "Majsolja", "Solrosolja", "Arganolja"],
+  },
+  "Spannmal": {
+    unit: "kg",
+    basePrice: 28,
+    names: ["Havreris", "Matvete", "Korn", "Dinkel", "Rågkross", "Hirs", "Amarant", "Teff", "Bovete", "Freekeh", "Farro", "Polenta", "Maizena", "Potatismjöl", "Rismjöl", "Mandelmjöl", "Kikärtsmjöl", "Panko", "Glasnudlar", "Sobanudlar"],
+  },
+  "Torvaror": {
+    unit: "kg",
+    basePrice: 35,
+    names: ["Muscovadosocker", "Florsocker", "Kokossocker", "Agavesirap", "Lönnsirap", "Melass", "Gelatin", "Agar agar", "Pektin", "Bakpulver", "Bikarbonat", "Torrjäst", "Vaniljsocker", "Vaniljstång", "Mörk choklad", "Vit choklad", "Kakaonibs", "Torkad mango", "Torkade tranbär", "Russin"],
+  },
+  "Kryddor": {
+    unit: "kg",
+    basePrice: 120,
+    names: ["Kardemumma", "Korianderfrö", "Fänkålsfrö", "Senapsfrö", "Stjärnanis", "Kryddnejlika", "Muskot", "Mace", "Sumak", "Za'atar", "Ras el hanout", "Garam masala", "Berbere", "Aleppopeppar", "Chipotle", "Cayenne", "Vitpeppar", "Grönpeppar", "Sanshopeppar", "Asafoetida"],
+  },
+  "Smaksattare": {
+    unit: "kg",
+    basePrice: 65,
+    names: ["Tamari", "Ponzu", "Hoisinsås", "Ostronsås", "Worcestersås", "Harissa", "Tahini", "Pesto", "Tapenade", "Kimchi", "Surkål", "Yuzu juice", "Tamarindpasta", "Räksås", "Anchovispasta", "Kapris", "Cornichons", "Svart vitlök", "Marmite", "Nutritional yeast"],
+  },
+  "Baljvaxter": {
+    unit: "kg",
+    basePrice: 30,
+    names: ["Belugalinser", "Gröna linser", "Gula ärtor", "Kidneybönor", "Borlottibönor", "Cannellinibönor", "Edamame", "Tempeh", "Seitan", "Sojafärs", "Mungbönor", "Adzukibönor", "Lupinbönor", "Favabönor", "Black eyed peas", "Puy linser", "Urid dal", "Toor dal", "Chana dal", "Miso tofu"],
+  },
+  "Notter & fron": {
+    unit: "kg",
+    basePrice: 90,
+    names: ["Cashew", "Hasselnötter", "Pistage", "Macadamia", "Pekannötter", "Solrosfrön", "Pumpakärnor", "Chiafrön", "Linfrön", "Hampafrön", "Nigellafrön", "Vallmofrön", "Pinjekärnor", "Kokosflingor", "Kokoschips", "Rostad mandel", "Saltrostade jordnötter", "Tahini sesam", "Mandelmassa", "Nötmix"],
+  },
+  "Drycker": {
+    unit: "liter",
+    basePrice: 35,
+    names: ["Rödvinsvinäger", "Vitvinsvinäger", "Sherryvinäger", "Risvinäger", "Mirin", "Sake", "Kombucha", "Kokosvatten", "Granatäppeljuice", "Tranbärsjuice", "Tomatjuice", "Mandelmjölk", "Havremjölk", "Sojamjölk", "Kaffebrygd", "Espresso", "Grönt te", "Svart te", "Matcha dryck", "Fläderdryck"],
+  },
+  "Exotiskt & rare": {
+    unit: "kg",
+    basePrice: 180,
+    names: ["Yuzu skal", "Buddhas hand", "Finger lime", "Rambutan", "Mangostan", "Durian", "Jackfruit", "Soursop", "Dragon fruit", "Kaktusfikon", "Bananblomma", "Galangal", "Färsk gurkmeja", "Wasabirot", "Umeboshi", "Katsuobushi", "Kombu", "Wakame", "Dulse", "Samphire"],
+  },
+  "Blommor & mikrogront": {
+    unit: "ask",
+    basePrice: 38,
+    names: ["Ätbara violer", "Krasseblommor", "Ringblomma", "Gurkörtsblomma", "Tagetes", "Röd oxalis", "Grön oxalis", "Mizuna micro", "Rödbetsgroddar", "Ärtgroddar", "Solrosskott", "Broccoligroddar", "Shisokrasse", "Senapskrasse", "Korianderkrasse", "Basilikakrasse", "Rädisskott", "Lökkrasse", "Amarant micro", "Fänkålsskott"],
+  },
+  "Fermenterat": {
+    unit: "kg",
+    basePrice: 58,
+    names: ["Kombu ferment", "Fermenterad chili", "Fermenterad vitlök", "Mjölksyrad gurka", "Picklad rödlök", "Picklad senap", "Miso ljus", "Miso mörk", "Natto", "Tempeh starter", "Koji ris", "Koji korn", "Fermenterad svamp", "Fermenterad citron", "Saltad lime", "Syrad morot", "Syrad kål", "Fermenterad tomat", "Fermenterad plommon", "Fermenterad rabarber"],
+  },
+  "Bageri": {
+    unit: "kg",
+    basePrice: 45,
+    names: ["Surdeg", "Brioche", "Focaccia", "Ciabatta", "Baguette", "Rågbröd", "Knäckebröd", "Tortilla", "Pita", "Naan", "Filodeg", "Smördeg", "Mördeg", "Kataifi", "Bao buns", "Slider buns", "Pretzel", "Lavash", "Injera", "Arepa"],
+  },
+  "Chark & konserver": {
+    unit: "kg",
+    basePrice: 85,
+    names: ["Salami", "Prosciutto", "Bresaola", "Mortadella", "Nduja", "Anklever mousse", "Corned beef", "Sardeller", "Sardiner", "Tonfisk konserv", "Confiterad anka", "Tomater konserverade", "Kronärtskocka konserv", "Grillad paprika konserv", "Oliver gröna", "Oliver kalamata", "Kaprisbär", "Majskorn", "Bambuskott", "Vattenkastanj"],
+  },
+  "Saser & fonder": {
+    unit: "liter",
+    basePrice: 55,
+    names: ["Kycklingfond", "Kalvfond", "Fiskfond", "Grönsaksfond", "Svampfond", "Dashi", "Demi glace", "Tomatsås", "Bechamel", "Hollandaisesås", "Bearnaisebas", "Currysås", "Jus", "Rödvinssky", "Äppelgastrique", "Balsamicoreduktion", "Chiliglaze", "Mangosås", "Sataysås", "Tahinisås"],
+  },
+  "Dessert & glass": {
+    unit: "kg",
+    basePrice: 62,
+    names: ["Vaniljglass", "Sorbet mango", "Sorbet hallon", "Gelato pistage", "Mascarponekräm", "Lemon curd", "Dulce de leche", "Karamellsås", "Chokladganache", "Maräng", "Macaron skal", "Pralinmassa", "Nougat", "Marsipan", "Kanderad apelsin", "Kanderad ingefära", "Fruktpure passion", "Fruktpure hallon", "Kaksmulor", "Crumble"],
+  },
+  "Alkoholfria barvaror": {
+    unit: "liter",
+    basePrice: 28,
+    names: ["Tonic", "Ginger beer", "Sodavatten", "Alkoholfri gin", "Alkoholfri aperitif", "Grenadine", "Sockerlag", "Myntasyrup", "Vaniljsyrup", "Kaffesyrup", "Bitter alkoholfri", "Citronmix", "Lime cordial", "Passion cordial", "Rabarbersaft", "Lingondricka", "Blåbärsdryck", "Äppelmust", "Päronmust", "Is-te koncentrat"],
+  },
+  "Specialkost": {
+    unit: "kg",
+    basePrice: 52,
+    names: ["Glutenfri mjölmix", "Glutenfri panko", "Laktosfri creme fraiche", "Vegansk majonnäs", "Aquafaba", "Äggersättning", "Kokosgrädde", "Havrefraiche", "Sojagrädde", "Ärtprotein", "Risprotein", "Quorn", "Jackfruit konserv", "Vegansk färs", "Vegansk kyckling", "Vegansk bacon", "Vegansk choklad", "Sockerfri sirap", "Stevia", "Erytritol"],
+  },
+  "Asiatiskt skafferi": {
+    unit: "kg",
+    basePrice: 48,
+    names: ["Gochugaru", "Doenjang", "Doubanjiang", "Shaoxingvin", "Svart bönsås", "Fermenterade svarta bönor", "Kecap manis", "Sambal oelek", "Laksa paste", "Röd curry paste", "Grön curry paste", "Massaman curry paste", "Panang curry paste", "Rice paper", "Nori", "Furikake", "Bamburis", "Lotusfrön", "Tapiokapärlor", "Palm sugar"],
+  },
+  "Latinamerikanskt": {
+    unit: "kg",
+    basePrice: 42,
+    names: ["Masa harina", "Torkad ancho", "Torkad guajillo", "Torkad pasilla", "Achiote", "Tomatillo", "Poblano", "Jalapeno", "Habanero", "Chipotle in adobo", "Queso fresco", "Cotija", "Plantain", "Yucca", "Hominy", "Svarta bönor kokta", "Refried beans", "Mole paste", "Tajin", "Epazote"],
+  },
+  "Mellanostern": {
+    unit: "kg",
+    basePrice: 46,
+    names: ["Bulgur fin", "Bulgur grov", "Freekeh rostad", "Tahini premium", "Granatäppelsirap", "Rosenvatten", "Apelsinblomsvatten", "Labneh", "Halloumi grill", "Sumac hel", "Dukkah", "Baharat", "Molokhia", "Okra fryst", "Kataifi deg", "Filodeg ark", "Pistagekross", "Dadelsirap", "Torkad lime", "Za'atar premium"],
+  },
+};
+
+function buildExpandedCatalog() {
+  const supplier = "Expanded restaurant catalog";
+  return Object.entries(expandedCategorySeeds).flatMap(([category, seed], categoryIndex) =>
+    seed.names.map((name, itemIndex) => ({
+      name,
+      category,
+      unit: seed.unit,
+      priceSek: Math.round((seed.basePrice + itemIndex * 3.7 + categoryIndex * 1.9) * 100) / 100,
+      priceChangePct: Math.round((((itemIndex % 9) - 4) * 0.9 + categoryIndex * 0.03) * 10) / 10,
+      supplier,
+      source: "market_estimate" as const,
+      confidence: category.includes("rare") || category.includes("Exotiskt") ? "low" as const : "medium" as const,
+    })),
+  );
+}
+
+const expandedIngredientCatalog = buildExpandedCatalog().filter(
+  (item) => !baseIngredientCatalog.some((base) => base.name.toLowerCase() === item.name.toLowerCase()),
+);
+
+export const ingredientCatalog: IngredientCatalogItem[] = [
+  ...baseIngredientCatalog,
+  ...expandedIngredientCatalog,
 ];
