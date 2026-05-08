@@ -1,6 +1,15 @@
 services:
-  smakvarldensourceareplit:
-    image: smakvarldensourceareplit
+  app:
+    image: smakvarlden
     build:
       context: .
       dockerfile: ./Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: "3000"
+      DATABASE_URL: "${DATABASE_URL}"
+      SESSION_SECRET: "${SESSION_SECRET:-smakvarlden-dev-secret}"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      NODE_ENV: "production"
+      STATIC_DIR: "/app/public"
