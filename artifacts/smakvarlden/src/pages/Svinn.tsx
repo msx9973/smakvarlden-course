@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import {
   Trash2, TrendingDown, AlertTriangle, Leaf, Lightbulb, BarChart2, Calendar, DollarSign,
 } from "lucide-react";
@@ -73,7 +75,7 @@ export default function Svinn() {
 
   const { data, isLoading } = useQuery<SvinnSummary>({
     queryKey: ["svinn-summary"],
-    queryFn: () => fetch("/api/svinn/summary").then((r) => r.json()),
+    queryFn: () => fetch(`${BASE}/api/svinn/summary`).then((r) => r.json()),
     staleTime: 60_000,
   });
 

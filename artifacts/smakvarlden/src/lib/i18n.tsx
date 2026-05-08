@@ -109,6 +109,10 @@ const T: Record<string, { en: string }> = {
   "Äggfri":            { en: "Egg-free" },
   "Nötfri":            { en: "Nut-free" },
   "Fisk/skaldjursfri": { en: "Fish/Shellfish-free" },
+  "Tillbehör":         { en: "Side Dishes" },
+  "Snacks":            { en: "Snacks" },
+  "Bröd":              { en: "Bread" },
+  "Frukt":             { en: "Fruit" },
 
   // ── Ingredient categories ────────────────────────────────────
   "Kött":              { en: "Meat" },
@@ -212,8 +216,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 export function useI18n() { return useContext(I18nContext); }
 
 // Category arrays — Swedish = DB storage value, translate display only
-export const RECIPE_CATEGORIES  = ["Huvudrätter", "Sallader", "Såser", "Dressingar", "Desserter", "Soppor", "Förrätter", "Specialkost"];
+export const RECIPE_CATEGORIES  = ["Huvudrätter", "Sallader", "Såser", "Dressingar", "Desserter", "Soppor", "Förrätter", "Specialkost", "Tillbehör", "Snacks", "Bröd"];
 export const DIET_CATEGORIES    = ["Veganskt", "Vegetariskt", "Glutenfri", "Laktosfri"];
 export const ALLERGY_CATEGORIES = ["Glutenfri", "Mjölkfri", "Äggfri", "Nötfri", "Fisk/skaldjursfri"];
-export const ALL_RECIPE_CATEGORIES = [...RECIPE_CATEGORIES, ...DIET_CATEGORIES, "Mjölkfri", "Äggfri", "Nötfri", "Fisk/skaldjursfri"];
-export const INGREDIENT_CATEGORIES = ["Kött", "Fisk & skaldjur", "Mejeri", "Svamp & vilt", "Kryddor", "Ägg & mejeriprodukter", "Spannmål", "Grönsaker", "Oljor", "Drycker"];
+export const ALL_RECIPE_CATEGORIES = [...RECIPE_CATEGORIES, ...DIET_CATEGORIES, ...ALLERGY_CATEGORIES];
+export const INGREDIENT_CATEGORIES = ["Kött", "Fisk & skaldjur", "Mejeri", "Svamp & vilt", "Kryddor", "Ägg & mejeriprodukter", "Spannmål", "Grönsaker", "Frukt", "Oljor", "Drycker"];
