@@ -1,0 +1,13 @@
+[build]
+  base = "."
+  command = "corepack enable && corepack pnpm install --frozen-lockfile && corepack pnpm --filter @workspace/smakvarlden run build"
+  publish = "artifacts/smakvarlden/dist/public"
+
+[build.environment]
+  NODE_VERSION = "24"
+  PNPM_VERSION = "11.0.8"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

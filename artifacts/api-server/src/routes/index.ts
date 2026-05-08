@@ -9,6 +9,7 @@ import aiRouter from "./ai";
 import scbRouter from "./scb";
 import svinnRouter from "./svinn";
 import marketRouter from "./market";
+import spoonacularRouter from "./spoonacular";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use("/dashboard", dashboardRouter);
 router.use("/community", communityRouter);
 router.use("/svinn", svinnRouter);
 router.use("/market", marketRouter);
+router.use("/spoonacular", spoonacularRouter);
 
 export default router;

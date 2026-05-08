@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 
 export default function Login({ onSuccess }: { onSuccess?: () => void }) {
-  const { login, register } = useAuth();
+  const { login, register, loginWithGoogle, supabaseEnabled } = useAuth();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -24,6 +24,17 @@ export default function Login({ onSuccess }: { onSuccess?: () => void }) {
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Fel uppstod.");
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const googleLogin = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      await loginWithGoogle();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Google login failed.");
       setLoading(false);
     }
   };
@@ -75,6 +86,31 @@ export default function Login({ onSuccess }: { onSuccess?: () => void }) {
               </button>
             ))}
           </div>
+
+          {supabaseEnabled && (
+            <>
+              <button
+                type="button"
+                onClick={googleLogin}
+                disabled={loading}
+                className="w-full py-3 rounded-full text-sm font-semibold transition-all disabled:opacity-60 mb-4"
+                style={{
+                  background: "#fff",
+                  color: "hsl(17 47% 13%)",
+                  border: "1.5px solid hsl(33 28% 89%)",
+                  boxShadow: "0 2px 10px rgba(44,24,16,.06)",
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
+              >
+                Logga in med Google
+              </button>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-px flex-1" style={{ background: "hsl(33 28% 89%)" }} />
+                <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: "hsl(20 20% 65%)" }}>eller</span>
+                <div className="h-px flex-1" style={{ background: "hsl(33 28% 89%)" }} />
+              </div>
+            </>
+          )}
 
           <form onSubmit={submit} className="space-y-4">
             {mode === "register" && (

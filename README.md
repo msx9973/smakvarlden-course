@@ -70,6 +70,16 @@ corepack pnpm run build
 
 Builds the whole project.
 
+## Real Service Setup
+
+This repo is now prepared for Supabase, Google Auth, Spoonacular, and Netlify.
+
+- Copy `.env.example` to `.env` for local API/frontend variables.
+- Use Supabase Postgres as `DATABASE_URL`.
+- Enable Google in Supabase Auth, then set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+- Keep `SPOONACULAR_API_KEY` only on the API server.
+- See `docs/deployment.md` for the full setup checklist.
+
 ## Notes
 
 - Use `pnpm`, not `npm` or `yarn`.

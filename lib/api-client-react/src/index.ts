@@ -101,7 +101,7 @@ type ListParams = {
   search?: string;
 };
 
-const API_BASE = "/api";
+const API_BASE = ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_URL)?.replace(/\/$/, "") ?? "/api";
 
 function queryString(params?: Record<string, unknown>) {
   const search = new URLSearchParams();
