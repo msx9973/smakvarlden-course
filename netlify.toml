@@ -3,6 +3,10 @@
   functions = "netlify/functions"
   # No build command needed — all files are pre-built and committed
 
+[build.environment]
+  NPM_FLAGS = "--ignore-scripts"
+  NODE_VERSION = "22"
+
 [functions]
   node_bundler = "none"
 
