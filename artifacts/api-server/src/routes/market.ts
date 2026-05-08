@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db, ingredientsTable, recipesTable } from "@workspace/db";
-import { sql, avg } from "drizzle-orm";
+import { sql } from "drizzle-orm";
+import { demoIngredients, demoRecipes, hasDemoFallbackError, type DemoIngredient } from "../lib/demo-data";
 
 const router = Router();
 
@@ -18,26 +19,55 @@ function buildPriceIndex() {
 
 router.get("/overview", async (_req, res) => {
   /* ─── 1. Category stats from live DB ─── */
-  const categoryStats = await db
-    .select({
-      category:  ingredientsTable.category,
-      avgPrice:  sql<number>`round(avg(${ingredientsTable.currentPriceSek})::numeric, 2)`,
-      minPrice:  sql<number>`round(min(${ingredientsTable.currentPriceSek})::numeric, 2)`,
-      maxPrice:  sql<number>`round(max(${ingredientsTable.currentPriceSek})::numeric, 2)`,
-      count:     sql<number>`count(*)::int`,
-    })
-    .from(ingredientsTable)
-    .groupBy(ingredientsTable.category)
-    .orderBy(sql`avg(${ingredientsTable.currentPriceSek}) desc`);
+  let categoryStats: Array<{ category: string; avgPrice: number; minPrice: number; maxPrice: number; count: number }>;
 
   /* ─── 2. Recipe economics from live DB ─── */
-  const recipeEcon = await db
-    .select({
-      avgCost:   sql<number>`round(avg(${recipesTable.totalCostSek})::numeric, 2)`,
-      avgMargin: sql<number>`round(avg(${recipesTable.profitMarginPct})::numeric, 1)`,
-      avgPrice:  sql<number>`round(avg(${recipesTable.sellingPriceSek})::numeric, 2)`,
-    })
-    .from(recipesTable);
+  let recipeEcon: Array<{ avgCost: number; avgMargin: number; avgPrice: number }>;
+
+  try {
+    categoryStats = await db
+      .select({
+        category:  ingredientsTable.category,
+        avgPrice:  sql<number>`round(avg(${ingredientsTable.currentPriceSek})::numeric, 2)`,
+        minPrice:  sql<number>`round(min(${ingredientsTable.currentPriceSek})::numeric, 2)`,
+        maxPrice:  sql<number>`round(max(${ingredientsTable.currentPriceSek})::numeric, 2)`,
+        count:     sql<number>`count(*)::int`,
+      })
+      .from(ingredientsTable)
+      .groupBy(ingredientsTable.category)
+      .orderBy(sql`avg(${ingredientsTable.currentPriceSek}) desc`);
+
+    recipeEcon = await db
+      .select({
+        avgCost:   sql<number>`round(avg(${recipesTable.totalCostSek})::numeric, 2)`,
+        avgMargin: sql<number>`round(avg(${recipesTable.profitMarginPct})::numeric, 1)`,
+        avgPrice:  sql<number>`round(avg(${recipesTable.sellingPriceSek})::numeric, 2)`,
+      })
+      .from(recipesTable);
+
+    if (categoryStats.length === 0) throw new Error("No database rows, using demo market data");
+  } catch (error) {
+    if (!hasDemoFallbackError(error) && !(error instanceof Error && error.message.includes("demo market"))) throw error;
+    const grouped = new Map<string, DemoIngredient[]>();
+    for (const ingredient of demoIngredients) {
+      grouped.set(ingredient.category, [...(grouped.get(ingredient.category) ?? []), ingredient]);
+    }
+    categoryStats = [...grouped.entries()].map(([category, ingredients]) => {
+      const prices = ingredients.map((ingredient) => ingredient.currentPriceSek);
+      return {
+        category,
+        avgPrice: Math.round((prices.reduce((sum, price) => sum + price, 0) / prices.length) * 100) / 100,
+        minPrice: Math.min(...prices),
+        maxPrice: Math.max(...prices),
+        count: ingredients.length,
+      };
+    }).sort((a, b) => b.avgPrice - a.avgPrice);
+    recipeEcon = [{
+      avgCost: Math.round((demoRecipes.reduce((sum, recipe) => sum + recipe.totalCostSek, 0) / demoRecipes.length) * 100) / 100,
+      avgMargin: Math.round((demoRecipes.reduce((sum, recipe) => sum + recipe.profitMarginPct, 0) / demoRecipes.length) * 10) / 10,
+      avgPrice: Math.round((demoRecipes.reduce((sum, recipe) => sum + recipe.sellingPriceSek, 0) / demoRecipes.length) * 100) / 100,
+    }];
+  }
 
   const econ = recipeEcon[0] ?? { avgCost: 0, avgMargin: 65, avgPrice: 0 };
   const foodCostPct = econ.avgPrice > 0

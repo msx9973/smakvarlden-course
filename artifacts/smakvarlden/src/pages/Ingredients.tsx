@@ -5,13 +5,70 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Plus, Trash2, TrendingUp, TrendingDown, Minus, Leaf } from "lucide-react";
+import { Search, Plus, Trash2, TrendingUp, TrendingDown, Minus, Leaf, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AddIngredientDialog } from "@/components/AddIngredientDialog";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 const CATEGORIES = ["Alla", "Kött", "Fisk & skaldjur", "Mejeri", "Svamp & vilt", "Kryddor"];
 const CHART_COLORS = ["hsl(44 50% 46%)", "#3b82f6", "#10b981", "#ef4444", "#8b5cf6"];
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+type ImportRow = {
+  name?: string;
+  category?: string;
+  unit?: string;
+  priceSek?: number;
+  supplier?: string;
+};
+
+function parseCsvLine(line: string) {
+  const values: string[] = [];
+  let value = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    const next = line[i + 1];
+    if (char === "\"" && next === "\"") {
+      value += "\"";
+      i++;
+    } else if (char === "\"") {
+      inQuotes = !inQuotes;
+    } else if (char === "," && !inQuotes) {
+      values.push(value.trim());
+      value = "";
+    } else {
+      value += char;
+    }
+  }
+  values.push(value.trim());
+  return values;
+}
+
+function normalizeHeader(header: string) {
+  return header.trim().toLowerCase().replace(/[\s_-]/g, "");
+}
+
+function parseIngredientCsv(text: string): ImportRow[] {
+  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  if (lines.length < 2) return [];
+  const headers = parseCsvLine(lines[0]).map(normalizeHeader);
+  return lines.slice(1).map((line) => {
+    const values = parseCsvLine(line);
+    const raw: Record<string, string> = {};
+    headers.forEach((header, index) => {
+      raw[header] = values[index] ?? "";
+    });
+    const price = Number((raw.pricesek ?? raw.currentpricesek ?? raw.price ?? raw.pris ?? "").replace(",", "."));
+    return {
+      name: raw.name ?? raw.namn,
+      category: raw.category ?? raw.kategori,
+      unit: raw.unit ?? raw.enhet,
+      priceSek: Number.isFinite(price) ? price : undefined,
+      supplier: raw.supplier ?? raw.leverantor ?? raw.leverantör,
+    };
+  });
+}
 
 function PriceChangePill({ pct }: { pct: number }) {
   const abs = Math.abs(pct);
@@ -54,6 +111,31 @@ export default function Ingredients() {
     },
   });
 
+  const importCsv = async (file: File) => {
+    try {
+      const rows = parseIngredientCsv(await file.text());
+      if (rows.length === 0) {
+        toast({ title: "Ingen data hittades", description: "CSV maste ha name, category, unit och priceSek." });
+        return;
+      }
+      const res = await fetch(`${BASE}/api/ingredients/import`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ingredients: rows }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Import misslyckades");
+      queryClient.invalidateQueries({ queryKey: getListIngredientsQueryKey() });
+      queryClient.invalidateQueries({ queryKey: getGetIngredientPriceTrendsQueryKey() });
+      toast({ title: "Prislista importerad", description: `${data.imported} ingredienser uppdaterades.` });
+    } catch (error) {
+      toast({
+        title: "Import misslyckades",
+        description: error instanceof Error ? error.message : "Kontrollera CSV-filen.",
+      });
+    }
+  };
+
   const trendsByIngredient = (priceTrends.data ?? []).reduce<Record<string, typeof priceTrends.data>>((acc, entry) => {
     if (!acc[entry.ingredientName]) acc[entry.ingredientName] = [];
     acc[entry.ingredientName]!.push(entry);
@@ -74,16 +156,39 @@ export default function Ingredients() {
     <div className="flex flex-col gap-6 max-w-6xl">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="font-serif text-2xl font-bold tracking-tight" style={{ color: "var(--sv-text)" }}>Ingredienser</h1>
           <p className="text-[13px] mt-1" style={{ color: "var(--sv-text-2)" }}>Råvarupriser uppdateras 3× per vecka</p>
         </div>
-        <button onClick={() => setShowAdd(true)}
+        <div className="flex items-center gap-2">
+          <label
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-semibold hover:opacity-90 transition-all cursor-pointer"
+            style={{ background: "var(--sv-muted)", color: "var(--sv-text)", border: "1px solid var(--sv-border)" }}>
+            <Upload className="w-4 h-4" /> Importera CSV
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) void importCsv(file);
+                event.currentTarget.value = "";
+              }}
+            />
+          </label>
+          <button onClick={() => setShowAdd(true)}
           className="flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-semibold hover:opacity-90 transition-all"
           style={{ background: "var(--sv-brown)", color: "var(--sv-surface)", boxShadow: "0 4px 14px var(--sv-shadow)" }}>
           <Plus className="w-4 h-4" /> Ny ingrediens
-        </button>
+          </button>
+        </div>
+      </div>
+
+      <div className="rounded-2xl px-4 py-3 text-[12px] leading-relaxed"
+        style={{ background: "var(--sv-accent)", color: "var(--sv-text-2)", border: "1px solid var(--sv-border)" }}>
+        CSV-format: <span className="font-mono" style={{ color: "var(--sv-text)" }}>name, category, unit, priceSek, supplier</span>.
+        Exempel: <span className="font-mono" style={{ color: "var(--sv-text)" }}>Kycklingfile, Kott, kg, 95, Menigo</span>
       </div>
 
       {/* Price trend chart */}

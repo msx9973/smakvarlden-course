@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "lib": ["es2022"],
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["src"]
+}

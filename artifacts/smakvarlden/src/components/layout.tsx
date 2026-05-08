@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Calculator, Users, BookOpen, Leaf, Moon, Sun,
-  Shield, LogOut, LogIn, ChefHat, HelpCircle, Trash2, Globe,
+  Shield, LogOut, LogIn, ChefHat, HelpCircle, Trash2, Globe, Sparkles,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
@@ -16,6 +16,7 @@ const NAV_MAIN = [
   { href: "/community",   label: "Community",    icon: Users },
 ];
 const NAV_SUPPORT = [
+  { href: "/plans", label: "Planer",       icon: Sparkles },
   { href: "/svinn", label: "Svinnanalys",  icon: Trash2 },
   { href: "/help",  label: "Hjälpcenter", icon: HelpCircle },
 ];
@@ -128,6 +129,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* User footer */}
         <div className="px-3 pb-4 pt-2 shrink-0"
           style={{ borderTop: "1px solid var(--sv-border)" }}>
+          {!user && (
+            <Link href="/plans"
+              className="mb-2 flex flex-col gap-1 px-3 py-3 rounded-xl transition-all"
+              style={{ background: "var(--sv-accent)", border: "1px solid var(--sv-border)" }}>
+              <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "var(--sv-gold)" }}>
+                14 dagar gratis
+              </span>
+              <span className="text-[12px] leading-snug" style={{ color: "var(--sv-text-2)" }}>
+                Testa Pro Chef innan betalning.
+              </span>
+            </Link>
+          )}
           {user ? (
             <div className="flex items-center gap-2.5 px-2 py-2 rounded-xl transition-colors"
               style={{ cursor: "default" }}>

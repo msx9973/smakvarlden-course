@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db, communityPostsTable, activityLogTable } from "@workspace/db";
 import { eq, ilike, desc, sql } from "drizzle-orm";
+import { demoRecipes, hasDemoFallbackError } from "../lib/demo-data";
 import {
   CreateCommunityPostBody,
   ListCommunityPostsQueryParams,
@@ -12,10 +13,28 @@ const router = Router();
 router.get("/posts", async (req, res) => {
   const parsed = ListCommunityPostsQueryParams.safeParse(req.query);
   const search = parsed.success ? parsed.data.search : undefined;
-  const rows = await db.select().from(communityPostsTable)
-    .where(search ? ilike(communityPostsTable.recipeName, `%${search}%`) : undefined)
-    .orderBy(desc(communityPostsTable.createdAt));
-  return res.json(rows.map(formatPost));
+  try {
+    const rows = await db.select().from(communityPostsTable)
+      .where(search ? ilike(communityPostsTable.recipeName, `%${search}%`) : undefined)
+      .orderBy(desc(communityPostsTable.createdAt));
+    if (rows.length > 0) return res.json(rows.map(formatPost));
+  } catch (error) {
+    if (!hasDemoFallbackError(error)) throw error;
+  }
+  const normalizedSearch = search?.toLowerCase();
+  return res.json(demoRecipes
+    .filter((recipe) => recipe.isShared)
+    .filter((recipe) => !normalizedSearch || recipe.name.toLowerCase().includes(normalizedSearch))
+    .map((recipe, index) => ({
+      id: recipe.id,
+      recipeName: recipe.name,
+      chefName: ["Chef Erik", "Chef Sofia", "Chef Marco", "Chef Priya"][index % 4],
+      description: recipe.description ?? "",
+      category: recipe.category,
+      costSek: recipe.totalCostSek,
+      likes: 12 + index * 7,
+      createdAt: recipe.createdAt.toISOString(),
+    })));
 });
 
 router.post("/posts", async (req, res) => {

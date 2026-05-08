@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { db, ingredientsTable, activityLogTable } from "@workspace/db";
+import { db, hasDatabase, ingredientsTable, activityLogTable } from "@workspace/db";
 import { eq, ilike, and, sql } from "drizzle-orm";
+import { demoIngredients, hasDemoFallbackError, type DemoIngredient } from "../lib/demo-data";
 import {
   CreateIngredientBody,
   ListIngredientsQueryParams,
@@ -12,17 +13,38 @@ import {
 
 const router = Router();
 
+type ImportedIngredient = {
+  name?: string;
+  category?: string;
+  unit?: string;
+  priceSek?: number;
+  currentPriceSek?: number;
+  supplier?: string;
+};
+
 router.get("/", async (req, res) => {
   const parsed = ListIngredientsQueryParams.safeParse(req.query);
   if (!parsed.success) {
     return res.status(400).json({ error: "Invalid query params" });
   }
   const { category, search } = parsed.data;
-  const conditions = [];
-  if (category) conditions.push(eq(ingredientsTable.category, category));
-  if (search) conditions.push(ilike(ingredientsTable.name, `%${search}%`));
-  const rows = await db.select().from(ingredientsTable).where(conditions.length ? and(...conditions) : undefined);
-  return res.json(rows.map(formatIngredient));
+  try {
+    const conditions = [];
+    if (category) conditions.push(eq(ingredientsTable.category, category));
+    if (search) conditions.push(ilike(ingredientsTable.name, `%${search}%`));
+    const rows = await db.select().from(ingredientsTable).where(conditions.length ? and(...conditions) : undefined);
+    if (rows.length > 0) return res.json(rows.map(formatIngredient));
+  } catch (error) {
+    if (!hasDemoFallbackError(error)) throw error;
+  }
+
+  const normalizedSearch = search?.toLowerCase();
+  const rows = demoIngredients.filter((ingredient) => {
+    if (category && ingredient.category !== category) return false;
+    if (normalizedSearch && !ingredient.name.toLowerCase().includes(normalizedSearch)) return false;
+    return true;
+  });
+  return res.json(rows.map(formatDemoIngredient));
 });
 
 router.post("/", async (req, res) => {
@@ -46,8 +68,83 @@ router.post("/", async (req, res) => {
   return res.status(201).json(formatIngredient(row));
 });
 
+router.post("/import", async (req, res) => {
+  const rows = Array.isArray(req.body?.ingredients) ? req.body.ingredients as ImportedIngredient[] : [];
+  if (rows.length === 0) return res.status(400).json({ error: "No ingredients supplied" });
+
+  const normalized = rows.flatMap((row) => {
+    const name = row.name?.trim();
+    const category = row.category?.trim();
+    const unit = row.unit?.trim();
+    const currentPriceSek = Number(row.currentPriceSek ?? row.priceSek);
+    if (!name || !category || !unit || !Number.isFinite(currentPriceSek) || currentPriceSek < 0) return [];
+    return [{
+      name,
+      category,
+      unit,
+      currentPriceSek,
+      supplier: row.supplier?.trim() || "Importerad prislista",
+    }];
+  });
+
+  if (normalized.length === 0) return res.status(400).json({ error: "No valid ingredients found" });
+
+  if (hasDatabase) {
+    const inserted = await db.insert(ingredientsTable).values(normalized.map((row) => ({
+      name: row.name,
+      category: row.category,
+      unit: row.unit,
+      currentPriceSek: String(row.currentPriceSek),
+      supplier: row.supplier,
+      priceChangePct: "0",
+    }))).returning();
+
+    await db.insert(activityLogTable).values({
+      type: "recipe_updated",
+      title: "Prislista importerad",
+      subtitle: `${inserted.length} ingredienser lades till`,
+    });
+
+    return res.status(201).json({ imported: inserted.length, skipped: rows.length - normalized.length });
+  }
+
+  let imported = 0;
+  for (const row of normalized) {
+    const existing = demoIngredients.find((ingredient) => ingredient.name.toLowerCase() === row.name.toLowerCase());
+    if (existing) {
+      existing.category = row.category;
+      existing.unit = row.unit;
+      existing.currentPriceSek = row.currentPriceSek;
+      existing.priceChangePct = 0;
+      existing.supplier = row.supplier;
+      existing.updatedAt = new Date();
+    } else {
+      demoIngredients.push({
+        id: Math.max(0, ...demoIngredients.map((ingredient) => ingredient.id)) + 1,
+        name: row.name,
+        category: row.category,
+        unit: row.unit,
+        currentPriceSek: row.currentPriceSek,
+        priceChangePct: 0,
+        supplier: row.supplier,
+        updatedAt: new Date(),
+      });
+    }
+    imported++;
+  }
+
+  return res.status(201).json({ imported, skipped: rows.length - normalized.length });
+});
+
 router.get("/price-trends", async (_req, res) => {
-  const rows = await db.select().from(ingredientsTable).limit(8);
+  let rows: Array<typeof ingredientsTable.$inferSelect | DemoIngredient>;
+  try {
+    rows = await db.select().from(ingredientsTable).limit(8);
+    if (rows.length === 0) rows = demoIngredients.slice(0, 8);
+  } catch (error) {
+    if (!hasDemoFallbackError(error)) throw error;
+    rows = demoIngredients.slice(0, 8);
+  }
   const trends: { ingredientId: number; ingredientName: string; date: string; priceSek: number }[] = [];
   const now = new Date();
   for (const ing of rows) {
@@ -68,29 +165,62 @@ router.get("/price-trends", async (_req, res) => {
 });
 
 router.get("/category-breakdown", async (_req, res) => {
-  const rows = await db
-    .select({
-      category: ingredientsTable.category,
-      count: sql<number>`count(*)::int`,
-      avgPriceSek: sql<number>`avg(current_price_sek::numeric)`,
-      totalPriceSek: sql<number>`sum(current_price_sek::numeric)`,
-    })
-    .from(ingredientsTable)
-    .groupBy(ingredientsTable.category);
+  try {
+    const rows = await db
+      .select({
+        category: ingredientsTable.category,
+        count: sql<number>`count(*)::int`,
+        avgPriceSek: sql<number>`avg(current_price_sek::numeric)`,
+        totalPriceSek: sql<number>`sum(current_price_sek::numeric)`,
+      })
+      .from(ingredientsTable)
+      .groupBy(ingredientsTable.category);
+    if (rows.length > 0) {
+      return res.json(rows.map((r) => ({
+        category: r.category,
+        count: r.count,
+        avgPriceSek: Math.round(Number(r.avgPriceSek) * 100) / 100,
+        totalPriceSek: Math.round(Number(r.totalPriceSek) * 100) / 100,
+      })));
+    }
+  } catch (error) {
+    if (!hasDemoFallbackError(error)) throw error;
+  }
+
+  const grouped = new Map<string, DemoIngredient[]>();
+  for (const ingredient of demoIngredients) {
+    grouped.set(ingredient.category, [...(grouped.get(ingredient.category) ?? []), ingredient]);
+  }
+  const rows = [...grouped.entries()].map(([category, ingredients]) => {
+    const totalPriceSek = ingredients.reduce((sum, ingredient) => sum + ingredient.currentPriceSek, 0);
+    return {
+      category,
+      count: ingredients.length,
+      avgPriceSek: Math.round((totalPriceSek / ingredients.length) * 100) / 100,
+      totalPriceSek: Math.round(totalPriceSek * 100) / 100,
+    };
+  });
   return res.json(rows.map((r) => ({
     category: r.category,
     count: r.count,
-    avgPriceSek: Math.round(Number(r.avgPriceSek) * 100) / 100,
-    totalPriceSek: Math.round(Number(r.totalPriceSek) * 100) / 100,
+    avgPriceSek: r.avgPriceSek,
+    totalPriceSek: r.totalPriceSek,
   })));
 });
 
 router.get("/:id", async (req, res) => {
   const parsed = GetIngredientParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
-  const [row] = await db.select().from(ingredientsTable).where(eq(ingredientsTable.id, parsed.data.id));
+  try {
+    const [row] = await db.select().from(ingredientsTable).where(eq(ingredientsTable.id, parsed.data.id));
+    if (!row) return res.status(404).json({ error: "Not found" });
+    return res.json(formatIngredient(row));
+  } catch (error) {
+    if (!hasDemoFallbackError(error)) throw error;
+  }
+  const row = demoIngredients.find((ingredient) => ingredient.id === parsed.data.id);
   if (!row) return res.status(404).json({ error: "Not found" });
-  return res.json(formatIngredient(row));
+  return res.json(formatDemoIngredient(row));
 });
 
 router.put("/:id", async (req, res) => {
@@ -140,6 +270,19 @@ function formatIngredient(row: typeof ingredientsTable.$inferSelect) {
     currentPriceSek: parseFloat(String(row.currentPriceSek)),
     priceChangePct: parseFloat(String(row.priceChangePct)),
     supplier: row.supplier ?? undefined,
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+function formatDemoIngredient(row: DemoIngredient) {
+  return {
+    id: row.id,
+    name: row.name,
+    category: row.category,
+    unit: row.unit,
+    currentPriceSek: row.currentPriceSek,
+    priceChangePct: row.priceChangePct,
+    supplier: row.supplier,
     updatedAt: row.updatedAt.toISOString(),
   };
 }

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db, ingredientsTable, recipesTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
+import { demoIngredients, demoRecipes, hasDemoFallbackError, type DemoIngredient } from "../lib/demo-data";
 
 const router = Router();
 
@@ -34,22 +35,53 @@ const SVINN_TIPS = [
 ];
 
 router.get("/summary", async (_req, res) => {
-  const ingredientRows = await db
-    .select({
-      category: ingredientsTable.category,
-      count: sql<number>`count(*)::int`,
-      avgPriceSek: sql<number>`avg(current_price_sek::numeric)`,
-      totalPriceSek: sql<number>`sum(current_price_sek::numeric)`,
-    })
-    .from(ingredientsTable)
-    .groupBy(ingredientsTable.category);
+  let ingredientRows: Array<{
+    category: string;
+    count: number;
+    avgPriceSek: number;
+    totalPriceSek: number;
+  }>;
+  let recipeSummary: { avgCost: number | null; totalRecipes: number } | undefined;
 
-  const [recipeSummary] = await db
-    .select({
-      avgCost: sql<number>`avg(total_cost_sek::numeric)`,
-      totalRecipes: sql<number>`count(*)::int`,
-    })
-    .from(recipesTable);
+  try {
+    ingredientRows = await db
+      .select({
+        category: ingredientsTable.category,
+        count: sql<number>`count(*)::int`,
+        avgPriceSek: sql<number>`avg(current_price_sek::numeric)`,
+        totalPriceSek: sql<number>`sum(current_price_sek::numeric)`,
+      })
+      .from(ingredientsTable)
+      .groupBy(ingredientsTable.category);
+
+    [recipeSummary] = await db
+      .select({
+        avgCost: sql<number>`avg(total_cost_sek::numeric)`,
+        totalRecipes: sql<number>`count(*)::int`,
+      })
+      .from(recipesTable);
+
+    if (ingredientRows.length === 0) throw new Error("No database rows, using demo svinn data");
+  } catch (error) {
+    if (!hasDemoFallbackError(error) && !(error instanceof Error && error.message.includes("demo svinn"))) throw error;
+    const grouped = new Map<string, DemoIngredient[]>();
+    for (const ingredient of demoIngredients) {
+      grouped.set(ingredient.category, [...(grouped.get(ingredient.category) ?? []), ingredient]);
+    }
+    ingredientRows = [...grouped.entries()].map(([category, ingredients]) => {
+      const totalPriceSek = ingredients.reduce((sum, ingredient) => sum + ingredient.currentPriceSek, 0);
+      return {
+        category,
+        count: ingredients.length,
+        avgPriceSek: totalPriceSek / ingredients.length,
+        totalPriceSek,
+      };
+    });
+    recipeSummary = {
+      avgCost: demoRecipes.reduce((sum, recipe) => sum + recipe.totalCostSek, 0) / demoRecipes.length,
+      totalRecipes: demoRecipes.length,
+    };
+  }
 
   const avgDailyPortions = 40;
 

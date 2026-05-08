@@ -15,6 +15,7 @@ import Admin from "@/pages/Admin";
 import HelpCenter from "@/pages/HelpCenter";
 import Svinn from "@/pages/Svinn";
 import MarketInsights from "@/pages/MarketInsights";
+import Plans from "@/pages/Plans";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { useLocation } from "wouter";
 
@@ -68,6 +69,7 @@ function Router() {
             <Route path="/help" component={HelpCenter} />
             <Route path="/svinn" component={Svinn} />
             <Route path="/market" component={MarketInsights} />
+            <Route path="/plans" component={Plans} />
             <Route component={NotFound} />
           </Switch>
         </Layout>

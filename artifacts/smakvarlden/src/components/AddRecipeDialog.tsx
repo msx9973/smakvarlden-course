@@ -20,7 +20,7 @@ const schema = z.object({
   isShared: z.boolean().optional(),
 });
 
-const CATEGORIES = ["Kött", "Fisk & skaldjur", "Vegetariskt", "Pasta", "Mejeri", "Svamp & vilt", "Kryddor", "Oljor", "Drycker"];
+const CATEGORIES = ["Huvudratter", "Forratter", "Sallader", "Saser", "Dressingar", "Desserter", "Soppor", "Veganskt", "Vegetariskt", "Kott", "Fisk & skaldjur"];
 
 export function AddRecipeDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const queryClient = useQueryClient();

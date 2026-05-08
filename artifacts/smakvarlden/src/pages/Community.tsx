@@ -28,7 +28,7 @@ const schema = z.object({
   category:    z.string().min(1, "Välj kategori"),
   costSek:     z.coerce.number().min(0),
 });
-const CATEGORIES = ["Kött", "Fisk & skaldjur", "Vegetariskt", "Pasta", "Mejeri", "Svamp & vilt", "Kryddor", "Oljor"];
+const CATEGORIES = ["Kött", "Fisk & skaldjur", "Veganskt", "Vegetariskt", "Mejeri", "Svamp & vilt", "Kryddor", "Oljor"];
 
 function initials(name: string) {
   return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
