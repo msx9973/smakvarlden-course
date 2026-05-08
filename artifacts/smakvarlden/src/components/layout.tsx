@@ -5,21 +5,27 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { AiChat } from "./AiChat";
 
-const NAV_MAIN = [
-  { href: "/",            label: "Dashboard",   icon: LayoutDashboard },
-  { href: "/recipes",     label: "Recept",       icon: BookOpen },
-  { href: "/ingredients", label: "Ingredienser", icon: Leaf },
-  { href: "/calculator",  label: "Kalkylator",   icon: Calculator },
-  { href: "/market",      label: "Marknadsdata", icon: Globe },
-  { href: "/community",   label: "Community",    icon: Users },
-];
-const NAV_SUPPORT = [
-  { href: "/svinn",    label: "Svinnanalys",  icon: Trash2 },
-  { href: "/help",     label: "Hjälpcenter",  icon: HelpCircle },
-  { href: "/upgrade",  label: "Pro Chef",     icon: Crown },
-];
+function useNavItems() {
+  const { t } = useI18n();
+  return {
+    main: [
+      { href: "/",            label: t("Dashboard"),    icon: LayoutDashboard },
+      { href: "/recipes",     label: t("Recept"),        icon: BookOpen },
+      { href: "/ingredients", label: t("Ingredienser"),  icon: Leaf },
+      { href: "/calculator",  label: t("Kalkylator"),    icon: Calculator },
+      { href: "/market",      label: t("Marknadsdata"),  icon: Globe },
+      { href: "/community",   label: t("Community"),     icon: Users },
+    ],
+    support: [
+      { href: "/svinn",   label: t("Svinnanalys"),  icon: Trash2 },
+      { href: "/help",    label: t("Hjälpcenter"),  icon: HelpCircle },
+      { href: "/upgrade", label: t("Pro Chef"),     icon: Crown },
+    ],
+  };
+}
 
 function NavItem({ href, label, icon: Icon, admin }: {
   href: string; label: string; icon: React.ElementType; admin?: boolean;
@@ -40,18 +46,12 @@ function NavItem({ href, label, icon: Icon, admin }: {
       }}
     >
       <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all"
-        style={active ? {
-          background: "rgba(201,168,76,.22)",
-        } : {
-          background: "var(--sv-muted)",
-        }}>
+        style={active ? { background: "rgba(201,168,76,.22)" } : { background: "var(--sv-muted)" }}>
         <Icon className="w-3.5 h-3.5 transition-colors"
           style={{ color: active ? "var(--sv-nav-active-icon)" : admin ? "hsl(350 55% 50%)" : "var(--sv-text-2)" }} />
       </div>
       <span>{label}</span>
-      {active && (
-        <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ background: "var(--sv-nav-active-dot)" }} />
-      )}
+      {active && <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ background: "var(--sv-nav-active-dot)" }} />}
     </Link>
   );
 }
@@ -59,7 +59,9 @@ function NavItem({ href, label, icon: Icon, admin }: {
 export function Layout({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const { user, logout } = useAuth();
+  const { lang, setLang, t } = useI18n();
   const [location] = useLocation();
+  const { main: NAV_MAIN, support: NAV_SUPPORT } = useNavItems();
 
   useEffect(() => {
     const isDark = document.documentElement.classList.contains("dark");
@@ -97,7 +99,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <span className="font-serif font-bold text-sm tracking-tight" style={{ color: "var(--sv-text)" }}>
               Smak<span style={{ color: "var(--sv-gold)", fontStyle: "italic" }}>världen</span>
             </span>
-            <div className="text-[10px] leading-none mt-0.5" style={{ color: "var(--sv-text-2)" }}>Kockens verktyg</div>
+            <div className="text-[10px] leading-none mt-0.5" style={{ color: "var(--sv-text-2)" }}>{t("Kockens verktyg")}</div>
           </div>
         </div>
 
@@ -105,7 +107,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
           <p className="text-[10px] font-bold uppercase tracking-[0.1em] px-3 py-2 mb-1"
             style={{ color: "var(--sv-gold)" }}>
-            Verktyg
+            {t("Verktyg")}
           </p>
           {NAV_MAIN.map((item) => <NavItem key={item.href} {...item} />)}
 
@@ -113,25 +115,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <>
               <p className="text-[10px] font-bold uppercase tracking-[0.1em] px-3 py-2 mt-4 mb-1"
                 style={{ color: "var(--sv-gold)" }}>
-                Administration
+                {t("Administration")}
               </p>
-              <NavItem href="/admin" label="Admin" icon={Shield} admin />
+              <NavItem href="/admin" label={t("Admin")} icon={Shield} admin />
             </>
           )}
 
           <p className="text-[10px] font-bold uppercase tracking-[0.1em] px-3 py-2 mt-4 mb-1"
             style={{ color: "var(--sv-gold)" }}>
-            Support
+            {t("Support")}
           </p>
           {NAV_SUPPORT.map((item) => <NavItem key={item.href} {...item} />)}
         </nav>
 
         {/* User footer */}
-        <div className="px-3 pb-4 pt-2 shrink-0"
-          style={{ borderTop: "1px solid var(--sv-border)" }}>
+        <div className="px-3 pb-4 pt-2 shrink-0" style={{ borderTop: "1px solid var(--sv-border)" }}>
           {user ? (
-            <div className="flex items-center gap-2.5 px-2 py-2 rounded-xl transition-colors"
-              style={{ cursor: "default" }}>
+            <div className="flex items-center gap-2.5 px-2 py-2 rounded-xl" style={{ cursor: "default" }}>
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold font-serif shrink-0"
                 style={{ background: "var(--sv-brown)", color: "var(--sv-gold)" }}>
                 {user.name.charAt(0).toUpperCase()}
@@ -139,10 +139,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] font-semibold truncate" style={{ color: "var(--sv-text)" }}>{user.name}</p>
                 <p className="text-[11px]" style={{ color: "var(--sv-gold)" }}>
-                  {user.role === "admin" ? "Admin" : user.plan === "pro" ? "Pro Chef" : "Kock"}
+                  {user.role === "admin" ? t("Admin") : user.plan === "pro" ? t("Pro Chef") : t("Kock")}
                 </p>
               </div>
-              <button onClick={logout} title="Logga ut"
+              <button onClick={logout} title={t("Logga ut")}
                 className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:opacity-70"
                 style={{ color: "var(--sv-text-2)" }}>
                 <LogOut className="w-3.5 h-3.5" />
@@ -153,7 +153,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-[13px] font-semibold transition-all"
               style={{ background: "var(--sv-muted)", color: "var(--sv-gold)" }}>
               <LogIn className="w-4 h-4" />
-              Logga in
+              {t("Logga in")}
             </Link>
           )}
         </div>
@@ -164,10 +164,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Top bar */}
         <header className="h-[60px] sticky top-0 z-20 flex items-center justify-between px-6"
-          style={{
-            background: "var(--sv-sidebar)",
-            borderBottom: "1px solid var(--sv-border)",
-          }}>
+          style={{ background: "var(--sv-sidebar)", borderBottom: "1px solid var(--sv-border)" }}>
           {/* Mobile logo */}
           <div className="flex md:hidden items-center gap-2">
             <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "var(--sv-brown)" }}>
@@ -183,9 +180,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 className="hidden md:flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] font-semibold transition-all"
                 style={{ background: "var(--sv-brown)", color: "var(--sv-surface)" }}>
                 <LogIn className="w-3.5 h-3.5" />
-                Logga in
+                {t("Logga in")}
               </Link>
             )}
+            {/* Language toggle */}
+            <button
+              onClick={() => setLang(lang === "sv" ? "en" : "sv")}
+              className="h-9 px-3 rounded-xl flex items-center justify-center transition-colors text-[12px] font-bold"
+              style={{ color: "var(--sv-text-2)", background: "var(--sv-muted)" }}
+              title="Switch language"
+            >
+              {lang === "sv" ? "EN" : "SV"}
+            </button>
+            {/* Theme toggle */}
             <button
               onClick={toggleTheme}
               className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
@@ -205,7 +212,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* ── Mobile bottom nav ── */}
       <div className="md:hidden fixed bottom-0 inset-x-0 h-16 flex items-center justify-around z-50"
         style={{ background: "var(--sv-sidebar)", borderTop: "1px solid var(--sv-border)" }}>
-        {[...NAV_MAIN.slice(0, 4), { href: "/help", label: "Hälp", icon: HelpCircle }].map(({ href, label, icon: Icon }) => {
+        {[...NAV_MAIN.slice(0, 4), { href: "/help", label: t("Hjälpcenter"), icon: HelpCircle }].map(({ href, label, icon: Icon }) => {
           const active = href === "/" ? location === "/" : location.startsWith(href);
           return (
             <Link key={href} href={href}

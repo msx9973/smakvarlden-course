@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useRef } from "react";
+import { useI18n, INGREDIENT_CATEGORIES } from "@/lib/i18n";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -42,10 +43,10 @@ const schema = z.object({
   supplier: z.string().optional(),
 });
 
-const CATEGORIES = ["Kött", "Fisk & skaldjur", "Mejeri", "Svamp & vilt", "Kryddor", "Ägg & mejeriprodukter", "Spannmål", "Grönsaker", "Oljor", "Drycker"];
 const UNITS = ["kg", "g", "liter", "dl", "st", "msk", "tsk", "kruka"];
 
 export function AddIngredientDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [nameInput, setNameInput] = useState("");
@@ -61,7 +62,7 @@ export function AddIngredientDialog({ open, onClose }: { open: boolean; onClose:
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListIngredientsQueryKey() });
-        toast({ title: "Ingrediens tillagd!" });
+        toast({ title: t("Ingrediens tillagd!") });
         onClose();
         form.reset();
         setNameInput("");
@@ -73,13 +74,13 @@ export function AddIngredientDialog({ open, onClose }: { open: boolean; onClose:
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-serif">Ny ingrediens</DialogTitle>
+          <DialogTitle className="font-serif">{t("Ny ingrediens")}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((data) => create.mutate({ data }))} className="space-y-4">
             <FormField control={form.control} name="name" render={({ field }) => (
               <FormItem className="relative">
-                <FormLabel>Namn</FormLabel>
+                <FormLabel>{t("Namn")}</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -116,13 +117,13 @@ export function AddIngredientDialog({ open, onClose }: { open: boolean; onClose:
             <div className="grid grid-cols-2 gap-3">
               <FormField control={form.control} name="category" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Kategori</FormLabel>
+                  <FormLabel>{t("Kategori")}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Välj" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={t("Välj")} /></SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      {INGREDIENT_CATEGORIES.map((c) => <SelectItem key={c} value={c}>{t(c)}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -130,10 +131,10 @@ export function AddIngredientDialog({ open, onClose }: { open: boolean; onClose:
               )} />
               <FormField control={form.control} name="unit" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Enhet</FormLabel>
+                  <FormLabel>{t("Enhet")}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Välj" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={t("Välj")} /></SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {UNITS.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}
@@ -145,21 +146,21 @@ export function AddIngredientDialog({ open, onClose }: { open: boolean; onClose:
             </div>
             <FormField control={form.control} name="currentPriceSek" render={({ field }) => (
               <FormItem>
-                <FormLabel>Pris (kr per enhet)</FormLabel>
+                <FormLabel>{t("Pris (kr per enhet)")}</FormLabel>
                 <FormControl><Input type="number" step="0.01" min={0} {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="supplier" render={({ field }) => (
               <FormItem>
-                <FormLabel>Leverantör (valfritt)</FormLabel>
+                <FormLabel>{t("Leverantör (valfritt)")}</FormLabel>
                 <FormControl><Input {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>Avbryt</Button>
-              <Button type="submit" disabled={create.isPending}>Spara</Button>
+              <Button type="button" variant="outline" onClick={onClose}>{t("Avbryt")}</Button>
+              <Button type="submit" disabled={create.isPending}>{t("Spara")}</Button>
             </DialogFooter>
           </form>
         </Form>

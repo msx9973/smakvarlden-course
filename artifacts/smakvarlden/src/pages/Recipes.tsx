@@ -1,63 +1,33 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
-import { useListRecipes, useDeleteRecipe, getListRecipesQueryKey } from "@workspace/api-client-react";
+import { useListRecipes, useDeleteRecipe, useCreateRecipe, getListRecipesQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Plus, Trash2, ExternalLink, ChefHat, Globe, Clock } from "lucide-react";
+import { Search, Plus, Trash2, ExternalLink, ChefHat, Globe, Clock, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AddRecipeDialog } from "@/components/AddRecipeDialog";
+import { ImportDialog, type CsvRow } from "@/components/ImportDialog";
+import { useI18n, RECIPE_CATEGORIES, DIET_CATEGORIES, ALLERGY_CATEGORIES } from "@/lib/i18n";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-interface SpoonRecipe {
-  id: number;
-  title: string;
-  image: string;
-  readyInMinutes: number;
-  cuisines: string[];
-  diets: string[];
-  summary: string;
-}
-
-function useSpoonSearch(query: string, enabled: boolean) {
-  const [results, setResults] = useState<SpoonRecipe[]>([]);
-  const [loading, setLoading] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (!enabled || !query.trim()) { setResults([]); return; }
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(async () => {
-      setLoading(true);
-      try {
-        const r = await fetch(`${BASE}/api/spoonacular/recipes/search?query=${encodeURIComponent(query)}&number=12`);
-        if (r.ok) {
-          const data = await r.json();
-          setResults(data.results ?? []);
-        }
-      } finally {
-        setLoading(false);
-      }
-    }, 600);
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [query, enabled]);
-
-  return { results, loading };
-}
-
-const CATEGORIES = ["Alla", "Kött", "Fisk & skaldjur", "Vegetariskt", "Pasta", "Mejeri", "Svamp & vilt"];
-
 const CAT_GRADIENT: Record<string, string> = {
-  "Kött":           "linear-gradient(135deg,#ef4444,#b91c1c)",
-  "Fisk & skaldjur":"linear-gradient(135deg,#3b82f6,#1d4ed8)",
-  "Vegetariskt":    "linear-gradient(135deg,#16a34a,#14532d)",
-  "Pasta":          "linear-gradient(135deg,#d97706,#92400e)",
-  "Mejeri":         "linear-gradient(135deg,#c9a84c,#a37a30)",
-  "Svamp & vilt":   "linear-gradient(135deg,#7c3aed,#4c1d95)",
-  "Desserter":      "linear-gradient(135deg,#db2777,#9d174d)",
-  "Frukost":        "linear-gradient(135deg,#ea580c,#9a3412)",
-  "Förrätter":      "linear-gradient(135deg,#0891b2,#164e63)",
   "Huvudrätter":    "linear-gradient(135deg,hsl(17 47% 22%),hsl(17 47% 13%))",
+  "Sallader":       "linear-gradient(135deg,#16a34a,#14532d)",
+  "Såser":          "linear-gradient(135deg,#d97706,#92400e)",
+  "Dressingar":     "linear-gradient(135deg,#c9a84c,#a37a30)",
+  "Desserter":      "linear-gradient(135deg,#db2777,#9d174d)",
+  "Soppor":         "linear-gradient(135deg,#0891b2,#164e63)",
+  "Förrätter":      "linear-gradient(135deg,#7c3aed,#4c1d95)",
+  "Specialkost":    "linear-gradient(135deg,#f97316,#7c2d12)",
+  "Veganskt":       "linear-gradient(135deg,#22c55e,#14532d)",
+  "Vegetariskt":    "linear-gradient(135deg,#84cc16,#365314)",
+  "Glutenfri":      "linear-gradient(135deg,#e8c840,#9a7c10)",
+  "Laktosfri":      "linear-gradient(135deg,#38bdf8,#075985)",
+  "Mjölkfri":       "linear-gradient(135deg,#a78bfa,#4c1d95)",
+  "Äggfri":         "linear-gradient(135deg,#fb923c,#7c2d12)",
+  "Nötfri":         "linear-gradient(135deg,#f43f5e,#881337)",
+  "Fisk/skaldjursfri": "linear-gradient(135deg,#2dd4bf,#134e4a)",
 };
 
 function marginStyle(pct: number) {
@@ -66,12 +36,52 @@ function marginStyle(pct: number) {
   return { color: "#dc2626" };
 }
 
+interface SpoonRecipe {
+  id: number; title: string; image: string; readyInMinutes: number;
+  cuisines: string[]; diets: string[];
+}
+
+function useSpoonSearch(query: string, enabled: boolean) {
+  const [results, setResults] = useState<SpoonRecipe[]>([]);
+  const [loading, setLoading] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!enabled || !query.trim()) { setResults([]); return; }
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const r = await fetch(`${BASE}/api/spoonacular/recipes/search?query=${encodeURIComponent(query)}&number=12`);
+        if (r.ok) { const d = await r.json(); setResults(d.results ?? []); }
+      } finally { setLoading(false); }
+    }, 600);
+    return () => { if (timer.current) clearTimeout(timer.current); };
+  }, [query, enabled]);
+
+  return { results, loading };
+}
+
+function FilterPill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button onClick={onClick}
+      className="px-3 py-1.5 rounded-full text-[12px] font-medium transition-all whitespace-nowrap"
+      style={active ? {
+        background: "var(--sv-brown)", color: "var(--sv-surface)", boxShadow: "0 2px 8px var(--sv-shadow)",
+      } : { background: "var(--sv-muted)", color: "var(--sv-text-2)" }}>
+      {label}
+    </button>
+  );
+}
+
 export default function Recipes() {
+  const { t } = useI18n();
   const [tab, setTab] = useState<"mine" | "world">("mine");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [spoonQuery, setSpoonQuery] = useState("");
   const [showAdd, setShowAdd] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -81,12 +91,34 @@ export default function Recipes() {
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListRecipesQueryKey() });
-        toast({ title: "Recept borttaget" });
+        toast({ title: t("Recept borttaget") });
       },
     },
   });
-
+  const createRecipe = useCreateRecipe();
   const { results: spoonResults, loading: spoonLoading } = useSpoonSearch(spoonQuery, tab === "world");
+
+  async function handleImport(rows: CsvRow[]) {
+    for (const row of rows) {
+      await createRecipe.mutateAsync({
+        data: {
+          name: row["name"] || row["namn"] || "Okänt recept",
+          description: row["description"] || row["beskrivning"] || undefined,
+          category: row["category"] || row["kategori"] || "Huvudrätter",
+          servings: parseInt(row["servings"] || row["portioner"] || "4") || 4,
+          sellingPriceSek: parseFloat(row["selling_price"] || row["pris"] || "0") || 0,
+        },
+      });
+    }
+    queryClient.invalidateQueries({ queryKey: getListRecipesQueryKey() });
+    toast({ title: `${rows.length} ${t("rader importerade")}` });
+  }
+
+  const filterSections = [
+    { key: "type",    label: t("Recepttyp"), cats: ["Alla", ...RECIPE_CATEGORIES] },
+    { key: "diet",    label: t("Kost"),      cats: DIET_CATEGORIES },
+    { key: "allergy", label: t("Allergi"),   cats: ALLERGY_CATEGORIES },
+  ];
 
   return (
     <div className="flex flex-col gap-6 max-w-6xl">
@@ -94,32 +126,38 @@ export default function Recipes() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-serif text-2xl font-bold tracking-tight" style={{ color: "var(--sv-text)" }}>Recept</h1>
+          <h1 className="font-serif text-2xl font-bold tracking-tight" style={{ color: "var(--sv-text)" }}>
+            {t("Recept")}
+          </h1>
           <p className="text-[13px] mt-1" style={{ color: "var(--sv-text-2)" }}>
-            {tab === "mine" ? "Din privata kokbok med kostnadskalkyl" : "Sök bland miljoner recept från hela världen"}
+            {tab === "mine" ? t("Din privata kokbok med kostnadskalkyl") : t("Sök bland miljoner recept från hela världen")}
           </p>
         </div>
         {tab === "mine" && (
-          <button onClick={() => setShowAdd(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-semibold transition-all hover:opacity-90"
-            style={{ background: "var(--sv-brown)", color: "var(--sv-surface)", boxShadow: "0 4px 14px var(--sv-shadow)" }}>
-            <Plus className="w-4 h-4" /> Nytt recept
-          </button>
+          <div className="flex gap-2">
+            <button onClick={() => setShowImport(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-semibold transition-all hover:opacity-90"
+              style={{ background: "var(--sv-muted)", color: "var(--sv-text-2)", border: "1.5px solid var(--sv-border)" }}>
+              <Upload className="w-4 h-4" /> {t("Importera")}
+            </button>
+            <button onClick={() => setShowAdd(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-semibold transition-all hover:opacity-90"
+              style={{ background: "var(--sv-brown)", color: "var(--sv-surface)", boxShadow: "0 4px 14px var(--sv-shadow)" }}>
+              <Plus className="w-4 h-4" /> {t("Nytt recept")}
+            </button>
+          </div>
         )}
       </div>
 
       {/* Tabs */}
       <div className="flex gap-1 p-1 rounded-xl w-fit"
         style={{ background: "var(--sv-surface)", border: "1px solid var(--sv-border)" }}>
-        {([["mine", ChefHat, "Mina recept"], ["world", Globe, "Hitta recept"]] as const).map(([t, Icon, label]) => (
-          <button key={t} onClick={() => setTab(t)}
+        {([["mine", ChefHat, t("Mina recept")], ["world", Globe, t("Hitta recept")]] as const).map(([tab2, Icon, label]) => (
+          <button key={tab2} onClick={() => setTab(tab2)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-semibold transition-all"
-            style={tab === t ? {
-              background: "var(--sv-brown)", color: "var(--sv-surface)",
-              boxShadow: "0 2px 8px var(--sv-shadow)",
-            } : {
-              color: "var(--sv-text-2)",
-            }}>
+            style={tab === tab2 ? {
+              background: "var(--sv-brown)", color: "var(--sv-surface)", boxShadow: "0 2px 8px var(--sv-shadow)",
+            } : { color: "var(--sv-text-2)" }}>
             <Icon className="w-3.5 h-3.5" /> {label}
           </button>
         ))}
@@ -128,40 +166,38 @@ export default function Recipes() {
       {tab === "mine" ? (
         <>
           {/* Filter bar */}
-          <div className="rounded-2xl p-4 flex flex-col sm:flex-row gap-3"
+          <div className="rounded-2xl p-4 flex flex-col gap-3"
             style={{ background: "var(--sv-surface)", boxShadow: "0 2px 8px var(--sv-shadow)" }}>
-            <div className="relative flex-1">
+            {/* Search */}
+            <div className="relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--sv-text-2)" }} />
               <input
-                placeholder="Sök recept..."
+                placeholder={t("Sök recept...")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl text-[13px] outline-none transition-all"
-                style={{
-                  background: "var(--sv-muted)",
-                  color: "var(--sv-text)",
-                  border: "1.5px solid var(--sv-border)",
-                  fontFamily: "'DM Sans', sans-serif",
-                }}
+                style={{ background: "var(--sv-muted)", color: "var(--sv-text)", border: "1.5px solid var(--sv-border)", fontFamily: "'DM Sans', sans-serif" }}
               />
             </div>
-            <div className="flex gap-1.5 flex-wrap">
-              {CATEGORIES.map((cat) => {
-                const active = category === (cat === "Alla" ? "" : cat);
-                return (
-                  <button key={cat} onClick={() => setCategory(cat === "Alla" ? "" : cat)}
-                    className="px-3.5 py-2 rounded-full text-[12px] font-medium transition-all"
-                    style={active ? {
-                      background: "var(--sv-brown)", color: "var(--sv-surface)",
-                      boxShadow: "0 2px 8px var(--sv-shadow)",
-                    } : {
-                      background: "var(--sv-muted)", color: "var(--sv-text-2)",
-                    }}>
-                    {cat}
-                  </button>
-                );
-              })}
-            </div>
+            {/* Category group filters */}
+            {filterSections.map(({ key, label, cats }) => (
+              <div key={key} className="flex items-start gap-3">
+                <span className="text-[10px] font-bold uppercase tracking-widest pt-2 shrink-0 w-16 text-right"
+                  style={{ color: "var(--sv-gold)" }}>
+                  {label}
+                </span>
+                <div className="flex gap-1.5 flex-wrap flex-1">
+                  {cats.map((cat) => (
+                    <FilterPill
+                      key={cat}
+                      label={t(cat)}
+                      active={category === (cat === "Alla" ? "" : cat)}
+                      onClick={() => setCategory(cat === "Alla" ? "" : cat)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* Grid */}
@@ -174,8 +210,8 @@ export default function Recipes() {
               <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ background: "var(--sv-muted)" }}>
                 <ChefHat className="w-8 h-8" style={{ color: "var(--sv-text-2)" }} />
               </div>
-              <p className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>Inga recept hittades</p>
-              <p className="text-[13px] mt-1" style={{ color: "var(--sv-text-2)" }}>Lägg till ditt första recept ovan</p>
+              <p className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>{t("Inga recept hittades")}</p>
+              <p className="text-[13px] mt-1" style={{ color: "var(--sv-text-2)" }}>{t("Lägg till ditt första recept ovan")}</p>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -201,15 +237,15 @@ export default function Recipes() {
                         </div>
                         {recipe.isShared && (
                           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0"
-                            style={{ background: "rgba(16,163,74,.12)", color: "#16a34a" }}>Delat</span>
+                            style={{ background: "rgba(16,163,74,.12)", color: "#16a34a" }}>{t("Delat")}</span>
                         )}
                       </div>
 
                       <div className="grid grid-cols-3 gap-2">
                         {[
-                          { label: "Kostnad", value: `${recipe.totalCostSek.toFixed(0)} kr`, style: {} },
-                          { label: "Pris",    value: `${recipe.sellingPriceSek.toFixed(0)} kr`, style: {} },
-                          { label: "Marginal", value: `${recipe.profitMarginPct.toFixed(1)}%`, style: mg },
+                          { label: t("Kostnad"),  value: `${recipe.totalCostSek.toFixed(0)} kr`,       style: {} },
+                          { label: t("Pris"),     value: `${recipe.sellingPriceSek.toFixed(0)} kr`,    style: {} },
+                          { label: t("Marginal"), value: `${recipe.profitMarginPct.toFixed(1)}%`,      style: mg },
                         ].map(({ label, value, style }) => (
                           <div key={label} className="rounded-xl p-2.5 text-center" style={{ background: "var(--sv-muted)" }}>
                             <p className="text-[10px] font-semibold uppercase tracking-wide mb-0.5" style={{ color: "var(--sv-text-2)" }}>{label}</p>
@@ -221,16 +257,16 @@ export default function Recipes() {
                       <div className="flex items-center justify-between mt-auto pt-1">
                         <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
                           style={{ background: "var(--sv-muted)", color: "var(--sv-text-2)" }}>
-                          {recipe.category}
+                          {t(recipe.category)}
                         </span>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Link href={`/recipes/${recipe.id}`}>
-                            <button className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+                            <button className="w-7 h-7 rounded-lg flex items-center justify-center"
                               style={{ color: "var(--sv-text-2)" }}>
                               <ExternalLink className="w-3.5 h-3.5" />
                             </button>
                           </Link>
-                          <button className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+                          <button className="w-7 h-7 rounded-lg flex items-center justify-center"
                             style={{ color: "#dc2626" }}
                             onClick={() => deleteRecipe.mutate({ id: recipe.id })}>
                             <Trash2 className="w-3.5 h-3.5" />
@@ -245,22 +281,16 @@ export default function Recipes() {
           )}
         </>
       ) : (
-        /* ── Spoonacular search ── */
+        /* ── Spoonacular ── */
         <div className="flex flex-col gap-5">
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--sv-text-2)" }} />
             <input
-              placeholder="Sök recept på engelska, t.ex. pasta, chicken, salad..."
+              placeholder={t("Sök recept på engelska, t.ex. pasta, chicken, salad...")}
               value={spoonQuery}
               onChange={(e) => setSpoonQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-xl text-[13px] outline-none transition-all"
-              style={{
-                background: "var(--sv-surface)",
-                color: "var(--sv-text)",
-                border: "1.5px solid var(--sv-border)",
-                fontFamily: "'DM Sans', sans-serif",
-                boxShadow: "0 2px 8px var(--sv-shadow)",
-              }}
+              className="w-full pl-10 pr-4 py-3 rounded-xl text-[13px] outline-none"
+              style={{ background: "var(--sv-surface)", color: "var(--sv-text)", border: "1.5px solid var(--sv-border)", fontFamily: "'DM Sans', sans-serif", boxShadow: "0 2px 8px var(--sv-shadow)" }}
             />
           </div>
 
@@ -273,19 +303,18 @@ export default function Recipes() {
           {!spoonLoading && spoonQuery.trim() && spoonResults.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <Globe className="w-10 h-10 mb-3" style={{ color: "var(--sv-text-2)" }} />
-              <p className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>Inga recept hittades</p>
-              <p className="text-[13px] mt-1" style={{ color: "var(--sv-text-2)" }}>Försök med ett annat sökord</p>
+              <p className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>{t("Inga recept hittades")}</p>
+              <p className="text-[13px] mt-1" style={{ color: "var(--sv-text-2)" }}>{t("Försök med ett annat sökord")}</p>
             </div>
           )}
 
           {!spoonLoading && !spoonQuery.trim() && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-                style={{ background: "var(--sv-muted)" }}>
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ background: "var(--sv-muted)" }}>
                 <Globe className="w-8 h-8" style={{ color: "var(--sv-text-2)" }} />
               </div>
-              <p className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>Sök bland miljoner recept</p>
-              <p className="text-[13px] mt-1" style={{ color: "var(--sv-text-2)" }}>Skriv något i sökfältet ovan</p>
+              <p className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>{t("Sök bland miljoner recept")}</p>
+              <p className="text-[13px] mt-1" style={{ color: "var(--sv-text-2)" }}>{t("Skriv något i sökfältet ovan")}</p>
             </div>
           )}
 
@@ -296,14 +325,11 @@ export default function Recipes() {
                   className="rounded-2xl overflow-hidden flex flex-col transition-all duration-200 hover:-translate-y-1"
                   style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
                   {r.image && (
-                    <img src={r.image} alt={r.title}
-                      className="w-full h-36 object-cover"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                    />
+                    <img src={r.image} alt={r.title} className="w-full h-36 object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                   )}
                   <div className="p-4 flex flex-col gap-2 flex-1">
-                    <h3 className="font-serif font-semibold text-[14px] leading-snug line-clamp-2"
-                      style={{ color: "var(--sv-text)" }}>
+                    <h3 className="font-serif font-semibold text-[14px] leading-snug line-clamp-2" style={{ color: "var(--sv-text)" }}>
                       {r.title}
                     </h3>
                     <div className="flex items-center gap-1.5 mt-auto">
@@ -325,6 +351,14 @@ export default function Recipes() {
       )}
 
       <AddRecipeDialog open={showAdd} onClose={() => setShowAdd(false)} />
+      <ImportDialog
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        title={t("Importera recept")}
+        expectedHeaders={["name", "description", "category", "servings", "selling_price"]}
+        example={"Pasta Carbonara,Klassisk pasta,Huvudrätter,4,185"}
+        onImport={handleImport}
+      />
     </div>
   );
 }
