@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Calculator, Users, BookOpen, Leaf, Moon, Sun,
-  Shield, LogOut, LogIn, ChefHat, HelpCircle, Trash2, Globe,
+  Shield, LogOut, LogIn, ChefHat, HelpCircle, Trash2, Globe, Crown,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
@@ -16,8 +16,9 @@ const NAV_MAIN = [
   { href: "/community",   label: "Community",    icon: Users },
 ];
 const NAV_SUPPORT = [
-  { href: "/svinn", label: "Svinnanalys",  icon: Trash2 },
-  { href: "/help",  label: "Hjälpcenter", icon: HelpCircle },
+  { href: "/svinn",    label: "Svinnanalys",  icon: Trash2 },
+  { href: "/help",     label: "Hjälpcenter",  icon: HelpCircle },
+  { href: "/upgrade",  label: "Pro Chef",     icon: Crown },
 ];
 
 function NavItem({ href, label, icon: Icon, admin }: {
@@ -138,7 +139,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] font-semibold truncate" style={{ color: "var(--sv-text)" }}>{user.name}</p>
                 <p className="text-[11px]" style={{ color: "var(--sv-gold)" }}>
-                  {user.role === "admin" ? "Admin" : "Kock"}
+                  {user.role === "admin" ? "Admin" : user.plan === "pro" ? "Pro Chef" : "Kock"}
                 </p>
               </div>
               <button onClick={logout} title="Logga ut"

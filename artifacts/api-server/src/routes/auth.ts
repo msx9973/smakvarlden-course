@@ -15,7 +15,7 @@ function signToken(user: { id: number; email: string; role: string }) {
 }
 
 function formatUser(u: typeof usersTable.$inferSelect) {
-  return { id: u.id, name: u.name, email: u.email, role: u.role, createdAt: u.createdAt.toISOString() };
+  return { id: u.id, name: u.name, email: u.email, role: u.role, plan: u.plan, createdAt: u.createdAt.toISOString() };
 }
 
 router.post("/auth/register", async (req, res) => {

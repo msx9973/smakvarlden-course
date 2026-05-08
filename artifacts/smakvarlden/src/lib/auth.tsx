@@ -5,6 +5,7 @@ export interface AuthUser {
   name: string;
   email: string;
   role: "user" | "admin";
+  plan: "free" | "pro";
   createdAt: string;
 }
 

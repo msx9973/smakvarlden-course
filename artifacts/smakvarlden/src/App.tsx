@@ -15,8 +15,11 @@ import Admin from "@/pages/Admin";
 import HelpCenter from "@/pages/HelpCenter";
 import Svinn from "@/pages/Svinn";
 import MarketInsights from "@/pages/MarketInsights";
+import Upgrade from "@/pages/Upgrade";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { useLocation } from "wouter";
+import { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,6 +33,18 @@ const queryClient = new QueryClient({
 function LoginPage() {
   const [, navigate] = useLocation();
   return <Login onSuccess={() => navigate("/")} />;
+}
+
+function PaymentSuccessBanner() {
+  const { toast } = useToast();
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment") === "success") {
+      toast({ title: "Betalning lyckades!", description: "Välkommen till Pro Chef. Alla funktioner ar nu upplasta." });
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+  return null;
 }
 
 function Router() {
@@ -47,6 +62,7 @@ function Router() {
       <Route path="/login" component={LoginPage} />
       <Route>
         <Layout>
+          <PaymentSuccessBanner />
           <Switch>
             <Route path="/" component={Dashboard} />
             <Route path="/recipes">
@@ -68,6 +84,7 @@ function Router() {
             <Route path="/help" component={HelpCenter} />
             <Route path="/svinn" component={Svinn} />
             <Route path="/market" component={MarketInsights} />
+            <Route path="/upgrade" component={Upgrade} />
             <Route component={NotFound} />
           </Switch>
         </Layout>

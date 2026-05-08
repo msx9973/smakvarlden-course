@@ -9,6 +9,30 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect, useRef } from "react";
+
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+interface SpoonIngredient { id: number; name: string; }
+
+function useIngredientSuggestions(query: string) {
+  const [suggestions, setSuggestions] = useState<SpoonIngredient[]>([]);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!query.trim() || query.length < 2) { setSuggestions([]); return; }
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(async () => {
+      try {
+        const r = await fetch(`${BASE}/api/spoonacular/ingredients/autocomplete?query=${encodeURIComponent(query)}&number=6`);
+        if (r.ok) setSuggestions(await r.json());
+      } catch { /* ignore */ }
+    }, 400);
+    return () => { if (timer.current) clearTimeout(timer.current); };
+  }, [query]);
+
+  return suggestions;
+}
 
 const schema = z.object({
   name: z.string().min(1, "Ange ett namn"),
@@ -24,6 +48,10 @@ const UNITS = ["kg", "g", "liter", "dl", "st", "msk", "tsk", "kruka"];
 export function AddIngredientDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [nameInput, setNameInput] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestions = useIngredientSuggestions(nameInput);
+
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: { name: "", category: "", unit: "kg", currentPriceSek: 0, supplier: "" },
@@ -36,6 +64,7 @@ export function AddIngredientDialog({ open, onClose }: { open: boolean; onClose:
         toast({ title: "Ingrediens tillagd!" });
         onClose();
         form.reset();
+        setNameInput("");
       },
     },
   });
@@ -49,9 +78,38 @@ export function AddIngredientDialog({ open, onClose }: { open: boolean; onClose:
         <Form {...form}>
           <form onSubmit={form.handleSubmit((data) => create.mutate({ data }))} className="space-y-4">
             <FormField control={form.control} name="name" render={({ field }) => (
-              <FormItem>
+              <FormItem className="relative">
                 <FormLabel>Namn</FormLabel>
-                <FormControl><Input {...field} /></FormControl>
+                <FormControl>
+                  <Input
+                    {...field}
+                    value={nameInput}
+                    onChange={(e) => {
+                      setNameInput(e.target.value);
+                      field.onChange(e.target.value);
+                      setShowSuggestions(true);
+                    }}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                    autoComplete="off"
+                  />
+                </FormControl>
+                {showSuggestions && suggestions.length > 0 && (
+                  <ul className="absolute z-50 left-0 right-0 top-full mt-1 rounded-xl overflow-hidden shadow-lg"
+                    style={{ background: "var(--sv-surface)", border: "1px solid var(--sv-border)" }}>
+                    {suggestions.map((s) => (
+                      <li key={s.id}
+                        className="px-4 py-2.5 text-[13px] cursor-pointer hover:opacity-80 transition-opacity capitalize"
+                        style={{ color: "var(--sv-text)" }}
+                        onMouseDown={() => {
+                          setNameInput(s.name);
+                          field.onChange(s.name);
+                          setShowSuggestions(false);
+                        }}>
+                        {s.name}
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 <FormMessage />
               </FormItem>
             )} />
