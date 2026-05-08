@@ -53,3 +53,22 @@ VITE_API_URL=https://YOUR_API_HOST/api
 ```
 
 The Express API still needs a Node host such as Render, Railway, Fly.io, Supabase Edge Functions, or Netlify Functions. Once the API is hosted, put that API URL into `VITE_API_URL`.
+
+## 5. Stripe
+
+Create products and prices in Stripe Dashboard, then set these only on the API host:
+
+```text
+STRIPE_SECRET_KEY=sk_test_or_live_...
+STRIPE_PRO_PRICE_ID=price_...
+STRIPE_TEAM_PRICE_ID=price_...
+APP_URL=https://your-site.netlify.app
+```
+
+The current app uses:
+
+- `POST /api/billing/checkout` to create a Stripe Checkout subscription session.
+- `GET /api/billing/config` to check whether Stripe is configured.
+- `POST /api/billing/portal` as a prepared billing portal endpoint when customer ids are stored.
+
+For local testing, set `APP_URL=http://localhost:5173`. The Pro Chef button on `/plans` redirects to Stripe Checkout when `STRIPE_SECRET_KEY` and `STRIPE_PRO_PRICE_ID` are present.

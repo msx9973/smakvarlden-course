@@ -1,5 +1,7 @@
 import { Check, Sparkles, Timer, TrendingUp } from "lucide-react";
 import { FEATURE_LOCK_RULES, FREE_FEATURES, LOCKED_FEATURES, PLAN_LIMITS, PLANS } from "@/lib/plans";
+import { apiFetch, useAuth } from "@/lib/auth";
+import { useState } from "react";
 
 const toneStyle: Record<string, { bg: string; border: string; color: string; accent: string }> = {
   muted: {
@@ -22,9 +24,10 @@ const toneStyle: Record<string, { bg: string; border: string; color: string; acc
   },
 };
 
-function PlanCard({ plan }: { plan: (typeof PLANS)[number] }) {
+function PlanCard({ plan, onCheckout, loadingPlan }: { plan: (typeof PLANS)[number]; onCheckout: (planId: string) => void; loadingPlan: string | null }) {
   const style = toneStyle[plan.tone];
   const isFeatured = plan.id === "trial";
+  const canCheckout = plan.id === "pro";
   return (
     <div
       className="rounded-2xl p-5 flex flex-col gap-5 relative overflow-hidden"
@@ -63,20 +66,41 @@ function PlanCard({ plan }: { plan: (typeof PLANS)[number] }) {
         ))}
       </div>
       <button
-        disabled={plan.id === "team"}
+        disabled={plan.id === "team" || loadingPlan === plan.id}
+        onClick={() => canCheckout ? onCheckout(plan.id) : undefined}
         className="relative mt-auto rounded-xl px-4 py-2.5 text-[13px] font-bold transition-all disabled:opacity-55"
         style={{
           background: plan.tone === "dark" ? "hsl(44 54% 54%)" : plan.tone === "featured" ? "hsl(17 47% 13%)" : "var(--sv-brown)",
           color: plan.tone === "featured" ? "#FAF8F4" : plan.tone === "dark" ? "hsl(17 47% 13%)" : "var(--sv-surface)",
         }}
       >
-        {plan.cta}
+        {loadingPlan === plan.id ? "Oppnar Stripe..." : plan.cta}
       </button>
     </div>
   );
 }
 
 export default function Plans() {
+  const { user } = useAuth();
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState("");
+
+  const checkout = async (planId: string) => {
+    setCheckoutError("");
+    setLoadingPlan(planId);
+    try {
+      const data = await apiFetch("/billing/checkout", {
+        method: "POST",
+        body: JSON.stringify({ planId, email: user?.email }),
+      });
+      if (!data.url) throw new Error("Stripe checkout URL saknas.");
+      window.location.href = data.url;
+    } catch (error) {
+      setCheckoutError(error instanceof Error ? error.message : "Stripe checkout kunde inte startas.");
+      setLoadingPlan(null);
+    }
+  };
+
   return (
     <div className="max-w-6xl flex flex-col gap-7">
       <div className="relative rounded-2xl overflow-hidden px-7 py-8"
@@ -103,8 +127,14 @@ export default function Plans() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {PLANS.map((plan) => <PlanCard key={plan.id} plan={plan} />)}
+        {PLANS.map((plan) => <PlanCard key={plan.id} plan={plan} onCheckout={checkout} loadingPlan={loadingPlan} />)}
       </div>
+
+      {checkoutError && (
+        <div className="rounded-xl px-4 py-3 text-[13px] font-semibold" style={{ background: "hsl(350 60% 96%)", color: "hsl(350 60% 36%)" }}>
+          {checkoutError}
+        </div>
+      )}
 
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="rounded-2xl p-5" style={{ background: "var(--sv-surface)", border: "1px solid var(--sv-border)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>

@@ -72,12 +72,13 @@ Builds the whole project.
 
 ## Real Service Setup
 
-This repo is now prepared for Supabase, Google Auth, Spoonacular, and Netlify.
+This repo is now prepared for Supabase, Google Auth, Spoonacular, Stripe, and Netlify.
 
 - Copy `.env.example` to `.env` for local API/frontend variables.
 - Use Supabase Postgres as `DATABASE_URL`.
 - Enable Google in Supabase Auth, then set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
 - Keep `SPOONACULAR_API_KEY` only on the API server.
+- Keep `STRIPE_SECRET_KEY` only on the API server and use Stripe price ids for paid plans.
 - See `docs/deployment.md` for the full setup checklist.
 
 ## Notes
