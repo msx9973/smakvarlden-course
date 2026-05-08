@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { db, ingredientsTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 
 const router = Router();
 
@@ -82,9 +83,7 @@ export async function syncSCBPrices(): Promise<{ updated: number; message: strin
       currentPriceSek: String(newPrice),
       priceChangePct: String(changePct),
       updatedAt: new Date(),
-    }).where(
-      (await import("drizzle-orm")).eq(ingredientsTable.id, ingredient.id)
-    );
+    }).where(eq(ingredientsTable.id, ingredient.id));
     updated++;
   }
 

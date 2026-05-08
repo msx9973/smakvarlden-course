@@ -24,7 +24,8 @@ function useMarketOverview() {
   return useQuery<Overview>({
     queryKey: ["market-overview"],
     queryFn: async () => {
-      const r = await fetch(`${import.meta.env.BASE_URL}api/market/overview`);
+      const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+      const r = await fetch(`${base}/api/market/overview`);
       if (!r.ok) throw new Error("Failed to load market data");
       return r.json();
     },

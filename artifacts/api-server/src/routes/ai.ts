@@ -35,15 +35,19 @@ router.post("/ai/chat", async (req, res) => {
     { role: "user", content: message },
   ];
 
-  const response = await client.messages.create({
-    model: "claude-haiku-4-5",
-    max_tokens: 1024,
-    system: SYSTEM_PROMPT,
-    messages,
-  });
-
-  const reply = response.content[0]?.type === "text" ? response.content[0].text : "";
-  return res.json({ reply, tokensUsed: response.usage?.output_tokens });
+  try {
+    const response = await client.messages.create({
+      model: "claude-haiku-4-5",
+      max_tokens: 1024,
+      system: SYSTEM_PROMPT,
+      messages,
+    });
+    const reply = response.content[0]?.type === "text" ? response.content[0].text : "";
+    return res.json({ reply, tokensUsed: response.usage?.output_tokens });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "AI-tjänsten svarade inte.";
+    return res.status(502).json({ error: msg });
+  }
 });
 
 router.post("/ai/suggest", async (req, res) => {
@@ -60,15 +64,19 @@ ${budget ? `Budget: ${budget} SEK.` : ""}
 Antal portioner: ${servings}.
 Föreslå 3 konkreta recept med dessa ingredienser. För varje recept: ge namn, kategori, uppskattad kostnad per portion, och en kort beskrivning (max 2 meningar).`;
 
-  const response = await client.messages.create({
-    model: "claude-haiku-4-5",
-    max_tokens: 1024,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: prompt }],
-  });
-
-  const reply = response.content[0]?.type === "text" ? response.content[0].text : "";
-  return res.json({ reply });
+  try {
+    const response = await client.messages.create({
+      model: "claude-haiku-4-5",
+      max_tokens: 1024,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: "user", content: prompt }],
+    });
+    const reply = response.content[0]?.type === "text" ? response.content[0].text : "";
+    return res.json({ reply });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "AI-tjänsten svarade inte.";
+    return res.status(502).json({ error: msg });
+  }
 });
 
 export default router;

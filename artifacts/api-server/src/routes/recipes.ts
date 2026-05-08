@@ -132,13 +132,20 @@ router.put("/:id", async (req, res) => {
   const [existing] = await db.select().from(recipesTable).where(eq(recipesTable.id, paramParsed.data.id));
   if (!existing) return res.status(404).json({ error: "Not found" });
 
+  const newSellingPrice = bodyParsed.data.sellingPriceSek ?? parseFloat(String(existing.sellingPriceSek));
+  const existingTotalCost = parseFloat(String(existing.totalCostSek));
+  const newProfitMarginPct = newSellingPrice > 0
+    ? ((newSellingPrice - existingTotalCost) / newSellingPrice) * 100
+    : 0;
+
   const [updated] = await db.update(recipesTable)
     .set({
       name: bodyParsed.data.name ?? existing.name,
       description: bodyParsed.data.description ?? existing.description,
       category: bodyParsed.data.category ?? existing.category,
       servings: bodyParsed.data.servings ?? existing.servings,
-      sellingPriceSek: bodyParsed.data.sellingPriceSek ? String(bodyParsed.data.sellingPriceSek) : existing.sellingPriceSek,
+      sellingPriceSek: String(newSellingPrice),
+      profitMarginPct: String(Math.round(newProfitMarginPct * 100) / 100),
       isShared: bodyParsed.data.isShared ?? existing.isShared,
       updatedAt: new Date(),
     })
