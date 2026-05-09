@@ -86812,8 +86812,10 @@ app.use(import_express14.default.urlencoded({ extended: true }));
 app.use("/api", routes_default);
 app.use(function(err, req, res, _next) {
   const status = err.status || err.statusCode || 500;
-  console.error("[api error]", err.message, err.cause || err.stack);
-  res.status(status).json({ error: err.message || "Internal server error", cause: err.cause?.message });
+  const cause = err.cause;
+  const causeInfo = cause ? { message: cause.message, code: cause.code, detail: cause.detail, severity: cause.severity, routine: cause.routine } : undefined;
+  console.error("[api error]", err.message, causeInfo || err.stack);
+  res.status(status).json({ error: err.message || "Internal server error", cause: causeInfo });
 });
 var __dirname2;
 try { __dirname2 = path2.dirname(fileURLToPath(import.meta.url)); } catch (_e) { __dirname2 = typeof __dirname !== "undefined" ? __dirname : "/tmp"; }
