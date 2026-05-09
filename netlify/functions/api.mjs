@@ -62838,7 +62838,9 @@ router6.post("/auth/register", async (req, res) => {
     return res.status(201).json({ token: signToken(user), user: formatUser(user) });
   } catch (err) {
     console.error("[register]", err);
-    return res.status(500).json({ error: err instanceof Error ? err.message : "Registrering misslyckades." });
+    const cause = err.cause;
+    const causeInfo = cause ? { message: cause.message, code: cause.code } : undefined;
+    return res.status(500).json({ error: err instanceof Error ? err.message : "Registrering misslyckades.", cause: causeInfo });
   }
 });
 router6.post("/auth/login", async (req, res) => {
@@ -62852,7 +62854,9 @@ router6.post("/auth/login", async (req, res) => {
     return res.json({ token: signToken(user), user: formatUser(user) });
   } catch (err) {
     console.error("[login]", err);
-    return res.status(500).json({ error: err instanceof Error ? err.message : "Inloggning misslyckades." });
+    const cause = err.cause;
+    const causeInfo = cause ? { message: cause.message, code: cause.code } : undefined;
+    return res.status(500).json({ error: err instanceof Error ? err.message : "Inloggning misslyckades.", cause: causeInfo });
   }
 });
 router6.get("/auth/me", async (req, res) => {
