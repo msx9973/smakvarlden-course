@@ -6,6 +6,7 @@
 [build.environment]
   NPM_FLAGS = "--ignore-scripts"
   NODE_VERSION = "22"
+  NODE_ENV = "production"
 
 [functions]
   node_bundler = "esbuild"
