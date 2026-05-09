@@ -7,7 +7,7 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Heart, Plus, Users, Lock } from "lucide-react";
+import { Search, Heart, Plus, Users, Lock, ExternalLink } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { sv, enUS } from "date-fns/locale";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -227,14 +227,21 @@ export default function Community() {
                       style={{ background: "hsl(36 27% 94%)", color: "hsl(20 20% 52%)" }}>
                       {t(post.category)}
                     </span>
-                    <button
-                      onClick={() => likePost.mutate({ id: post.id })}
-                      className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium transition-all ml-auto"
-                      style={{ background: "rgba(239,68,68,.08)", color: "#ef4444" }}
-                    >
-                      <Heart className="w-3.5 h-3.5" />
-                      <span className="font-semibold">{post.likes}</span>
-                    </button>
+                    <div className="flex items-center gap-1.5 ml-auto">
+                      <Link href={`/community/${post.id}`}
+                        className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium transition-all"
+                        style={{ background: "hsl(36 27% 94%)", color: "hsl(20 20% 52%)" }}>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </Link>
+                      <button
+                        onClick={() => likePost.mutate({ id: post.id })}
+                        className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium transition-all"
+                        style={{ background: "rgba(239,68,68,.08)", color: "#ef4444" }}
+                      >
+                        <Heart className="w-3.5 h-3.5" />
+                        <span className="font-semibold">{post.likes}</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

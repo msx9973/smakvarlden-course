@@ -300,6 +300,17 @@ export function useGetDashboardRecentActivity(
 
 /* ── Community hooks ──────────────────────────────────── */
 
+export function getGetCommunityPostQueryKey(id: number) { return ["getCommunityPost", id] as const; }
+
+export function useGetCommunityPost(id: number, options?: QueryOptions<CommunityPost>) {
+  return useQuery({
+    queryKey: options?.query?.queryKey ?? getGetCommunityPostQueryKey(id),
+    queryFn: () => apiFetch<CommunityPost>(`/community/posts/${id}`),
+    enabled: !!id,
+    ...options?.query,
+  });
+}
+
 export function useListCommunityPosts(
   params?: { search?: string },
   options?: QueryOptions<CommunityPost[]>,

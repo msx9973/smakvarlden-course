@@ -10,6 +10,7 @@ import RecipeDetail from "@/pages/RecipeDetail";
 import Ingredients from "@/pages/Ingredients";
 import Calculator from "@/pages/Calculator";
 import Community from "@/pages/Community";
+import CommunityPost from "@/pages/CommunityPost";
 import Login from "@/pages/Login";
 import Admin from "@/pages/Admin";
 import HelpCenter from "@/pages/HelpCenter";
@@ -80,6 +81,9 @@ function Router() {
             </Route>
             <Route path="/community">
               <Community />
+            </Route>
+            <Route path="/community/:id">
+              {(params) => <CommunityPost id={Number(params.id)} />}
             </Route>
             <Route path="/admin" component={Admin} />
             <Route path="/help" component={HelpCenter} />

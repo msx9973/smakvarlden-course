@@ -61059,6 +61059,13 @@ router5.post("/posts", async (req, res) => {
   });
   return res.status(201).json(formatPost(post));
 });
+router5.get("/posts/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
+  const [post] = await db.select().from(communityPostsTable).where(eq(communityPostsTable.id, id));
+  if (!post) return res.status(404).json({ error: "Not found" });
+  return res.json(formatPost(post));
+});
 router5.post("/posts/:id/like", async (req, res) => {
   const parsed = LikeCommunityPostParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
