@@ -60715,7 +60715,13 @@ if (!process.env.DATABASE_URL) {
     "DATABASE_URL must be set. Did you forget to provision a database?"
   );
 }
-var pool = new Pool3({ connectionString: process.env.DATABASE_URL });
+var pool = new Pool3({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+  max: 1,
+  idleTimeoutMillis: 10000,
+  connectionTimeoutMillis: 10000,
+});
 var db = drizzle(pool, { schema: schema_exports });
 
 // src/routes/recipes.ts
@@ -86806,8 +86812,8 @@ app.use(import_express14.default.urlencoded({ extended: true }));
 app.use("/api", routes_default);
 app.use(function(err, req, res, _next) {
   const status = err.status || err.statusCode || 500;
-  console.error("[api error]", err.message || err);
-  res.status(status).json({ error: err.message || "Internal server error" });
+  console.error("[api error]", err.message, err.cause || err.stack);
+  res.status(status).json({ error: err.message || "Internal server error", cause: err.cause?.message });
 });
 var __dirname2;
 try { __dirname2 = path2.dirname(fileURLToPath(import.meta.url)); } catch (_e) { __dirname2 = typeof __dirname !== "undefined" ? __dirname : "/tmp"; }
