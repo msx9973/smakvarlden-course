@@ -86809,7 +86809,8 @@ app.use(function(err, req, res, _next) {
   console.error("[api error]", err.message || err);
   res.status(status).json({ error: err.message || "Internal server error" });
 });
-var __dirname2 = path2.dirname(fileURLToPath(import.meta.url));
+var __dirname2;
+try { __dirname2 = path2.dirname(fileURLToPath(import.meta.url)); } catch (_e) { __dirname2 = typeof __dirname !== "undefined" ? __dirname : "/tmp"; }
 var staticDir = process.env.STATIC_DIR ?? path2.resolve(__dirname2, "..", "..", "smakvarlden", "dist", "public");
 if (fs.existsSync(staticDir)) {
   app.use(import_express14.default.static(staticDir));
