@@ -62815,29 +62815,39 @@ function formatUser(u) {
   return { id: u.id, name: u.name, email: u.email, role: u.role, plan: u.plan, createdAt: new Date(u.createdAt).toISOString() };
 }
 router6.post("/auth/register", async (req, res) => {
-  const { name, email: email3, password } = req.body ?? {};
-  if (!name || !email3 || !password) return res.status(400).json({ error: "Fyll i namn, e-post och l\xF6senord." });
-  if (password.length < 6) return res.status(400).json({ error: "L\xF6senordet m\xE5ste vara minst 6 tecken." });
-  const existing = await db.select().from(usersTable).where(eq(usersTable.email, email3.toLowerCase().trim()));
-  if (existing.length > 0) return res.status(400).json({ error: "E-postadressen anv\xE4nds redan." });
-  const passwordHash = await bcryptjs_default.hash(password, 12);
-  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
-  const [user] = await db.insert(usersTable).values({
-    name: name.trim(),
-    email: email3.toLowerCase().trim(),
-    passwordHash,
-    role: isFirstUser ? "admin" : "user"
-  }).returning();
-  return res.status(201).json({ token: signToken(user), user: formatUser(user) });
+  try {
+    const { name, email: email3, password } = req.body ?? {};
+    if (!name || !email3 || !password) return res.status(400).json({ error: "Fyll i namn, e-post och l\xF6senord." });
+    if (password.length < 6) return res.status(400).json({ error: "L\xF6senordet m\xE5ste vara minst 6 tecken." });
+    const existing = await db.select().from(usersTable).where(eq(usersTable.email, email3.toLowerCase().trim()));
+    if (existing.length > 0) return res.status(400).json({ error: "E-postadressen anv\xE4nds redan." });
+    const passwordHash = await bcryptjs_default.hash(password, 12);
+    const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
+    const [user] = await db.insert(usersTable).values({
+      name: name.trim(),
+      email: email3.toLowerCase().trim(),
+      passwordHash,
+      role: isFirstUser ? "admin" : "user"
+    }).returning();
+    return res.status(201).json({ token: signToken(user), user: formatUser(user) });
+  } catch (err) {
+    console.error("[register]", err);
+    return res.status(500).json({ error: err instanceof Error ? err.message : "Registrering misslyckades." });
+  }
 });
 router6.post("/auth/login", async (req, res) => {
-  const { email: email3, password } = req.body ?? {};
-  if (!email3 || !password) return res.status(400).json({ error: "Fyll i e-post och l\xF6senord." });
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email3.toLowerCase().trim()));
-  if (!user) return res.status(401).json({ error: "Felaktig e-post eller l\xF6senord." });
-  const ok = await bcryptjs_default.compare(password, user.passwordHash);
-  if (!ok) return res.status(401).json({ error: "Felaktig e-post eller l\xF6senord." });
-  return res.json({ token: signToken(user), user: formatUser(user) });
+  try {
+    const { email: email3, password } = req.body ?? {};
+    if (!email3 || !password) return res.status(400).json({ error: "Fyll i e-post och l\xF6senord." });
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email3.toLowerCase().trim()));
+    if (!user) return res.status(401).json({ error: "Felaktig e-post eller l\xF6senord." });
+    const ok = await bcryptjs_default.compare(password, user.passwordHash);
+    if (!ok) return res.status(401).json({ error: "Felaktig e-post eller l\xF6senord." });
+    return res.json({ token: signToken(user), user: formatUser(user) });
+  } catch (err) {
+    console.error("[login]", err);
+    return res.status(500).json({ error: err instanceof Error ? err.message : "Inloggning misslyckades." });
+  }
 });
 router6.get("/auth/me", async (req, res) => {
   const header = req.headers.authorization;
@@ -86794,6 +86804,11 @@ app.use((0, import_cors.default)());
 app.use(import_express14.default.json());
 app.use(import_express14.default.urlencoded({ extended: true }));
 app.use("/api", routes_default);
+app.use(function(err, req, res, _next) {
+  const status = err.status || err.statusCode || 500;
+  console.error("[api error]", err.message || err);
+  res.status(status).json({ error: err.message || "Internal server error" });
+});
 var __dirname2 = path2.dirname(fileURLToPath(import.meta.url));
 var staticDir = process.env.STATIC_DIR ?? path2.resolve(__dirname2, "..", "..", "smakvarlden", "dist", "public");
 if (fs.existsSync(staticDir)) {
