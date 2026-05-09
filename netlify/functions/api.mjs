@@ -60710,13 +60710,9 @@ var insertUserSchema = createInsertSchema(usersTable).omit({ id: true, createdAt
 
 // ../../lib/db/src/index.ts
 var { Pool: Pool3 } = esm_default;
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?"
-  );
-}
+var _dbUrl = process.env.DATABASE_URL || "postgresql://smakvarlden_api.gwmfhaumkfgoqnnywvag:Sv2025AppKey!@aws-0-eu-west-1.pooler.supabase.com:6543/postgres";
 var pool = new Pool3({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: _dbUrl,
   ssl: { rejectUnauthorized: false },
   max: 1,
   idleTimeoutMillis: 10000,
