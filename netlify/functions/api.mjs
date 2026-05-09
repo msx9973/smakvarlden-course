@@ -60854,8 +60854,8 @@ function formatRecipe(r) {
     sellingPriceSek: parseFloat(String(r.sellingPriceSek)),
     profitMarginPct: parseFloat(String(r.profitMarginPct)),
     isShared: r.isShared,
-    createdAt: r.createdAt.toISOString(),
-    updatedAt: r.updatedAt.toISOString()
+    createdAt: new Date(r.createdAt).toISOString(),
+    updatedAt: new Date(r.updatedAt).toISOString()
   };
 }
 var recipes_default = router2;
@@ -60978,7 +60978,7 @@ function formatIngredient(row) {
     currentPriceSek: parseFloat(String(row.currentPriceSek)),
     priceChangePct: parseFloat(String(row.priceChangePct)),
     supplier: row.supplier ?? void 0,
-    updatedAt: row.updatedAt.toISOString()
+    updatedAt: new Date(row.updatedAt).toISOString()
   };
 }
 var ingredients_default = router3;
@@ -61024,7 +61024,7 @@ router4.get("/recent-activity", async (req, res) => {
     type: r.type,
     title: r.title,
     subtitle: r.subtitle,
-    timestamp: r.timestamp.toISOString()
+    timestamp: new Date(r.timestamp).toISOString()
   })));
 });
 var dashboard_default = router4;
@@ -61071,7 +61071,7 @@ function formatPost(p) {
     category: p.category,
     costSek: parseFloat(String(p.costSek)),
     likes: p.likes,
-    createdAt: p.createdAt.toISOString()
+    createdAt: new Date(p.createdAt).toISOString()
   };
 }
 var community_default = router5;
@@ -62812,7 +62812,7 @@ function signToken(user) {
   return import_jsonwebtoken.default.sign({ id: user.id, email: user.email, role: user.role }, getSecret(), { expiresIn: "30d" });
 }
 function formatUser(u) {
-  return { id: u.id, name: u.name, email: u.email, role: u.role, plan: u.plan, createdAt: u.createdAt.toISOString() };
+  return { id: u.id, name: u.name, email: u.email, role: u.role, plan: u.plan, createdAt: new Date(u.createdAt).toISOString() };
 }
 router6.post("/auth/register", async (req, res) => {
   const { name, email: email3, password } = req.body ?? {};
