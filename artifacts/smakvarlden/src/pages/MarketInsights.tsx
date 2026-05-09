@@ -8,8 +8,8 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine,
 } from "recharts";
+import { useI18n } from "@/lib/i18n";
 
-/* ── Types ── */
 interface Overview {
   priceIndex:    { month: string; livsmedel: number; restaurang: number; kott: number; fisk: number }[];
   categoryStats: { category: string; avgPrice: number; minPrice: number; maxPrice: number; count: number }[];
@@ -19,7 +19,6 @@ interface Overview {
   summary:       { foodInflationPct: number; restaurantPricePct: number; avgFoodCostPct: number; avgMarginPct: number };
 }
 
-/* ── Fetch hook ── */
 function useMarketOverview() {
   return useQuery<Overview>({
     queryKey: ["market-overview"],
@@ -33,7 +32,6 @@ function useMarketOverview() {
   });
 }
 
-/* ── Helpers ── */
 function benchmarkColor(yours: number, industry: number, goodIfLower: boolean) {
   const better = goodIfLower ? yours <= industry : yours >= industry;
   return better ? "#16a34a" : yours === industry ? "#d97706" : "#dc2626";
@@ -60,7 +58,6 @@ function StatCard({ label, value, sub, icon: Icon, color }: {
 const LINE_COLORS = { livsmedel: "hsl(44 50% 46%)", restaurang: "#3b82f6", kott: "#ef4444", fisk: "#06b6d4" };
 const BAR_COLORS  = ["hsl(44 50% 46%)","#3b82f6","#10b981","#8b5cf6","#ef4444","#06b6d4","#ec4899","#84cc16","#d97706","#14b8a6"];
 
-/* ── Custom tooltip ── */
 function ChartTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
@@ -78,13 +75,50 @@ function ChartTooltip({ active, payload, label }: any) {
   );
 }
 
+const EN_SEASONAL = [
+  { season: "Winter (Dec–Feb)", emoji: "❄️", cheap: ["Root vegetables", "Cabbage", "Citrus fruits", "Winter apples", "Pork"], expensive: ["Tomatoes", "Cucumber", "Summer berries", "Asparagus"], tip: "Focus on root mash, cabbage soup and slow-cooked stews. Replace tomatoes with canned." },
+  { season: "Spring (Mar–May)", emoji: "🌱", cheap: ["Asparagus", "Wild garlic", "Spinach", "Radishes", "Lamb"], expensive: ["Game", "Mushrooms", "Pumpkin", "Root vegetables (end of season)"], tip: "Asparagus stays cheap March–May. Wild garlic replaces garlic in salads and sauces." },
+  { season: "Summer (Jun–Aug)", emoji: "☀️", cheap: ["Tomatoes", "Cucumber", "Zucchini", "Strawberries", "Blueberries"], expensive: ["Lobster", "Crayfish (Aug season)", "Imported meat"], tip: "Fill the menu with local vegetables. Choose cod or pollack instead of salmon (salmon rises in summer)." },
+  { season: "Autumn (Sep–Nov)", emoji: "🍂", cheap: ["Chanterelles", "Game", "Squash", "Pears", "Apples", "Pumpkin"], expensive: ["Asparagus", "Summer herbs", "Strawberries"], tip: "October–November is best for game (moose, deer). Mushrooms are cheapest in September." },
+];
+
+const EN_INSIGHTS = [
+  { tag: "SCB", color: "#3b82f6", title: "Food Price Index +3.8% YoY", desc: "Consumer price index for food rose 3.8% in 2025 compared to 2024 according to SCB. Milk, cheese and eggs drove the increase at +5.2%." },
+  { tag: "Trend", color: "#10b981", title: "Vegetarian dishes +22%", desc: "The share of vegetarian orders in Swedish restaurants increased 22% in 2024–2025 (Visita). Menus with plant-based options increase revenue by an average of 8%." },
+  { tag: "Ingredients", color: "#ef4444", title: "Salmon +11%, shrimp +8% YoY", desc: "Norwegian salmon averaged 145 SEK/kg Q1 2026 (+11% YoY). North Sea shrimp +8%. Switch to cod or pollack to preserve margin." },
+  { tag: "Energy", color: "#d97706", title: "Electricity costs stabilising", desc: "The electricity price for large kitchens SE3/SE4 stabilised at ~1.10 SEK/kWh Q1 2026 after peaking at 2.30 SEK/kWh. Energy costs now burden the margin by 3–5% vs the previous 8–10%." },
+  { tag: "HRF", color: "#8b5cf6", title: "Restaurant industry status", desc: "The Hotel and Restaurant Workers' Union (HRF) reports that 67% of Swedish restaurants achieve 60%+ food margin. Lunch restaurants have the lowest margin (52% average)." },
+];
+
+const EN_BENCHMARKS_LABELS: Record<string, { label: string; desc: string }> = {
+  "Råvarukostnad": { label: "Raw material cost", desc: "Of selling price" },
+  "Vinstmarginal": { label: "Profit margin", desc: "Food margin" },
+  "Menymarkup":    { label: "Menu markup", desc: "Cost × factor" },
+  "Svinnfrekvens": { label: "Waste rate", desc: "Industry avg SE 2025" },
+  "Prisändringar": { label: "Price changes", desc: "Alerts last week" },
+};
+
 export default function MarketInsights() {
   const { data, isLoading } = useMarketOverview();
+  const { t, lang } = useI18n();
+
+  const insights      = lang === "en" ? EN_INSIGHTS      : (data?.insights ?? []);
+  const seasonalGuide = lang === "en" ? EN_SEASONAL      : (data?.seasonalGuide ?? []);
+
+  const lineNames = lang === "en"
+    ? { livsmedel: "Food", restaurang: "Restaurant price", kott: "Meat", fisk: "Fish" }
+    : { livsmedel: "Livsmedel", restaurang: "Restaurangpris", kott: "Kött", fisk: "Fisk" };
+
+  const benchmarks = (data?.benchmarks ?? []).map((b) => {
+    if (lang === "en" && EN_BENCHMARKS_LABELS[b.label]) {
+      return { ...b, ...EN_BENCHMARKS_LABELS[b.label] };
+    }
+    return b;
+  });
 
   return (
     <div className="flex flex-col gap-7 max-w-6xl">
 
-      {/* ── Header ── */}
       <div className="relative rounded-2xl overflow-hidden px-7 py-7"
         style={{ background: "linear-gradient(135deg, hsl(220 40% 18%), hsl(220 35% 24%))", boxShadow: "0 8px 32px rgba(0,0,0,.18)" }}>
         <div className="absolute right-0 top-0 w-64 h-full opacity-[.06]"
@@ -95,11 +129,11 @@ export default function MarketInsights() {
               <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "rgba(59,130,246,.25)" }}>
                 <Globe className="w-4 h-4" style={{ color: "#93c5fd" }} />
               </div>
-              <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#93c5fd" }}>Live marknadsdata</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#93c5fd" }}>{t("Live marknadsdata")}</span>
             </div>
-            <h1 className="font-serif text-2xl font-bold text-white">Marknadsinsikter & Ekonomi</h1>
+            <h1 className="font-serif text-2xl font-bold text-white">{t("Marknadsinsikter & Ekonomi")}</h1>
             <p className="text-[13px] mt-1" style={{ color: "rgba(255,255,255,.55)" }}>
-              Prisindex, branschbenchmark och säsongsguide för svenska restaurangkockar
+              {t("Prisindex, branschbenchmark och säsongsguide för svenska restaurangkockar")}
             </p>
           </div>
           <div className="flex gap-2 text-[11px] text-white/60 items-center shrink-0">
@@ -109,26 +143,22 @@ export default function MarketInsights() {
         </div>
       </div>
 
-      {/* ── 4 stat cards ── */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {isLoading ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />) : data && (
           <>
-            <StatCard label="Livsmedelsindex" value={`+${data.summary.foodInflationPct}%`}
-              sub="YoY inflation (SCB 2025)" icon={TrendingUp} color="#ef4444" />
-            <StatCard label="Restaurangprisindex" value={`+${data.summary.restaurantPricePct}%`}
-              sub="Prisstegring på menyer" icon={TrendingUp} color="#d97706" />
-            <StatCard label="Din råvarukostnad" value={`${Number(data.summary.avgFoodCostPct).toFixed(1)}%`}
-              sub="Av försäljningspriset (bransch: 30%)" icon={ChefHat} color="hsl(44 50% 46%)" />
-            <StatCard label="Din livsmedelsmarginal" value={`${Number(data.summary.avgMarginPct).toFixed(1)}%`}
-              sub="Snittmarginal på dina recept" icon={BarChart2} color="#10b981" />
+            <StatCard label={t("Livsmedelsindex")} value={`+${data.summary.foodInflationPct}%`}
+              sub={t("YoY inflation (SCB 2025)")} icon={TrendingUp} color="#ef4444" />
+            <StatCard label={t("Restaurangprisindex")} value={`+${data.summary.restaurantPricePct}%`}
+              sub={t("Prisstegring på menyer")} icon={TrendingUp} color="#d97706" />
+            <StatCard label={t("Din råvarukostnad")} value={`${Number(data.summary.avgFoodCostPct).toFixed(1)}%`}
+              sub={t("Av försäljningspriset (bransch: 30%)")} icon={ChefHat} color="hsl(44 50% 46%)" />
+            <StatCard label={t("Din livsmedelsmarginal")} value={`${Number(data.summary.avgMarginPct).toFixed(1)}%`}
+              sub={t("Snittmarginal på dina recept")} icon={BarChart2} color="#10b981" />
           </>
         )}
       </div>
 
-      {/* ── Price index chart + Insights ── */}
       <div className="grid gap-5 lg:grid-cols-5">
-
-        {/* Price index — 3/5 */}
         <div className="lg:col-span-3 rounded-2xl p-6"
           style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
           <div className="flex items-center gap-3 mb-1">
@@ -136,8 +166,8 @@ export default function MarketInsights() {
               <TrendingUp className="w-4 h-4" style={{ color: "#3b82f6" }} />
             </div>
             <div>
-              <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>Prisindex — 12 månader</h2>
-              <p className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>Basindex 100 = Juni 2025</p>
+              <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>{t("Prisindex — 12 månader")}</h2>
+              <p className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>{t("Basindex 100 = Juni 2025")}</p>
             </div>
           </div>
           {isLoading ? <Skeleton className="h-64 rounded-xl mt-4" /> : (
@@ -149,26 +179,25 @@ export default function MarketInsights() {
                 <ReferenceLine y={100} stroke="var(--sv-border)" strokeDasharray="4 2" />
                 <Tooltip content={<ChartTooltip />} />
                 <Legend wrapperStyle={{ fontSize: 12, paddingTop: 12, color: "var(--sv-text-2)" }} />
-                <Line type="monotone" dataKey="livsmedel" name="Livsmedel" stroke={LINE_COLORS.livsmedel} strokeWidth={2.5} dot={false} />
-                <Line type="monotone" dataKey="restaurang" name="Restaurangpris" stroke={LINE_COLORS.restaurang} strokeWidth={2.5} dot={false} />
-                <Line type="monotone" dataKey="kott" name="Kött" stroke={LINE_COLORS.kott} strokeWidth={1.5} dot={false} strokeDasharray="5 3" />
-                <Line type="monotone" dataKey="fisk" name="Fisk" stroke={LINE_COLORS.fisk} strokeWidth={1.5} dot={false} strokeDasharray="5 3" />
+                <Line type="monotone" dataKey="livsmedel" name={lineNames.livsmedel} stroke={LINE_COLORS.livsmedel} strokeWidth={2.5} dot={false} />
+                <Line type="monotone" dataKey="restaurang" name={lineNames.restaurang} stroke={LINE_COLORS.restaurang} strokeWidth={2.5} dot={false} />
+                <Line type="monotone" dataKey="kott" name={lineNames.kott} stroke={LINE_COLORS.kott} strokeWidth={1.5} dot={false} strokeDasharray="5 3" />
+                <Line type="monotone" dataKey="fisk" name={lineNames.fisk} stroke={LINE_COLORS.fisk} strokeWidth={1.5} dot={false} strokeDasharray="5 3" />
               </LineChart>
             </ResponsiveContainer>
           )}
         </div>
 
-        {/* Market news — 2/5 */}
         <div className="lg:col-span-2 rounded-2xl overflow-hidden"
           style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
           <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--sv-border)" }}>
-            <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>Marknadsläge</h2>
-            <p className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>Aktuellt för svenska restauranger</p>
+            <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>{t("Marknadsläge")}</h2>
+            <p className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>{t("Aktuellt för svenska restauranger")}</p>
           </div>
           <div className="divide-y" style={{ borderColor: "var(--sv-border)" }}>
             {isLoading
               ? Array.from({ length: 4 }).map((_, i) => <div key={i} className="px-5 py-4"><Skeleton className="h-14 rounded-lg" /></div>)
-              : (data?.insights ?? []).map((item) => (
+              : insights.map((item) => (
                   <div key={item.title} className="px-5 py-4">
                     <div className="flex items-center gap-2 mb-1.5">
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
@@ -185,23 +214,20 @@ export default function MarketInsights() {
         </div>
       </div>
 
-      {/* ── Benchmarks + Category prices ── */}
       <div className="grid gap-5 lg:grid-cols-2">
-
-        {/* Benchmarks */}
         <div className="rounded-2xl p-6" style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
           <div className="flex items-center gap-3 mb-5">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "rgba(16,185,129,.12)" }}>
               <BarChart2 className="w-4 h-4" style={{ color: "#10b981" }} />
             </div>
             <div>
-              <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>Jämfört med branschen</h2>
-              <p className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>Dina siffror vs svensk branschsnitt (HRF 2025)</p>
+              <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>{t("Jämfört med branschen")}</h2>
+              <p className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>{t("Dina siffror vs svensk branschsnitt (HRF 2025)")}</p>
             </div>
           </div>
           {isLoading ? <Skeleton className="h-64 rounded-xl" /> : (
             <div className="flex flex-col gap-4">
-              {(data?.benchmarks ?? []).map((b) => {
+              {benchmarks.map((b) => {
                 const yoursN  = typeof b.yours    === "number" ? b.yours    : parseFloat(String(b.yours));
                 const industN = typeof b.industry === "number" ? b.industry : parseFloat(String(b.industry));
                 const col = benchmarkColor(yoursN, industN, b.goodIfLower);
@@ -214,21 +240,19 @@ export default function MarketInsights() {
                         <span className="text-[11px] ml-2" style={{ color: "var(--sv-text-2)" }}>{b.desc}</span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0 ml-3">
-                        <span className="text-[12px] font-bold" style={{ color: col }}>
-                          {b.yours}{b.unit}
-                        </span>
+                        <span className="text-[12px] font-bold" style={{ color: col }}>{b.yours}{b.unit}</span>
                         <span className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>/ {b.industry}{b.unit}</span>
                       </div>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] w-10 shrink-0" style={{ color: "var(--sv-text-2)" }}>Du</span>
+                        <span className="text-[10px] w-10 shrink-0" style={{ color: "var(--sv-text-2)" }}>{t("Du")}</span>
                         <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "var(--sv-muted)" }}>
                           <div className="h-full rounded-full" style={{ width: `${(yoursN / maxBar) * 100}%`, background: col }} />
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] w-10 shrink-0" style={{ color: "var(--sv-text-2)" }}>Snitt</span>
+                        <span className="text-[10px] w-10 shrink-0" style={{ color: "var(--sv-text-2)" }}>{t("Snitt")}</span>
                         <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "var(--sv-muted)" }}>
                           <div className="h-full rounded-full" style={{ width: `${(industN / maxBar) * 100}%`, background: "var(--sv-text-2)" }} />
                         </div>
@@ -241,15 +265,14 @@ export default function MarketInsights() {
           )}
         </div>
 
-        {/* Category avg prices chart */}
         <div className="rounded-2xl p-6" style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
           <div className="flex items-center gap-3 mb-5">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "rgba(139,92,246,.12)" }}>
               <Leaf className="w-4 h-4" style={{ color: "#8b5cf6" }} />
             </div>
             <div>
-              <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>Snittpris per kategori</h2>
-              <p className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>kr/kg — baserat på dina 148 ingredienser</p>
+              <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>{t("Snittpris per kategori")}</h2>
+              <p className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>{t("kr/kg — baserat på dina ingredienser")}</p>
             </div>
           </div>
           {isLoading ? <Skeleton className="h-64 rounded-xl" /> : (
@@ -261,9 +284,10 @@ export default function MarketInsights() {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--sv-border)" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 10, fill: "var(--sv-text-2)" }} axisLine={false} tickLine={false} />
                 <YAxis dataKey="category" type="category" width={90}
-                  tick={{ fontSize: 10, fill: "var(--sv-text-2)" }} axisLine={false} tickLine={false} />
+                  tick={{ fontSize: 10, fill: "var(--sv-text-2)" }} axisLine={false} tickLine={false}
+                  tickFormatter={(v) => t(v)} />
                 <Tooltip content={<ChartTooltip />} cursor={{ fill: "var(--sv-muted)" }} />
-                <Bar dataKey="avgPrice" name="Snitt kr/kg" radius={[0,4,4,0]}>
+                <Bar dataKey="avgPrice" name={t("Snitt kr/kg")} radius={[0,4,4,0]}>
                   {(data?.categoryStats ?? []).slice(0, 10).map((_, i) => (
                     <Cell key={i} fill={BAR_COLORS[i % BAR_COLORS.length]} />
                   ))}
@@ -274,20 +298,19 @@ export default function MarketInsights() {
         </div>
       </div>
 
-      {/* ── Seasonal guide ── */}
       <div>
         <div className="flex items-center gap-2 mb-4">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "rgba(16,163,74,.12)" }}>
             <Leaf className="w-4 h-4" style={{ color: "#16a34a" }} />
           </div>
           <div>
-            <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>Säsongsguide — köp rätt råvaror i rätt tid</h2>
-            <p className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>Billigast och dyrast per säsong för svenska restauranger</p>
+            <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>{t("Säsongsguide — köp rätt råvaror i rätt tid")}</h2>
+            <p className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>{t("Billigast och dyrast per säsong för svenska restauranger")}</p>
           </div>
         </div>
         {isLoading ? <Skeleton className="h-48 rounded-2xl" /> : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {(data?.seasonalGuide ?? []).map((s) => (
+            {seasonalGuide.map((s) => (
               <div key={s.season} className="rounded-2xl p-5 flex flex-col gap-3"
                 style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
                 <div className="flex items-center gap-2">
@@ -296,7 +319,7 @@ export default function MarketInsights() {
                 </div>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "#16a34a" }}>
-                    Billigast nu
+                    {t("Billigast nu")}
                   </p>
                   <div className="flex flex-wrap gap-1">
                     {s.cheap.map((item) => (
@@ -309,7 +332,7 @@ export default function MarketInsights() {
                 </div>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "#dc2626" }}>
-                    Undvik nu
+                    {t("Undvik nu")}
                   </p>
                   <div className="flex flex-wrap gap-1">
                     {s.expensive.map((item) => (
@@ -329,17 +352,16 @@ export default function MarketInsights() {
         )}
       </div>
 
-      {/* ── Category price table ── */}
       <div className="rounded-2xl overflow-hidden" style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
         <div className="px-6 py-4" style={{ borderBottom: "1px solid var(--sv-border)" }}>
-          <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>Detaljerat prisregister per kategori</h2>
-          <p className="text-[11px] mt-0.5" style={{ color: "var(--sv-text-2)" }}>Min, max och snitt baserat på dina spårade ingredienser</p>
+          <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>{t("Detaljerat prisregister per kategori")}</h2>
+          <p className="text-[11px] mt-0.5" style={{ color: "var(--sv-text-2)" }}>{t("Min, max och snitt baserat på dina spårade ingredienser")}</p>
         </div>
         {isLoading ? <div className="p-5"><Skeleton className="h-48 rounded-xl" /></div> : (
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--sv-border)", background: "var(--sv-muted)" }}>
-                {["Kategori", "Antal", "Lägst kr/kg", "Snitt kr/kg", "Högst kr/kg", "Prisintervall"].map((h, i) => (
+                {[t("Kategori"), t("Antal"), t("Lägst kr/kg"), t("Snitt kr/kg"), t("Högst kr/kg"), t("Prisintervall")].map((h, i) => (
                   <th key={h} className={`px-5 py-3.5 text-[10px] font-bold uppercase tracking-widest ${i > 1 ? "text-right" : "text-left"}`}
                     style={{ color: "var(--sv-text-2)" }}>
                     {h}
@@ -359,23 +381,17 @@ export default function MarketInsights() {
                   <tr key={cat.category} className="transition-colors hover:bg-black/[.02] dark:hover:bg-white/[.02]"
                     style={{ borderTop: i === 0 ? "none" : `1px solid var(--sv-border)` }}>
                     <td className="px-5 py-3.5">
-                      <span className="text-[13px] font-semibold" style={{ color: "var(--sv-text)" }}>{cat.category}</span>
+                      <span className="text-[13px] font-semibold" style={{ color: "var(--sv-text)" }}>{t(cat.category)}</span>
                     </td>
                     <td className="px-5 py-3.5">
                       <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
                         style={{ background: "var(--sv-muted)", color: "var(--sv-text-2)" }}>
-                        {cnt} st
+                        {cnt} {t("st")}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 text-right text-[13px]" style={{ color: "#16a34a" }}>
-                      {min.toFixed(0)} kr
-                    </td>
-                    <td className="px-5 py-3.5 text-right text-[13px] font-semibold" style={{ color: "var(--sv-text)" }}>
-                      {avg.toFixed(0)} kr
-                    </td>
-                    <td className="px-5 py-3.5 text-right text-[13px]" style={{ color: "#dc2626" }}>
-                      {max.toFixed(0)} kr
-                    </td>
+                    <td className="px-5 py-3.5 text-right text-[13px]" style={{ color: "#16a34a" }}>{min.toFixed(0)} kr</td>
+                    <td className="px-5 py-3.5 text-right text-[13px] font-semibold" style={{ color: "var(--sv-text)" }}>{avg.toFixed(0)} kr</td>
+                    <td className="px-5 py-3.5 text-right text-[13px]" style={{ color: "#dc2626" }}>{max.toFixed(0)} kr</td>
                     <td className="px-5 py-3.5 text-right" style={{ minWidth: 100 }}>
                       <div className="inline-flex items-center gap-1.5">
                         <div className="w-20 h-2 rounded-full overflow-hidden" style={{ background: "var(--sv-muted)" }}>
@@ -391,7 +407,6 @@ export default function MarketInsights() {
           </table>
         )}
       </div>
-
     </div>
   );
 }

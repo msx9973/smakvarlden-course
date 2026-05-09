@@ -13,12 +13,12 @@ import {
   TrendingUp, BookOpen, Leaf, Users, AlertTriangle, Share2, ChefHat, ArrowRight, Zap, BarChart2, Trash2,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { sv } from "date-fns/locale";
+import { sv, enUS } from "date-fns/locale";
 import { useAuth } from "@/lib/auth";
 import { Link } from "wouter";
 import { ResponsiveContainer, BarChart, Bar, Cell, Tooltip, XAxis, YAxis } from "recharts";
+import { useI18n } from "@/lib/i18n";
 
-/* ── Stat card ── */
 function StatCard({
   label, value, icon: Icon, sub, gradient, iconColor,
 }: {
@@ -27,10 +27,7 @@ function StatCard({
 }) {
   return (
     <div className="rounded-2xl p-5 flex flex-col gap-3 transition-all hover:-translate-y-0.5"
-      style={{
-        background: "var(--sv-surface)",
-        boxShadow: "0 2px 10px var(--sv-shadow)",
-      }}>
+      style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
       <div className="flex items-center justify-between">
         <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "var(--sv-text-2)" }}>{label}</p>
         <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
@@ -44,7 +41,6 @@ function StatCard({
   );
 }
 
-/* ── Activity icon ── */
 function ActivityIcon({ type }: { type: string }) {
   const map: Record<string, { bg: string; icon: React.ElementType; color: string }> = {
     recipe_created: { bg: "rgba(59,130,246,.12)",  icon: BookOpen,    color: "#3b82f6" },
@@ -64,11 +60,11 @@ function ActivityIcon({ type }: { type: string }) {
 const MEDAL_COLORS = ["hsl(44 58% 48%)", "hsl(220 10% 58%)", "hsl(25 58% 42%)"];
 const CAT_COLORS = ["hsl(44 50% 46%)","#3b82f6","#10b981","#8b5cf6","#ef4444","#06b6d4","#ec4899","#84cc16"];
 
-/* ── Stats sidebar ── */
 function StatsSidebar({ summary, catBreakdown }: {
   summary: ReturnType<typeof useGetDashboardSummary>["data"];
   catBreakdown: { category: string; count: number; avgPriceSek: number; totalPriceSek: number }[];
 }) {
+  const { t } = useI18n();
   const topCats = catBreakdown.slice(0, 6).map((c, i) => ({
     name: c.category.length > 10 ? c.category.slice(0, 9) + "…" : c.category,
     value: c.count,
@@ -77,20 +73,18 @@ function StatsSidebar({ summary, catBreakdown }: {
 
   return (
     <aside className="flex flex-col gap-5">
-
-      {/* Margin health */}
       <div className="rounded-2xl p-5" style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
         <div className="flex items-center gap-2 mb-4">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(16,185,129,.12)" }}>
             <Zap className="w-3.5 h-3.5" style={{ color: "#10b981" }} />
           </div>
-          <h3 className="text-[13px] font-bold" style={{ color: "var(--sv-text)" }}>Marginalstatus</h3>
+          <h3 className="text-[13px] font-bold" style={{ color: "var(--sv-text)" }}>{t("Marginalstatus")}</h3>
         </div>
         <div className="flex flex-col gap-3">
           {[
-            { label: "Bra (>60%)",  pct: 72, color: "#10b981", bg: "rgba(16,185,129,.15)" },
-            { label: "OK (45–60%)", pct: 20, color: "#d97706", bg: "rgba(217,119,6,.15)"  },
-            { label: "Låg (<45%)",  pct: 8,  color: "#ef4444", bg: "rgba(239,68,68,.15)"  },
+            { label: t("Bra (>60%)"),  pct: 72, color: "#10b981", bg: "rgba(16,185,129,.15)" },
+            { label: t("OK (45–60%)"), pct: 20, color: "#d97706", bg: "rgba(217,119,6,.15)"  },
+            { label: t("Låg (<45%)"),  pct: 8,  color: "#ef4444", bg: "rgba(239,68,68,.15)"  },
           ].map(({ label, pct, color, bg }) => (
             <div key={label}>
               <div className="flex justify-between mb-1.5">
@@ -106,24 +100,23 @@ function StatsSidebar({ summary, catBreakdown }: {
         <Link href="/calculator"
           className="flex items-center gap-1.5 mt-4 text-[12px] font-semibold"
           style={{ color: "var(--sv-gold)" }}>
-          Se fullständig analys <ArrowRight className="w-3.5 h-3.5" />
+          {t("Se fullständig analys")} <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
 
-      {/* KPI list */}
       <div className="rounded-2xl p-5" style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
         <div className="flex items-center gap-2 mb-4">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(59,130,246,.12)" }}>
             <BarChart2 className="w-3.5 h-3.5" style={{ color: "#3b82f6" }} />
           </div>
-          <h3 className="text-[13px] font-bold" style={{ color: "var(--sv-text)" }}>Nyckeltal</h3>
+          <h3 className="text-[13px] font-bold" style={{ color: "var(--sv-text)" }}>{t("Nyckeltal")}</h3>
         </div>
         <div className="flex flex-col">
           {[
-            { label: "Snitt marginal",   value: summary ? `${summary.avgProfitMarginPct.toFixed(1)}%` : "–" },
-            { label: "Snitt receptkost", value: summary ? `${summary.avgRecipeCostSek.toFixed(0)} kr` : "–" },
-            { label: "Prisvarningar",    value: summary ? `${summary.priceAlerts} st` : "–" },
-            { label: "Delade recept",    value: summary ? `${summary.sharedRecipes} st` : "–" },
+            { label: t("Snitt marginal"),   value: summary ? `${summary.avgProfitMarginPct.toFixed(1)}%` : "–" },
+            { label: t("Snitt receptkost"), value: summary ? `${summary.avgRecipeCostSek.toFixed(0)} kr` : "–" },
+            { label: t("Prisvarningar"),    value: summary ? `${summary.priceAlerts} st` : "–" },
+            { label: t("Delade recept"),    value: summary ? `${summary.sharedRecipes} st` : "–" },
           ].map(({ label, value }, i, arr) => (
             <div key={label} className="flex items-center justify-between py-2.5"
               style={{ borderBottom: i < arr.length - 1 ? `1px solid var(--sv-border)` : "none" }}>
@@ -134,14 +127,13 @@ function StatsSidebar({ summary, catBreakdown }: {
         </div>
       </div>
 
-      {/* Category mini bar */}
       {topCats.length > 0 && (
         <div className="rounded-2xl p-5" style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
           <div className="flex items-center gap-2 mb-4">
             <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(201,168,76,.15)" }}>
               <Leaf className="w-3.5 h-3.5" style={{ color: "var(--sv-gold)" }} />
             </div>
-            <h3 className="text-[13px] font-bold" style={{ color: "var(--sv-text)" }}>Ingredienser / kategori</h3>
+            <h3 className="text-[13px] font-bold" style={{ color: "var(--sv-text)" }}>{t("Ingredienser / kategori")}</h3>
           </div>
           <ResponsiveContainer width="100%" height={130}>
             <BarChart data={topCats} margin={{ top: 4, right: 4, bottom: 24, left: -20 }}>
@@ -158,7 +150,6 @@ function StatsSidebar({ summary, catBreakdown }: {
         </div>
       )}
 
-      {/* Svinn link */}
       <Link href="/svinn"
         className="rounded-2xl p-5 flex items-center gap-4 transition-all hover:-translate-y-0.5 group"
         style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
@@ -166,8 +157,8 @@ function StatsSidebar({ summary, catBreakdown }: {
           <Trash2 className="w-5 h-5" style={{ color: "#ef4444" }} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-bold" style={{ color: "var(--sv-text)" }}>Svinnanalys</p>
-          <p className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>Reducera matsvinn och öka vinst</p>
+          <p className="text-[13px] font-bold" style={{ color: "var(--sv-text)" }}>{t("Svinnanalys")}</p>
+          <p className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>{t("Reducera matsvinn och öka vinst")}</p>
         </div>
         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" style={{ color: "var(--sv-text-2)" }} />
       </Link>
@@ -177,21 +168,19 @@ function StatsSidebar({ summary, catBreakdown }: {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { t, lang } = useI18n();
   const summary      = useGetDashboardSummary({ query: { queryKey: getGetDashboardSummaryQueryKey() } });
   const activity     = useGetDashboardRecentActivity({ limit: 8 }, { query: { queryKey: getGetDashboardRecentActivityQueryKey({ limit: 8 }) } });
   const topRecipes   = useGetTopPerformingRecipes({ limit: 5 }, { query: { queryKey: getGetTopPerformingRecipesQueryKey({ limit: 5 }) } });
   const catBreakdown = useGetIngredientCategoryBreakdown({ query: { queryKey: getGetIngredientCategoryBreakdownQueryKey() } });
 
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? "God morgon" : hour < 17 ? "God eftermiddag" : "God kväll";
+  const greeting = hour < 12 ? t("God morgon") : hour < 17 ? t("God eftermiddag") : t("God kväll");
+  const dateLocale = lang === "en" ? enUS : sv;
 
   return (
     <div className="flex gap-7 max-w-[1400px]">
-
-      {/* ── Main column ── */}
       <div className="flex-1 min-w-0 flex flex-col gap-7">
-
-        {/* Hero */}
         <div className="relative rounded-2xl overflow-hidden px-7 py-8"
           style={{
             background: "linear-gradient(135deg, hsl(17 47% 13%) 0%, hsl(17 37% 20%) 100%)",
@@ -201,64 +190,59 @@ export default function Dashboard() {
             style={{ border: "40px solid hsl(44 54% 54%)" }} />
           <div className="absolute -right-4 top-8 w-28 h-28 rounded-full opacity-[.05]"
             style={{ border: "20px solid hsl(44 54% 54%)" }} />
-
           <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-5">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: "hsl(44 60% 60%)" }}>{greeting}</p>
               <h1 className="font-serif text-2xl font-bold text-white">
-                {user ? user.name : "Välkommen till Smakvärlden"}
+                {user ? user.name : t("Välkommen till Smakvärlden")}
               </h1>
               <p className="text-[13px] mt-1" style={{ color: "rgba(250,248,244,.55)" }}>
-                {user ? "Här är din köksöversikt för idag" : "Logga in för att komma igång"}
+                {user ? t("Här är din köksöversikt för idag") : t("Logga in för att komma igång")}
               </p>
             </div>
             <div className="flex gap-2 shrink-0 flex-wrap">
               <Link href="/recipes" className="px-4 py-2 rounded-full text-[13px] font-semibold transition-all"
                 style={{ background: "hsl(44 54% 54%)", color: "hsl(17 47% 10%)" }}>
-                Öppna recept
+                {t("Öppna recept")}
               </Link>
               <Link href="/calculator" className="px-4 py-2 rounded-full text-[13px] font-medium transition-all border"
                 style={{ borderColor: "rgba(255,255,255,.2)", color: "rgba(255,255,255,.8)" }}>
-                Kalkylator
+                {t("Kalkylator")}
               </Link>
               <Link href="/svinn" className="px-4 py-2 rounded-full text-[13px] font-medium transition-all"
                 style={{ background: "rgba(239,68,68,.18)", color: "#fca5a5" }}>
-                Svinnanalys
+                {t("Svinnanalys")}
               </Link>
             </div>
           </div>
         </div>
 
-        {/* Stat cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {summary.isLoading
             ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)
             : summary.data ? (
               <>
-                <StatCard label="Recept" value={summary.data.totalRecipes} icon={BookOpen} sub="I din kokbok"
+                <StatCard label={t("Recept")} value={summary.data.totalRecipes} icon={BookOpen} sub={t("I din kokbok")}
                   gradient="rgba(59,130,246,.14)" iconColor="#3b82f6" />
-                <StatCard label="Ingredienser" value={summary.data.totalIngredients} icon={Leaf} sub="Spårade råvaror"
+                <StatCard label={t("Ingredienser")} value={summary.data.totalIngredients} icon={Leaf} sub={t("Spårade råvaror")}
                   gradient="rgba(16,185,129,.14)" iconColor="#10b981" />
-                <StatCard label="Snitt marginal" value={`${summary.data.avgProfitMarginPct.toFixed(1)}%`}
-                  icon={TrendingUp} sub="Vinstmarginal"
+                <StatCard label={t("Snitt marginal")} value={`${summary.data.avgProfitMarginPct.toFixed(1)}%`}
+                  icon={TrendingUp} sub={t("Vinstmarginal")}
                   gradient="rgba(201,168,76,.18)" iconColor="hsl(44 50% 44%)" />
-                <StatCard label="Prisvarningar" value={summary.data.priceAlerts}
-                  icon={AlertTriangle} sub="Råvaror med >5% ändring"
+                <StatCard label={t("Prisvarningar")} value={summary.data.priceAlerts}
+                  icon={AlertTriangle} sub={t("Råvaror med >5% ändring")}
                   gradient={summary.data.priceAlerts > 0 ? "rgba(239,68,68,.14)" : "rgba(16,185,129,.10)"}
                   iconColor={summary.data.priceAlerts > 0 ? "#ef4444" : "#10b981"} />
               </>
             ) : null}
         </div>
 
-        {/* Bottom panels */}
         <div className="grid gap-5 lg:grid-cols-5">
-
-          {/* Activity feed 3/5 */}
           <div className="lg:col-span-3 rounded-2xl overflow-hidden"
             style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
             <div className="px-6 py-4 flex items-center justify-between"
               style={{ borderBottom: "1px solid var(--sv-border)" }}>
-              <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>Senaste aktivitet</h2>
+              <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>{t("Senaste aktivitet")}</h2>
               <span className="text-[11px] font-medium px-2 py-0.5 rounded-full"
                 style={{ background: "var(--sv-accent)", color: "var(--sv-gold)" }}>Live</span>
             </div>
@@ -280,7 +264,7 @@ export default function Dashboard() {
                         <p className="text-[12px] truncate" style={{ color: "var(--sv-text-2)" }}>{entry.subtitle}</p>
                       </div>
                       <span className="text-[11px] whitespace-nowrap shrink-0" style={{ color: "var(--sv-text-2)" }}>
-                        {formatDistanceToNow(new Date(entry.timestamp), { addSuffix: true, locale: sv })}
+                        {formatDistanceToNow(new Date(entry.timestamp), { addSuffix: true, locale: dateLocale })}
                       </span>
                     </div>
                   ))
@@ -288,15 +272,14 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Top recipes 2/5 */}
           <div className="lg:col-span-2 rounded-2xl overflow-hidden"
             style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
             <div className="px-5 py-4 flex items-center justify-between"
               style={{ borderBottom: "1px solid var(--sv-border)" }}>
-              <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>Toprecept</h2>
+              <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>{t("Toprecept")}</h2>
               <Link href="/recipes" className="text-[11px] font-semibold flex items-center gap-1"
                 style={{ color: "var(--sv-gold)" }}>
-                Alla <ArrowRight className="w-3 h-3" />
+                {t("Alla")} <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
             <div className="p-4 flex flex-col gap-2">
@@ -312,7 +295,7 @@ export default function Dashboard() {
                       <div className="flex-1 min-w-0">
                         <p className="text-[13px] font-semibold truncate" style={{ color: "var(--sv-text)" }}>{recipe.name}</p>
                         <p className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>
-                          {recipe.category} · {recipe.totalCostSek.toFixed(0)} kr
+                          {t(recipe.category)} · {recipe.totalCostSek.toFixed(0)} kr
                         </p>
                       </div>
                       <p className="text-[13px] font-bold shrink-0" style={{ color: "#10b981" }}>
@@ -326,7 +309,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Stats sidebar ── */}
       <div className="w-72 shrink-0 hidden xl:block">
         <StatsSidebar summary={summary.data} catBreakdown={catBreakdown.data ?? []} />
       </div>

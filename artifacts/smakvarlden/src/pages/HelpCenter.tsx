@@ -4,12 +4,13 @@ import {
   Mail, Search, HelpCircle, PlayCircle, LayoutDashboard, TrendingUp, Trash2, ChefHat,
 } from "lucide-react";
 import { Link } from "wouter";
+import { useI18n } from "@/lib/i18n";
 
 interface FaqItem { q: string; a: string }
 interface FaqSection { icon: React.ElementType; title: string; color: string; items: FaqItem[] }
 interface GuideStep { num: string; title: string; desc: string }
 
-const GUIDE_STEPS: GuideStep[] = [
+const SV_GUIDE_STEPS: GuideStep[] = [
   { num: "01", title: "Skapa ett konto", desc: "Klicka på Logga in i sidomenyn. Registrera dig med namn, e-post och lösenord. Ditt konto ger dig tillgång till din privata kokbok, kalkylatorn och community." },
   { num: "02", title: "Utforska receptbiblioteket", desc: "Bläddra bland 59+ recept filtrerade på kategori. Klicka på ett recept för att se ingredienser, kostnad per portion och marginal." },
   { num: "03", title: "Kalkylera ditt recept", desc: "Gå till Kalkylator. Välj ingredienser, ange mängder och portioner — kostnaden räknas ut automatiskt med aktuella grossistpriser från SCB." },
@@ -18,7 +19,16 @@ const GUIDE_STEPS: GuideStep[] = [
   { num: "06", title: "Fråga AI-assistenten", desc: "Klicka på glitterknappen (✦) nere till höger. Ställ frågor om recept, allergener, kostnadsoptimering och substitut på svenska." },
 ];
 
-const FAQ_SECTIONS: FaqSection[] = [
+const EN_GUIDE_STEPS: GuideStep[] = [
+  { num: "01", title: "Create an account", desc: "Click Log in in the sidebar. Register with your name, email and password. Your account gives you access to your private cookbook, the calculator and community." },
+  { num: "02", title: "Explore the recipe library", desc: "Browse 59+ recipes filtered by category. Click a recipe to see ingredients, cost per serving and profit margin." },
+  { num: "03", title: "Calculate your recipe", desc: "Go to Calculator. Select ingredients, enter quantities and servings — cost is calculated automatically using current wholesale prices from SCB." },
+  { num: "04", title: "Analyse the margin", desc: "Enter your selling price and see the profit margin in real time. Adjust the markup until you reach your target margin of 60%+." },
+  { num: "05", title: "Check the waste cost", desc: "Go to Waste Analysis to see estimated food waste costs per category and tips to reduce spoilage." },
+  { num: "06", title: "Ask the AI assistant", desc: "Click the sparkle button (✦) at the bottom right. Ask questions about recipes, allergens, cost optimisation and substitutes." },
+];
+
+const SV_FAQ_SECTIONS: FaqSection[] = [
   {
     icon: LayoutDashboard,
     title: "Kom igång",
@@ -125,6 +135,113 @@ const FAQ_SECTIONS: FaqSection[] = [
   },
 ];
 
+const EN_FAQ_SECTIONS: FaqSection[] = [
+  {
+    icon: LayoutDashboard,
+    title: "Getting started",
+    color: "#3b82f6",
+    items: [
+      { q: "How do I create an account?", a: "Click 'Log in' in the sidebar and then choose 'Create account'. It's free and takes under a minute. Enter your name, email address and choose a password." },
+      { q: "Can I use Smakvärlden without logging in?", a: "Yes! You can browse recipes, view prices and read community posts without an account. To create your own recipes, save calculations and participate in the community you need to register." },
+      { q: "How do I change my password?", a: "Contact support at support@smakvarlden.se. Support for automatic password reset via email is planned in an upcoming update." },
+      { q: "Does Smakvärlden support multiple users in the same restaurant?", a: "Yes! Each chef creates their own account. Recipes can be shared via the Community tab. A separate team feature with a shared cookbook is planned for the future." },
+    ],
+  },
+  {
+    icon: BookOpen,
+    title: "Recipes",
+    color: "#d97706",
+    items: [
+      { q: "How do I create a new recipe?", a: "Go to Recipes and click '+ New recipe'. You need to be logged in. Fill in name, category, cuisine, servings and select ingredients from the database with specified quantities." },
+      { q: "How is the cost calculated?", a: "Cost is calculated automatically: the current wholesale price of ingredients (SEK/kg or unit) × specified quantity. The total is then divided by the number of servings to give cost per serving." },
+      { q: "Why do example recipes show 66.7% margin?", a: "Seeded example recipes have standard prices (cost × 3 = selling price which gives 66.7% margin). Your own recipes with your selling prices show real figures." },
+      { q: "Can I filter recipes by category?", a: "Yes! Click the category buttons (All, Meat, Fish, Vegetarian, etc.) in the recipe view. You can also search freely in the search box to find specific dishes." },
+      { q: "How do I share a recipe with the community?", a: "Open the recipe and click the share button. The recipe is then published in the Community tab and visible to all logged-in users across Sweden." },
+    ],
+  },
+  {
+    icon: Calculator,
+    title: "Calculator & margins",
+    color: "#16a34a",
+    items: [
+      { q: "How does the calculator work?", a: "The calculator shows your top 10 recipes sorted by profit margin, a category breakdown of ingredient costs, and a detailed comparison table with cost, price, profit and margin for each recipe." },
+      { q: "What's the difference between markup and margin?", a: "Markup is the surcharge on raw material cost (e.g. 200% markup = price is 3× the cost). Margin is the profit as a share of the selling price. 200% markup gives 66.7% margin. The restaurant industry typically aims for 60–70% margin." },
+      { q: "What margin should I have?", a: "A healthy restaurant margin is 60–70% on food (food cost below 30–35%). Fish and seafood can be harder — aim for at least 55%. Check the calculator to see your current margins per recipe." },
+      { q: "How do I adjust a recipe with too low margin?", a: "Three options: 1) Raise the selling price, 2) Replace an expensive ingredient with a cheaper alternative (ask the AI assistant about substitutes), 3) Reduce the portion size or change the preparation method to reduce waste." },
+      { q: "Can I save a calculation?", a: "Yes — all recipes you create are automatically saved in your cookbook with cost data. Update the price on a recipe and the margin recalculates immediately." },
+    ],
+  },
+  {
+    icon: Leaf,
+    title: "Ingredients & prices",
+    color: "#0891b2",
+    items: [
+      { q: "Where does price data come from?", a: "Price data is fetched from SCB (Statistics Sweden) via their open API for food prices. Data is supplemented with simulated wholesale prices for categories not covered by SCB." },
+      { q: "How often are prices updated?", a: "SCB publishes price data every Monday, Wednesday and Friday. Admin can also trigger a manual synchronisation via the Admin panel." },
+      { q: "What do price alerts on the dashboard mean?", a: "A price alert appears when an ingredient's price has changed by more than 5% since the last update. Dashboard shows the number of active price alerts — go to the Ingredients tab and sort by 'Change' to see which raw materials have risen most." },
+      { q: "Which raw materials tend to vary most in price?", a: "Fish and seafood (+/- 15–25% seasonally), fresh herbs (+/- 20% depending on weather), meat (+/- 10% depending on supply). Pay extra attention to these categories before menu changes." },
+      { q: "Can I add my own supplier prices?", a: "Yes! Go to Ingredients and click '+ New ingredient'. Enter your own contract price from your supplier — this is then used in all your recipe calculations." },
+    ],
+  },
+  {
+    icon: Trash2,
+    title: "Waste analysis",
+    color: "#dc2626",
+    items: [
+      { q: "How are waste figures calculated?", a: "Waste is calculated using industry-standard rates per category: herbs 22%, fish & seafood 18%, vegetables 20%, meat 12%, dairy 3%. Costs are based on your 148 tracked ingredients multiplied by 40 daily portions." },
+      { q: "My restaurant serves fewer than 40 portions — are the figures accurate?", a: "Divide the displayed weekly waste figure by 40 and multiply by your actual number of portions. For example: if you serve 20 portions/day your estimated waste cost is approximately half the displayed value." },
+      { q: "How do I reduce waste in practice?", a: "FIFO (First In, First Out) is the most important principle — always rotate items in the fridge. Vacuum storage triples the shelf life of meat. Use vegetable scraps for stocks. Standardised portions can reduce waste by 10–15%." },
+      { q: "Can Smakvärlden track my actual waste?", a: "Currently the system shows estimates based on industry averages. A feature to register actual daily waste per ingredient/category is planned for an upcoming version." },
+    ],
+  },
+  {
+    icon: Sparkles,
+    title: "AI assistant",
+    color: "#8b5cf6",
+    items: [
+      { q: "How do I use the AI chat?", a: "Click the sparkle button (✦) at the bottom right of the screen. Type your question and press Enter or click Send. The assistant responds in your selected language." },
+      { q: "What can the AI assistant help with?", a: "Recipe suggestions and variations, cost optimisation ('which ingredient substitute is cheaper?'), allergen detection, cooking techniques, seasonal menus, portion scaling and price calculations." },
+      { q: "Why isn't the AI chat working?", a: "The AI chat requires an active Anthropic API key. Contact the administrator to activate the key. Without activation a friendly error message is shown." },
+      { q: "What do chefs ask the AI about most?", a: "Most common questions: 'What can I substitute for [expensive ingredient]?', 'How do I adapt this recipe to be gluten-free?', 'Give me ideas for this week's menu with [fridge ingredients]' and 'How do I calculate portions for 80 guests?'" },
+    ],
+  },
+  {
+    icon: ChefHat,
+    title: "For chefs",
+    color: "#d97706",
+    items: [
+      { q: "How do I plan a profitable menu?", a: "Use the Calculator to ensure every dish has at least 60% margin. Balance the menu: have 2–3 premium items (high margin despite high raw material cost) and several 'star dishes' that are simple and profitable. Check ingredient categories in the calculator to find the most expensive categories." },
+      { q: "How do I handle raw materials with high waste?", a: "Go to Waste Analysis to see which categories have the highest waste rate. Herbs (22%) and fish (18%) are the most common culprits. Buy herbs frozen or as paste instead of fresh. Trim fish immediately on delivery and vacuum pack." },
+      { q: "How do I track raw material price changes in real time?", a: "Dashboard shows 'Price alerts' — number of raw materials with >5% price change. Go to Ingredients and sort by the Change column (red pill = price increase). Update your recipes if a key raw material has risen more than 10%." },
+      { q: "How do I calculate the right portion size?", a: "Set the number of portions in the recipe to your actual serving count. The system automatically recalculates cost per portion. As a rule of thumb: starter 150–200g, main course 300–400g, dessert 120–180g." },
+      { q: "How do I use AI for substitutes?", a: "Ask the AI assistant: 'What can I replace [ingredient] with in [recipe]?' or 'Give cheaper alternatives to truffle that provide a similar umami flavour'. The AI suggests substitutes taking into account taste, texture and allergens." },
+    ],
+  },
+  {
+    icon: TrendingUp,
+    title: "For restaurant owners",
+    color: "hsl(44 50% 46%)",
+    items: [
+      { q: "How do I read the dashboard statistics?", a: "The 4 top cards show key metrics: total number of recipes in the cookbook, tracked ingredients (148), average margin for all recipes, and active price alerts. The activity feed shows all changes in real time. The recipe panel on the right shows your top 5 most profitable recipes — compare with what actually sells best." },
+      { q: "How do I analyse my most profitable dishes?", a: "Go to Calculator → 'Best profit margin'. It shows your top 10 recipes sorted by margin with visual bars. The comparison table below shows exact cost, price, profit and margin. Export data and combine with your cash register report to see which dishes are both profitable AND popular." },
+      { q: "How do I use Community as market analysis?", a: "The Community tab shows what other chefs in Sweden are creating and pricing. Study the costs (e.g. 'Butter-poached lobster 420 SEK') to understand market prices. See which categories are most popular (number of posts and likes) to understand what guests demand. Use this when setting prices on your menu." },
+      { q: "How do I know if my prices are competitive?", a: "Compare your selling prices with community posts from other chefs. The calculator shows whether your margin is good (>60%), acceptable (45–60%) or too low (<45%). A good rule: food cost (raw material cost) should be a maximum of 28–33% of the selling price." },
+      { q: "How do I interpret the waste analysis as investment basis?", a: "The waste analysis page shows estimated annual waste cost (based on industry averages). If your restaurant earns 40% on the potential saving (15,054 SEK/year) the cost of improving routines — such as buying a vacuum machine (approx. 3,000 SEK) — is profitable within 2–3 months." },
+      { q: "How do I know which raw material categories are driving up my costs?", a: "The calculator has a bar chart 'Ingredients per category' showing the average price per category. High bars = expensive categories. The waste analysis page shows waste cost per category — combine these insights to see where you can make savings with the greatest effect." },
+    ],
+  },
+  {
+    icon: Users,
+    title: "Community",
+    color: "#06b6d4",
+    items: [
+      { q: "How do I share a recipe?", a: "Click '+ Share recipe' in the Community view. Fill in recipe name, your name, category, cost and a description. The post is immediately visible to all users." },
+      { q: "Can I see how popular my recipe is?", a: "Yes — each post shows the number of likes. Click the heart to like other people's recipes. Future versions plan notifications when someone likes your recipe." },
+      { q: "How do I find inspiration for my next menu?", a: "Browse Community and filter by category via the search box. Check the costs that other chefs specify — it gives an idea of what is reasonable to spend on a dish. Liked posts indicate what the market appreciates." },
+    ],
+  },
+];
+
 function FaqAccordion({ items }: { items: FaqItem[] }) {
   const [open, setOpen] = useState<number | null>(null);
   return (
@@ -151,6 +268,7 @@ function FaqAccordion({ items }: { items: FaqItem[] }) {
 }
 
 function SectionCard({ section, defaultOpen }: { section: FaqSection; defaultOpen?: boolean }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(defaultOpen ?? false);
   const Icon = section.icon;
   return (
@@ -166,7 +284,7 @@ function SectionCard({ section, defaultOpen }: { section: FaqSection; defaultOpe
           <span className="text-base font-serif font-semibold" style={{ color: "var(--sv-text)" }}>{section.title}</span>
           <span className="ml-2 text-[11px] font-medium px-2 py-0.5 rounded-full"
             style={{ background: "var(--sv-muted)", color: "var(--sv-text-2)" }}>
-            {section.items.length} frågor
+            {section.items.length} {t("frågor")}
           </span>
         </div>
         <ChevronRight className="w-4 h-4 transition-transform shrink-0"
@@ -182,7 +300,11 @@ function SectionCard({ section, defaultOpen }: { section: FaqSection; defaultOpe
 }
 
 export default function HelpCenter() {
+  const { t, lang } = useI18n();
   const [search, setSearch] = useState("");
+
+  const FAQ_SECTIONS = lang === "en" ? EN_FAQ_SECTIONS : SV_FAQ_SECTIONS;
+  const GUIDE_STEPS  = lang === "en" ? EN_GUIDE_STEPS  : SV_GUIDE_STEPS;
 
   const filtered = search.trim().length > 1
     ? FAQ_SECTIONS.map((s) => ({
@@ -193,6 +315,20 @@ export default function HelpCenter() {
         ),
       })).filter((s) => s.items.length > 0)
     : FAQ_SECTIONS;
+
+  const quickLinks = lang === "en"
+    ? [
+        { label: "Get started fast",       desc: "6 step guide",          icon: PlayCircle,  color: "#3b82f6" },
+        { label: "Recipes & calculator",   desc: "Create and calculate",   icon: Calculator,  color: "#d97706" },
+        { label: "For chefs",              desc: "Daily tips",             icon: ChefHat,     color: "#16a34a" },
+        { label: "For restaurant owners",  desc: "Analyse & understand",   icon: TrendingUp,  color: "hsl(44 50% 44%)" },
+      ]
+    : [
+        { label: "Kom igång snabbt",       desc: "6 steg guide",           icon: PlayCircle,  color: "#3b82f6" },
+        { label: "Recept & kalkyl",        desc: "Skapa och räkna",        icon: Calculator,  color: "#d97706" },
+        { label: "För kockar",             desc: "Dagliga tips",           icon: ChefHat,     color: "#16a34a" },
+        { label: "För dig som ägare",      desc: "Analysera & förstå",     icon: TrendingUp,  color: "hsl(44 50% 44%)" },
+      ];
 
   return (
     <div className="max-w-4xl flex flex-col gap-8">
@@ -207,16 +343,16 @@ export default function HelpCenter() {
             style={{ background: "rgba(201,168,76,.15)", border: "1px solid rgba(201,168,76,.3)" }}>
             <HelpCircle className="w-7 h-7" style={{ color: "hsl(44 60% 70%)" }} />
           </div>
-          <h1 className="font-serif text-3xl font-bold mb-3 text-white">Hjälpcenter</h1>
+          <h1 className="font-serif text-3xl font-bold mb-3 text-white">{t("Hjälpcenter")}</h1>
           <p className="text-sm leading-relaxed max-w-md mx-auto mb-8" style={{ color: "rgba(250,248,244,.65)" }}>
-            Allt du behöver veta om Smakvärlden — för kockar och restaurangägare.
+            {t("Allt du behöver veta om Smakvärlden — för kockar och restaurangägare.")}
           </p>
           <div className="relative max-w-md mx-auto">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "rgba(250,248,244,.4)" }} />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Sök i hjälpcentret…"
+              placeholder={t("Sök i hjälpcentret…")}
               className="w-full pl-11 pr-4 py-3 rounded-full text-sm outline-none transition-all"
               style={{
                 background: "rgba(255,255,255,.09)",
@@ -234,12 +370,7 @@ export default function HelpCenter() {
       {/* Quick links */}
       {!search && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: "Kom igång snabbt", desc: "6 steg guide",      icon: PlayCircle,  color: "#3b82f6" },
-            { label: "Recept & kalkyl",  desc: "Skapa och räkna",   icon: Calculator,  color: "#d97706" },
-            { label: "För kockar",       desc: "Dagliga tips",       icon: ChefHat,     color: "#16a34a" },
-            { label: "För dig som ägare", desc: "Analysera & förstå", icon: TrendingUp, color: "hsl(44 50% 44%)" },
-          ].map((item) => {
+          {quickLinks.map((item) => {
             const Icon = item.icon;
             return (
               <div key={item.label}
@@ -264,7 +395,7 @@ export default function HelpCenter() {
         <div>
           <div className="flex items-center gap-2 mb-5">
             <PlayCircle className="w-5 h-5" style={{ color: "var(--sv-gold)" }} />
-            <h2 className="font-serif text-xl font-bold" style={{ color: "var(--sv-text)" }}>Kom igång på 6 steg</h2>
+            <h2 className="font-serif text-xl font-bold" style={{ color: "var(--sv-text)" }}>{t("Kom igång på 6 steg")}</h2>
           </div>
           <div className="grid sm:grid-cols-2 gap-3">
             {GUIDE_STEPS.map((step) => (
@@ -288,14 +419,20 @@ export default function HelpCenter() {
         <div className="flex items-center gap-2 mb-5">
           <HelpCircle className="w-5 h-5" style={{ color: "var(--sv-gold)" }} />
           <h2 className="font-serif text-xl font-bold" style={{ color: "var(--sv-text)" }}>
-            {search ? `Sökresultat (${filtered.reduce((a, s) => a + s.items.length, 0)} träffar)` : "Vanliga frågor"}
+            {search
+              ? (lang === "en"
+                  ? `Search results (${filtered.reduce((a, s) => a + s.items.length, 0)} hits)`
+                  : `Sökresultat (${filtered.reduce((a, s) => a + s.items.length, 0)} träffar)`)
+              : t("Vanliga frågor")}
           </h2>
         </div>
         {filtered.length === 0 ? (
           <div className="text-center py-12 rounded-2xl" style={{ background: "var(--sv-surface)", border: "1px solid var(--sv-border)" }}>
             <HelpCircle className="w-8 h-8 mx-auto mb-3" style={{ color: "var(--sv-text-2)" }} />
-            <p className="text-sm font-semibold" style={{ color: "var(--sv-text)" }}>Inga träffar för "{search}"</p>
-            <p className="text-xs mt-1" style={{ color: "var(--sv-text-2)" }}>Prova ett annat sökord eller kontakta oss nedan.</p>
+            <p className="text-sm font-semibold" style={{ color: "var(--sv-text)" }}>
+              {lang === "en" ? `No results for "${search}"` : `Inga träffar för "${search}"`}
+            </p>
+            <p className="text-xs mt-1" style={{ color: "var(--sv-text-2)" }}>{t("Prova ett annat sökord eller kontakta oss nedan.")}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -314,16 +451,18 @@ export default function HelpCenter() {
           <Mail className="w-6 h-6" style={{ color: "var(--sv-gold)" }} />
         </div>
         <div className="flex-1 text-center sm:text-left">
-          <h3 className="font-serif text-lg font-bold mb-1" style={{ color: "var(--sv-text)" }}>Hittade du inte svaret?</h3>
+          <h3 className="font-serif text-lg font-bold mb-1" style={{ color: "var(--sv-text)" }}>{t("Hittade du inte svaret?")}</h3>
           <p className="text-sm leading-relaxed" style={{ color: "var(--sv-text-2)" }}>
-            Kontakta oss på <strong style={{ color: "var(--sv-gold)" }}>support@smakvarlden.se</strong> eller
-            använd AI-assistenten (✦) för direkthjälp om recept och kalkyl.
+            {lang === "en"
+              ? <>Contact us at <strong style={{ color: "var(--sv-gold)" }}>support@smakvarlden.se</strong> or use the AI assistant (✦) for direct help with recipes and calculations.</>
+              : <>Kontakta oss på <strong style={{ color: "var(--sv-gold)" }}>support@smakvarlden.se</strong> eller använd AI-assistenten (✦) för direkthjälp om recept och kalkyl.</>
+            }
           </p>
         </div>
         <Link href="/community"
           className="shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition-all"
           style={{ background: "var(--sv-brown)", color: "var(--sv-surface)", boxShadow: "0 4px 12px var(--sv-shadow)" }}>
-          Gå till Community
+          {t("Gå till Community")}
         </Link>
       </div>
     </div>

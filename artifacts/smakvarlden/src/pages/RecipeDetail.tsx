@@ -4,8 +4,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, TrendingUp, Leaf } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export default function RecipeDetail({ id }: { id: number }) {
+  const { t } = useI18n();
   const recipe = useGetRecipe(id, { query: { queryKey: getGetRecipeQueryKey(id), enabled: !!id } });
 
   if (recipe.isLoading) {
@@ -21,9 +23,9 @@ export default function RecipeDetail({ id }: { id: number }) {
   if (!recipe.data) {
     return (
       <div className="text-center py-20 text-muted-foreground">
-        <p className="text-base font-serif font-semibold">Receptet hittades inte</p>
+        <p className="text-base font-serif font-semibold">{t("Receptet hittades inte")}</p>
         <Link href="/recipes">
-          <Button variant="link" className="mt-2">Tillbaka till recept</Button>
+          <Button variant="link" className="mt-2">{t("Tillbaka till recept")}</Button>
         </Link>
       </div>
     );
@@ -40,7 +42,7 @@ export default function RecipeDetail({ id }: { id: number }) {
       <div>
         <Link href="/recipes">
           <Button variant="ghost" size="sm" className="gap-1.5 -ml-2 mb-4 text-muted-foreground rounded-lg">
-            <ArrowLeft className="w-4 h-4" /> Tillbaka till recept
+            <ArrowLeft className="w-4 h-4" /> {t("Tillbaka till recept")}
           </Button>
         </Link>
         <div className="flex items-start justify-between gap-4">
@@ -48,17 +50,17 @@ export default function RecipeDetail({ id }: { id: number }) {
             <h1 className="text-2xl font-serif font-bold tracking-tight">{r.name}</h1>
             {r.description && <p className="text-muted-foreground mt-1.5 text-sm leading-relaxed">{r.description}</p>}
           </div>
-          <Badge variant="outline" className="rounded-lg shrink-0">{r.category}</Badge>
+          <Badge variant="outline" className="rounded-lg shrink-0">{t(r.category)}</Badge>
         </div>
       </div>
 
       {/* Key metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Portioner",        value: r.servings,                           color: "text-foreground" },
-          { label: "Kostnad",          value: `${r.totalCostSek.toFixed(0)} kr`,    color: "text-foreground" },
-          { label: "Försäljningspris", value: `${r.sellingPriceSek.toFixed(0)} kr`, color: "text-foreground" },
-          { label: "Marginal",         value: `${margin.toFixed(1)}%`,              color: marginColor },
+          { label: t("Portioner"),        value: r.servings,                           color: "text-foreground" },
+          { label: t("Kostnad"),          value: `${r.totalCostSek.toFixed(0)} kr`,    color: "text-foreground" },
+          { label: t("Försäljningspris"), value: `${r.sellingPriceSek.toFixed(0)} kr`, color: "text-foreground" },
+          { label: t("Marginal"),         value: `${margin.toFixed(1)}%`,              color: marginColor },
         ].map((m) => (
           <div key={m.label} className="bg-card border border-card-border rounded-xl p-4 text-center card-shadow">
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">{m.label}</p>
@@ -73,13 +75,13 @@ export default function RecipeDetail({ id }: { id: number }) {
           <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center">
             <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
           </div>
-          <h2 className="text-base font-serif font-semibold">Lönsamhetskalkyl</h2>
+          <h2 className="text-base font-serif font-semibold">{t("Lönsamhetskalkyl")}</h2>
         </div>
         <div className="space-y-2.5">
           {[
-            { label: "Råvarukostnad",      val: `${r.totalCostSek.toFixed(2)} kr`,                    cls: "" },
-            { label: "Kostnad per portion",val: `${(r.totalCostSek / r.servings).toFixed(2)} kr`,    cls: "" },
-            { label: "Försäljningspris",   val: `${r.sellingPriceSek.toFixed(2)} kr`,                cls: "" },
+            { label: t("Råvarukostnad"),       val: `${r.totalCostSek.toFixed(2)} kr`,                  cls: "" },
+            { label: t("Kostnad per portion"),  val: `${(r.totalCostSek / r.servings).toFixed(2)} kr`,  cls: "" },
+            { label: t("Försäljningspris"),     val: `${r.sellingPriceSek.toFixed(2)} kr`,              cls: "" },
           ].map((row) => (
             <div key={row.label} className="flex justify-between text-sm">
               <span className="text-muted-foreground">{row.label}</span>
@@ -88,13 +90,13 @@ export default function RecipeDetail({ id }: { id: number }) {
           ))}
           <div className="h-px bg-border my-1" />
           <div className="flex justify-between text-sm font-semibold">
-            <span>Bruttovinst</span>
+            <span>{t("Bruttovinst")}</span>
             <span className={profitSek > 0 ? "text-emerald-600" : "text-red-500"}>
               {profitSek > 0 ? "+" : ""}{profitSek.toFixed(2)} kr
             </span>
           </div>
           <div className="flex justify-between text-sm font-bold">
-            <span>Vinstmarginal</span>
+            <span>{t("Vinstmarginal")}</span>
             <span className={marginColor}>{margin.toFixed(2)}%</span>
           </div>
         </div>
@@ -107,15 +109,15 @@ export default function RecipeDetail({ id }: { id: number }) {
             <div className="w-6 h-6 rounded-md bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center">
               <Leaf className="w-3 h-3 text-emerald-600" />
             </div>
-            <h2 className="text-base font-serif font-semibold">Ingredienser</h2>
+            <h2 className="text-base font-serif font-semibold">{t("Ingredienser")}</h2>
           </div>
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left border-b border-border bg-muted/30">
-                <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Ingrediens</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Mängd</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Styckpris</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Kostnad</th>
+                <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("Ingrediens")}</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("Mängd")}</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("Styckpris")}</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("Kostnad")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -130,7 +132,7 @@ export default function RecipeDetail({ id }: { id: number }) {
             </tbody>
             <tfoot>
               <tr className="border-t-2 border-border bg-muted/20">
-                <td colSpan={3} className="px-4 py-3 font-bold text-xs uppercase tracking-wider text-muted-foreground">Totalt</td>
+                <td colSpan={3} className="px-4 py-3 font-bold text-xs uppercase tracking-wider text-muted-foreground">{t("Totalt")}</td>
                 <td className="px-4 py-3 text-right font-bold">{r.totalCostSek.toFixed(2)} kr</td>
               </tr>
             </tfoot>

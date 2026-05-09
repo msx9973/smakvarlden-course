@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useI18n } from "@/lib/i18n";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import {
@@ -70,7 +71,31 @@ function StatBox({
   );
 }
 
+const EN_TIPS = [
+  { icon: "🥩", title: "FIFO principle", desc: "Always rotate raw materials — First In, First Out. Older items towards the front of the fridge." },
+  { icon: "📏", title: "Portion size control", desc: "Standardized portions reduce waste by up to 15%. Use a scale consistently." },
+  { icon: "🍃", title: "Stem management", desc: "Roots and stems from vegetables can be used for stocks, saving 5–10%." },
+  { icon: "❄️", title: "Vacuum storage", desc: "Vacuum-packed meat lasts 3× longer. Invest in a vacuum machine." },
+  { icon: "📋", title: "Demand-driven purchasing", desc: "Plan the week's menu in advance and buy exactly what is needed. Reduces waste 20–30%." },
+  { icon: "♻️", title: "Reuse trim waste", desc: "Fish heads, shellfish shells and vegetable peelings make excellent stock and broths." },
+];
+
+const EN_BENCHMARKS = [
+  { label: "Vegetables & herbs", rate: "15–25%", your: 20, icon: "🥦", tip: "High waste due to peeling and trimming" },
+  { label: "Fish & seafood", rate: "15–20%", your: 18, icon: "🐟", tip: "Bones, shells and skin cause natural waste" },
+  { label: "Meat & poultry", rate: "8–15%", your: 12, icon: "🥩", tip: "Trim waste and bone content" },
+  { label: "Dairy & eggs", rate: "2–5%", your: 3, icon: "🧀", tip: "Low waste with good storage" },
+];
+
+const SV_BENCHMARKS = [
+  { label: "Grönsaker & örter", rate: "15–25%", your: 20, icon: "🥦", tip: "Hög svinn pga peeling och trimning" },
+  { label: "Fisk & skaldjur", rate: "15–20%", your: 18, icon: "🐟", tip: "Ben, skal och skin ger naturligt svinn" },
+  { label: "Kött & fågel", rate: "8–15%", your: 12, icon: "🥩", tip: "Trimspill och benandel" },
+  { label: "Mejeri & ägg", rate: "2–5%", your: 3, icon: "🧀", tip: "Lågt svinn med god lagring" },
+];
+
 export default function Svinn() {
+  const { t, lang } = useI18n();
   const [view, setView] = useState<"table" | "chart">("table");
 
   const { data, isLoading } = useQuery<SvinnSummary>({
@@ -81,19 +106,20 @@ export default function Svinn() {
 
   const chartData = (data?.categorySvinn ?? [])
     .slice(0, 10)
-    .map((c) => ({ name: c.category, svinn: c.svinnRatePct, cost: c.wasteCostSek }));
+    .map((c) => ({ name: t(c.category), svinn: c.svinnRatePct, cost: c.wasteCostSek }));
+
+  const tips = lang === "en" ? EN_TIPS : (data?.tips ?? []);
+  const benchmarks = lang === "en" ? EN_BENCHMARKS : SV_BENCHMARKS;
 
   return (
     <div className="flex flex-col gap-7 max-w-6xl">
-
-      {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-serif text-2xl font-bold tracking-tight" style={{ color: "hsl(17 47% 13%)" }}>
-            Svinnanalys
+            {t("Svinnanalys")}
           </h1>
           <p className="text-[13px] mt-1" style={{ color: "hsl(20 20% 58%)" }}>
-            Matsvinn, kostnad och besparingsmöjligheter per råvarukategori
+            {t("Matsvinn, kostnad och besparingsmöjligheter per råvarukategori")}
           </p>
         </div>
         <div className="flex items-center gap-1.5 p-1 rounded-xl" style={{ background: "hsl(36 27% 94%)" }}>
@@ -108,19 +134,15 @@ export default function Svinn() {
                 boxShadow: "0 2px 8px rgba(44,24,16,.18)",
               } : { color: "hsl(20 20% 55%)" }}
             >
-              {v === "table" ? "Tabell" : "Diagram"}
+              {v === "table" ? t("Tabell") : t("Diagram")}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Hero warning banner */}
       {!isLoading && data && (
         <div className="relative rounded-2xl overflow-hidden px-7 py-6"
-          style={{
-            background: "linear-gradient(135deg,#7f1d1d 0%,#991b1b 50%,#b91c1c 100%)",
-            boxShadow: "0 8px 32px rgba(185,28,28,.2)",
-          }}>
+          style={{ background: "linear-gradient(135deg,#7f1d1d 0%,#991b1b 50%,#b91c1c 100%)", boxShadow: "0 8px 32px rgba(185,28,28,.2)" }}>
           <div className="absolute -right-8 -top-8 w-44 h-44 rounded-full opacity-[.08]"
             style={{ border: "36px solid #fff" }} />
           <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
@@ -129,40 +151,42 @@ export default function Svinn() {
               <Trash2 className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-red-200 mb-1">Observera</p>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-red-200 mb-1">{t("Observera")}</p>
               <p className="text-white font-serif text-lg font-semibold">
-                Uppskattad svinnomsättning: <span className="text-yellow-300">{data.yearlyWasteSek.toFixed(0)} kr/år</span>
+                {t("Uppskattad svinnomsättning:")} <span className="text-yellow-300">{data.yearlyWasteSek.toFixed(0)} kr/{lang === "en" ? "year" : "år"}</span>
               </p>
               <p className="text-red-200 text-[13px] mt-1">
-                Baserat på {data.categorySvinn.length} ingredientskategorier · Branschsnittlig svinnfrekvens {data.avgWasteRatePct}%
+                {lang === "en"
+                  ? `Based on ${data.categorySvinn.length} ingredient categories · Industry average waste rate ${data.avgWasteRatePct}%`
+                  : `Baserat på ${data.categorySvinn.length} ingredientskategorier · Branschsnittlig svinnfrekvens ${data.avgWasteRatePct}%`
+                }
               </p>
             </div>
             <div className="shrink-0 text-right">
-              <p className="text-red-200 text-[11px] font-bold uppercase tracking-widest">Möjlig besparing</p>
+              <p className="text-red-200 text-[11px] font-bold uppercase tracking-widest">{t("Möjlig besparing")}</p>
               <p className="text-white font-serif text-2xl font-bold">{(data.yearlyWasteSek * 0.4).toFixed(0)} kr</p>
-              <p className="text-red-200 text-[12px]">med bättre rutiner</p>
+              <p className="text-red-200 text-[12px]">{t("med bättre rutiner")}</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Stat cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {isLoading ? (
           Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)
         ) : data ? (
           <>
-            <StatBox label="Svinn per vecka" value={`${data.weeklyWasteSek.toFixed(0)} kr`}
-              sub="Baserat på 40 portioner/dag"
+            <StatBox label={t("Svinn per vecka")} value={`${data.weeklyWasteSek.toFixed(0)} kr`}
+              sub={t("Baserat på 40 portioner/dag")}
               icon={Calendar} color="#f59e0b" bg="rgba(245,158,11,.1)" />
-            <StatBox label="Svinn per månad" value={`${data.monthlyWasteSek.toFixed(0)} kr`}
-              sub="4.33 veckor per månad"
+            <StatBox label={t("Svinn per månad")} value={`${data.monthlyWasteSek.toFixed(0)} kr`}
+              sub={t("4.33 veckor per månad")}
               icon={DollarSign} color="#ef4444" bg="rgba(239,68,68,.1)" />
-            <StatBox label="Svinn per år" value={`${data.yearlyWasteSek.toFixed(0)} kr`}
-              sub="Stor besparingsmöjlighet"
+            <StatBox label={t("Svinn per år")} value={`${data.yearlyWasteSek.toFixed(0)} kr`}
+              sub={t("Stor besparingsmöjlighet")}
               icon={TrendingDown} color="#8b5cf6" bg="rgba(139,92,246,.1)" />
-            <StatBox label="Snitt svinnfrekvens" value={`${data.avgWasteRatePct}%`}
-              sub={data.avgWasteRatePct > 10 ? "Ovanför branschsnitt" : "Under branschsnitt"}
+            <StatBox label={t("Snitt svinnfrekvens")} value={`${data.avgWasteRatePct}%`}
+              sub={data.avgWasteRatePct > 10 ? t("Ovanför branschsnitt") : t("Under branschsnitt")}
               icon={AlertTriangle}
               color={data.avgWasteRatePct > 10 ? "#ef4444" : "#10b981"}
               bg={data.avgWasteRatePct > 10 ? "rgba(239,68,68,.1)" : "rgba(16,185,129,.1)"} />
@@ -170,19 +194,15 @@ export default function Svinn() {
         ) : null}
       </div>
 
-      {/* Main content */}
       <div className="grid gap-6 lg:grid-cols-3">
-
-        {/* Category breakdown — 2/3 */}
         <div className="lg:col-span-2 bg-white rounded-2xl overflow-hidden"
           style={{ boxShadow: "0 2px 12px rgba(44,24,16,.07)" }}>
           <div className="px-6 py-4 border-b border-border flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-              style={{ background: "rgba(239,68,68,.1)" }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(239,68,68,.1)" }}>
               <BarChart2 className="w-4 h-4" style={{ color: "#ef4444" }} />
             </div>
             <h2 className="font-serif text-base font-semibold" style={{ color: "hsl(17 47% 13%)" }}>
-              Svinn per kategori
+              {t("Svinn per kategori")}
             </h2>
           </div>
 
@@ -192,7 +212,7 @@ export default function Svinn() {
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ borderBottom: "1px solid hsl(33 28% 90%)", background: "hsl(36 27% 97%)" }}>
-                  {["Kategori", "Råvaror", "Svinnfrekvens", "Svinncost", "Est. per vecka"].map((h, i) => (
+                  {[t("Kategori"), t("Råvaror"), t("Svinnfrekvens"), t("Svinncost"), t("Est. per vecka")].map((h, i) => (
                     <th key={h}
                       className={`px-5 py-3 text-[10px] font-bold uppercase tracking-widest${i > 1 ? " text-right" : " text-left"}`}
                       style={{ color: "hsl(20 20% 60%)" }}>
@@ -203,8 +223,7 @@ export default function Svinn() {
               </thead>
               <tbody>
                 {(data?.categorySvinn ?? []).map((cat, i) => (
-                  <tr key={cat.category}
-                    className="hover:bg-muted/25 transition-colors"
+                  <tr key={cat.category} className="hover:bg-muted/25 transition-colors"
                     style={{ borderTop: i === 0 ? "none" : "1px solid hsl(33 28% 92%)" }}>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2.5">
@@ -212,11 +231,11 @@ export default function Svinn() {
                           style={{ background: RATE_BG(cat.svinnRatePct) }}>
                           <Leaf className="w-3.5 h-3.5" style={{ color: RATE_COLOR(cat.svinnRatePct) }} />
                         </div>
-                        <span className="text-[13px] font-semibold" style={{ color: "hsl(17 47% 13%)" }}>{cat.category}</span>
+                        <span className="text-[13px] font-semibold" style={{ color: "hsl(17 47% 13%)" }}>{t(cat.category)}</span>
                       </div>
                     </td>
                     <td className="px-5 py-3.5 text-[13px]" style={{ color: "hsl(20 20% 55%)" }}>
-                      {cat.ingredientCount} st
+                      {cat.ingredientCount} {t("st")}
                     </td>
                     <td className="px-5 py-3.5 text-right">
                       <span className="text-[12px] font-bold px-2.5 py-1 rounded-full"
@@ -224,8 +243,7 @@ export default function Svinn() {
                         {cat.svinnRatePct}%
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 text-right text-[13px] font-semibold"
-                      style={{ color: "hsl(17 47% 13%)" }}>
+                    <td className="px-5 py-3.5 text-right text-[13px] font-semibold" style={{ color: "hsl(17 47% 13%)" }}>
                       {cat.wasteCostSek.toFixed(0)} kr
                     </td>
                     <td className="px-5 py-3.5 text-right text-[13px]" style={{ color: "#ef4444" }}>
@@ -245,14 +263,8 @@ export default function Svinn() {
                   <YAxis tick={{ fontSize: 11, fill: "hsl(20 20% 62%)" }} axisLine={false} tickLine={false}
                     tickFormatter={(v) => `${v}%`} />
                   <Tooltip
-                    contentStyle={{
-                      background: "#fff",
-                      border: "1px solid hsl(33 28% 89%)",
-                      borderRadius: 12,
-                      fontSize: 12,
-                      boxShadow: "0 4px 16px rgba(44,24,16,.10)",
-                    }}
-                    formatter={(val: number) => [`${val}%`, "Svinnfrekvens"]}
+                    contentStyle={{ background: "#fff", border: "1px solid hsl(33 28% 89%)", borderRadius: 12, fontSize: 12, boxShadow: "0 4px 16px rgba(44,24,16,.10)" }}
+                    formatter={(val: number) => [`${val}%`, t("Svinnfrekvens")]}
                     cursor={{ fill: "hsl(36 27% 95%)" }}
                   />
                   <Bar dataKey="svinn" radius={[6, 6, 0, 0]}>
@@ -266,22 +278,19 @@ export default function Svinn() {
           )}
         </div>
 
-        {/* Tips panel — 1/3 */}
-        <div className="bg-white rounded-2xl overflow-hidden"
-          style={{ boxShadow: "0 2px 12px rgba(44,24,16,.07)" }}>
+        <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(44,24,16,.07)" }}>
           <div className="px-5 py-4 border-b border-border flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-              style={{ background: "rgba(201,168,76,.15)" }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(201,168,76,.15)" }}>
               <Lightbulb className="w-4 h-4" style={{ color: "hsl(44 54% 50%)" }} />
             </div>
             <h2 className="font-serif text-base font-semibold" style={{ color: "hsl(17 47% 13%)" }}>
-              Spartips
+              {t("Spartips")}
             </h2>
           </div>
           <div className="p-4 flex flex-col gap-3">
             {isLoading
               ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)
-              : (data?.tips ?? []).map((tip, i) => (
+              : tips.map((tip, i) => (
                   <div key={i} className="p-3.5 rounded-xl transition-colors hover:bg-muted/30"
                     style={{ background: i % 2 === 0 ? "hsl(36 27% 97%)" : "#fff", border: "1px solid hsl(33 28% 91%)" }}>
                     <div className="flex items-start gap-3">
@@ -298,25 +307,19 @@ export default function Svinn() {
         </div>
       </div>
 
-      {/* Industry benchmarks */}
       <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(44,24,16,.07)" }}>
         <h2 className="font-serif text-base font-semibold mb-5" style={{ color: "hsl(17 47% 13%)" }}>
-          Branschjämförelse — Svinnfrekvenser
+          {t("Branschjämförelse — Svinnfrekvenser")}
         </h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { label: "Grönsaker & örter", rate: "15–25%", your: 20, icon: "🥦", tip: "Hög svinn pga peeling och trimning" },
-            { label: "Fisk & skaldjur", rate: "15–20%", your: 18, icon: "🐟", tip: "Ben, skal och skin ger naturligt svinn" },
-            { label: "Kött & fågel", rate: "8–15%", your: 12, icon: "🥩", tip: "Trimspill och benandel" },
-            { label: "Mejeri & ägg", rate: "2–5%", your: 3, icon: "🧀", tip: "Lågt svinn med god lagring" },
-          ].map((b) => (
+          {benchmarks.map((b) => (
             <div key={b.label} className="rounded-xl p-4"
               style={{ background: "hsl(36 27% 97%)", border: "1px solid hsl(33 28% 91%)" }}>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-2xl">{b.icon}</span>
                 <div>
                   <p className="text-[12px] font-bold" style={{ color: "hsl(17 47% 13%)" }}>{b.label}</p>
-                  <p className="text-[11px]" style={{ color: "hsl(44 54% 50%)" }}>Bransch: {b.rate}</p>
+                  <p className="text-[11px]" style={{ color: "hsl(44 54% 50%)" }}>{t("Bransch:")} {b.rate}</p>
                 </div>
               </div>
               <div className="h-2 rounded-full overflow-hidden mb-2" style={{ background: "hsl(33 28% 90%)" }}>
@@ -328,7 +331,6 @@ export default function Svinn() {
           ))}
         </div>
       </div>
-
     </div>
   );
 }
