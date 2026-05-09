@@ -322,6 +322,15 @@ const T: Record<string, { en: string }> = {
   "Styckpris":                  { en: "Unit price" },
   "Totalt":                     { en: "Total" },
 
+  // ── Guest / auth gates ───────────────────────────────────────
+  "Du surfar som gäst":         { en: "You're browsing as a guest" },
+  "Logga in för att skapa recept, spara kalkyler och hålla koll på din kokbok.": { en: "Log in to create recipes, save calculations and manage your cookbook." },
+  "Logga in för din kokbok":    { en: "Log in for your cookbook" },
+  "Skapa, redigera och kalkylera dina egna recept.": { en: "Create, edit and calculate your own recipes." },
+  "Logga in för att dela":      { en: "Log in to share" },
+  "Logga in för att kalkylera": { en: "Log in to calculate" },
+  "Spara dina kalkyler och håll koll på marginaler.": { en: "Save your calculations and track margins." },
+
   // ── Help center ──────────────────────────────────────────────
   "Hjälp & guide":              { en: "Help & guide" },
   "Hur använder du Smakvärlden?": { en: "How do you use Smakvärlden?" },

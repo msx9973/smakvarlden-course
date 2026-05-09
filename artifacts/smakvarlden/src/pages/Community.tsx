@@ -7,7 +7,7 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Heart, Plus, Users } from "lucide-react";
+import { Search, Heart, Plus, Users, Lock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { sv, enUS } from "date-fns/locale";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -21,6 +21,8 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { Input as ShadInput } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
+import { Link } from "wouter";
 
 const CATEGORIES = ["Kött", "Fisk & skaldjur", "Vegetariskt", "Pasta", "Mejeri", "Svamp & vilt", "Kryddor", "Oljor"];
 
@@ -128,6 +130,7 @@ function ShareDialog({ open, onClose }: { open: boolean; onClose: () => void }) 
 
 export default function Community() {
   const { t, lang } = useI18n();
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [showShare, setShowShare] = useState(false);
   const queryClient = useQueryClient();
@@ -148,13 +151,22 @@ export default function Community() {
           <h1 className="font-serif text-2xl font-bold tracking-tight" style={{ color: "hsl(17 47% 13%)" }}>{t("Community")}</h1>
           <p className="text-[13px] mt-1" style={{ color: "hsl(20 20% 58%)" }}>{t("Recept delade av kockar i Sverige")}</p>
         </div>
-        <button
-          onClick={() => setShowShare(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-semibold transition-all hover:opacity-90"
-          style={{ background: "hsl(17 47% 13%)", color: "#FAF8F4", boxShadow: "0 4px 14px rgba(44,24,16,.22)" }}
-        >
-          <Plus className="w-4 h-4" /> {t("Dela recept")}
-        </button>
+        {user ? (
+          <button
+            onClick={() => setShowShare(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-semibold transition-all hover:opacity-90"
+            style={{ background: "hsl(17 47% 13%)", color: "#FAF8F4", boxShadow: "0 4px 14px rgba(44,24,16,.22)" }}
+          >
+            <Plus className="w-4 h-4" /> {t("Dela recept")}
+          </button>
+        ) : (
+          <Link href="/login"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-semibold transition-all hover:opacity-90"
+            style={{ background: "var(--sv-muted)", color: "var(--sv-text-2)", border: "1.5px solid var(--sv-border)" }}
+          >
+            <Lock className="w-4 h-4" /> {t("Logga in för att dela")}
+          </Link>
+        )}
       </div>
 
       <div className="relative">

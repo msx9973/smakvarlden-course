@@ -6,9 +6,11 @@ import {
 } from "@workspace/api-client-react";
 import type { Ingredient } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, BarChart2, Trash2, ChefHat, Search, Calculator as CalcIcon } from "lucide-react";
+import { TrendingUp, BarChart2, Trash2, ChefHat, Search, Calculator as CalcIcon, Lock } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
+import { Link } from "wouter";
 
 const BAR_COLORS = ["hsl(44 50% 46%)","#3b82f6","#10b981","#8b5cf6","#ef4444","#06b6d4","#ec4899","#84cc16"];
 
@@ -270,8 +272,31 @@ function DishCalculator() {
   );
 }
 
+function GuestCalculatorWall() {
+  const { t } = useI18n();
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center rounded-2xl"
+      style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
+      <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
+        style={{ background: "rgba(201,168,76,.15)" }}>
+        <Lock className="w-7 h-7" style={{ color: "var(--sv-gold)" }} />
+      </div>
+      <h3 className="font-serif text-lg font-bold mb-2" style={{ color: "var(--sv-text)" }}>{t("Logga in för att kalkylera")}</h3>
+      <p className="text-[13px] mb-6 max-w-xs" style={{ color: "var(--sv-text-2)" }}>
+        {t("Spara dina kalkyler och håll koll på marginaler.")}
+      </p>
+      <Link href="/login"
+        className="px-6 py-3 rounded-full text-[13px] font-semibold transition-all hover:opacity-90"
+        style={{ background: "var(--sv-brown)", color: "var(--sv-surface)", boxShadow: "0 4px 14px var(--sv-shadow)" }}>
+        {t("Logga in")}
+      </Link>
+    </div>
+  );
+}
+
 export default function Calculator() {
   const { t } = useI18n();
+  const { user } = useAuth();
   const topRecipes = useGetTopPerformingRecipes({ limit: 10 }, { query: { queryKey: getGetTopPerformingRecipesQueryKey({ limit: 10 }) } });
   const breakdown  = useGetIngredientCategoryBreakdown({ query: { queryKey: getGetIngredientCategoryBreakdownQueryKey() } });
 
@@ -282,7 +307,7 @@ export default function Calculator() {
         <p className="text-[13px] mt-1" style={{ color: "var(--sv-text-2)" }}>{t("Beräkna kostnad och marginal för dina rätter")}</p>
       </div>
 
-      <DishCalculator />
+      {user ? <DishCalculator /> : <GuestCalculatorWall />}
 
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="rounded-2xl p-6" style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>

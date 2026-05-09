@@ -3,11 +3,12 @@ import { Link } from "wouter";
 import { useListRecipes, useDeleteRecipe, useCreateRecipe, getListRecipesQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Plus, Trash2, ExternalLink, ChefHat, Globe, Clock, Upload } from "lucide-react";
+import { Search, Plus, Trash2, ExternalLink, ChefHat, Globe, Clock, Upload, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AddRecipeDialog } from "@/components/AddRecipeDialog";
 import { ImportDialog, type CsvRow } from "@/components/ImportDialog";
 import { useI18n, RECIPE_CATEGORIES, DIET_CATEGORIES, ALLERGY_CATEGORIES } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -76,6 +77,7 @@ function FilterPill({ label, active, onClick }: { label: string; active: boolean
 
 export default function Recipes() {
   const { t } = useI18n();
+  const { user } = useAuth();
   const [tab, setTab] = useState<"mine" | "world">("mine");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
@@ -133,7 +135,7 @@ export default function Recipes() {
             {tab === "mine" ? t("Din privata kokbok med kostnadskalkyl") : t("Sök bland miljoner recept från hela världen")}
           </p>
         </div>
-        {tab === "mine" && (
+        {tab === "mine" && user && (
           <div className="flex gap-2">
             <button onClick={() => setShowImport(true)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-semibold transition-all hover:opacity-90"
@@ -163,7 +165,25 @@ export default function Recipes() {
         ))}
       </div>
 
-      {tab === "mine" ? (
+      {tab === "mine" && !user ? (
+        /* ── Guest login wall ── */
+        <div className="flex flex-col items-center justify-center py-28 text-center rounded-2xl"
+          style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
+            style={{ background: "rgba(201,168,76,.15)" }}>
+            <Lock className="w-8 h-8" style={{ color: "var(--sv-gold)" }} />
+          </div>
+          <h3 className="font-serif text-xl font-bold mb-2" style={{ color: "var(--sv-text)" }}>{t("Logga in för din kokbok")}</h3>
+          <p className="text-[13px] mb-6 max-w-sm" style={{ color: "var(--sv-text-2)" }}>
+            {t("Skapa, redigera och kalkylera dina egna recept.")}
+          </p>
+          <Link href="/login"
+            className="px-6 py-3 rounded-full text-[13px] font-semibold transition-all hover:opacity-90"
+            style={{ background: "var(--sv-brown)", color: "var(--sv-surface)", boxShadow: "0 4px 14px var(--sv-shadow)" }}>
+            {t("Logga in")}
+          </Link>
+        </div>
+      ) : tab === "mine" ? (
         <>
           {/* Filter bar */}
           <div className="rounded-2xl p-4 flex flex-col gap-3"

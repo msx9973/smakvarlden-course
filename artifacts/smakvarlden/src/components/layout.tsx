@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Calculator, Users, BookOpen, Leaf, Moon, Sun,
-  Shield, LogOut, LogIn, ChefHat, HelpCircle, Trash2, Globe, Crown,
+  Shield, LogOut, LogIn, ChefHat, HelpCircle, Trash2, Globe, Crown, Lock,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
@@ -205,6 +205,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Page */}
         <main className="flex-1 overflow-auto p-6 pb-24 md:pb-8" style={{ background: "var(--sv-bg)" }}>
+          {!user && (
+            <div className="mb-6 flex items-center gap-3 px-5 py-3.5 rounded-2xl"
+              style={{ background: "var(--sv-surface)", border: "1.5px solid var(--sv-border)", boxShadow: "0 2px 8px var(--sv-shadow)" }}>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: "rgba(201,168,76,.15)" }}>
+                <Lock className="w-4 h-4" style={{ color: "var(--sv-gold)" }} />
+              </div>
+              <p className="text-[13px] flex-1" style={{ color: "var(--sv-text-2)" }}>
+                <span className="font-semibold" style={{ color: "var(--sv-text)" }}>{t("Du surfar som gäst")}</span>
+                {" — "}{t("Logga in för att skapa recept, spara kalkyler och hålla koll på din kokbok.")}
+              </p>
+              <Link href="/login"
+                className="shrink-0 px-4 py-1.5 rounded-full text-[12px] font-semibold transition-all hover:opacity-90"
+                style={{ background: "var(--sv-brown)", color: "var(--sv-surface)" }}>
+                {t("Logga in")}
+              </Link>
+            </div>
+          )}
           {children}
         </main>
       </div>
