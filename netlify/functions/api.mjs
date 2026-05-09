@@ -60710,7 +60710,9 @@ var insertUserSchema = createInsertSchema(usersTable).omit({ id: true, createdAt
 
 // ../../lib/db/src/index.ts
 var { Pool: Pool3 } = esm_default;
-var _dbUrl = process.env.DATABASE_URL || "postgresql://smakvarlden_api.gwmfhaumkfgoqnnywvag:Sv2025AppKey!@aws-0-eu-west-1.pooler.supabase.com:6543/postgres";
+var _appDbUrl = "postgresql://smakvarlden_api.gwmfhaumkfgoqnnywvag:Sv2025AppKey!@aws-0-eu-west-1.pooler.supabase.com:6543/postgres";
+var _envDbUrl = process.env.DATABASE_URL || "";
+var _dbUrl = (_envDbUrl.includes("smakvarlden_api") || _envDbUrl.includes("smakvarlden-api")) ? _envDbUrl : _appDbUrl;
 var pool = new Pool3({
   connectionString: _dbUrl,
   ssl: { rejectUnauthorized: false },
