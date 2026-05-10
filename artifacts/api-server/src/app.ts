@@ -35,10 +35,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api", router);
 
 /* ── Static frontend (production) ──────────────────────── */
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const staticDir =
-  process.env.STATIC_DIR ??
-  path.resolve(__dirname, "..", "..", "smakvarlden", "dist", "public");
+// import.meta.url is undefined in CJS bundles; fall back to STATIC_DIR env var or skip.
+const staticDir = process.env.STATIC_DIR ?? (() => {
+  try { return path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "smakvarlden", "dist", "public"); }
+  catch { return ""; }
+})();
 
 if (fs.existsSync(staticDir)) {
   app.use(express.static(staticDir));

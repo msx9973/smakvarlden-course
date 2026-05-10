@@ -19,19 +19,14 @@ await build({
   logLevel: "info",
 });
 
-// Netlify Function bundle (serverless handler, no pino workers needed)
+// Netlify Function bundle — CJS so require() works natively in the Lambda runtime
 await build({
   entryPoints: { "api": "src/lambda.ts" },
   bundle: true,
   platform: "node",
   target: "node22",
-  format: "esm",
+  format: "cjs",
   outdir: "../../netlify/functions",
-  outExtension: { ".js": ".mjs" },
   sourcemap: false,
   logLevel: "info",
-  // serverless-http uses CJS require() for Node built-ins — inject a shim so it works in ESM
-  banner: {
-    js: "import { createRequire } from 'module';\nconst require = createRequire(import.meta.url);\n",
-  },
 });
