@@ -68296,7 +68296,18 @@ function getClient() {
   if (!key) return null;
   return new Anthropic({ apiKey: key });
 }
-var SYSTEM_PROMPT = `Du \xE4r Chef AI \u2013 en erfaren kockassistent p\xE5 Smakv\xE4rlden, Sveriges ledande plattform f\xF6r professionella kockar. Du hj\xE4lper kockar med:
+function buildSystemPrompt(lang) {
+  if (lang === "en") {
+    return `You are Chef AI \u2013 an experienced chef assistant on Smakv\xE4rlden, Sweden's leading platform for professional chefs. You help chefs with:
+- Recipe ideas and cooking techniques
+- Cost calculations and dish pricing
+- Ingredient substitutions and allergy adaptations
+- Menu planning and seasonal recipes
+- Professional restaurant-level kitchen advice
+
+Always respond in English, concisely and professionally. Be specific and practical. Include approximate costs in SEK when suggesting ingredients.`;
+  }
+  return `Du \xE4r Chef AI \u2013 en erfaren kockassistent p\xE5 Smakv\xE4rlden, Sveriges ledande plattform f\xF6r professionella kockar. Du hj\xE4lper kockar med:
 - Receptid\xE9er och matlagningstekniker
 - Kostnadsber\xE4kningar och priss\xE4ttning av r\xE4tter
 - R\xE5varusubstitutioner och allergianpassningar
@@ -68304,12 +68315,13 @@ var SYSTEM_PROMPT = `Du \xE4r Chef AI \u2013 en erfaren kockassistent p\xE5 Smak
 - Professionella k\xF6ksr\xE5d p\xE5 restaurangniv\xE5
 
 Svara alltid p\xE5 svenska, kortfattat och professionellt. Var specifik och praktisk. Inkludera g\xE4rna ungef\xE4rliga kostnader i SEK n\xE4r du f\xF6resl\xE5r ingredienser.`;
+}
 router7.post("/ai/chat", async (req, res) => {
   const client = getClient();
   if (!client) {
     return res.status(503).json({ error: "AI-funktionen \xE4r inte konfigurerad. L\xE4gg till ANTHROPIC_API_KEY i milj\xF6variabler." });
   }
-  const { message, history = [] } = req.body ?? {};
+  const { message, history = [], lang = "sv" } = req.body ?? {};
   if (!message?.trim()) return res.status(400).json({ error: "Meddelande saknas." });
   const messages = [
     ...history.slice(-10).map((h) => ({
@@ -68322,7 +68334,7 @@ router7.post("/ai/chat", async (req, res) => {
     const response = await client.messages.create({
       model: "claude-haiku-4-5",
       max_tokens: 1024,
-      system: SYSTEM_PROMPT,
+      system: buildSystemPrompt(lang),
       messages
     });
     const reply = response.content[0]?.type === "text" ? response.content[0].text : "";
@@ -68337,17 +68349,20 @@ router7.post("/ai/suggest", async (req, res) => {
   if (!client) {
     return res.status(503).json({ error: "AI-funktionen \xE4r inte konfigurerad." });
   }
-  const { ingredients = [], budget, servings = 4 } = req.body ?? {};
+  const { ingredients = [], budget, servings = 4, lang = "sv" } = req.body ?? {};
   if (!ingredients.length) return res.status(400).json({ error: "Inga ingredienser angivna." });
-  const prompt = `Jag har dessa ingredienser: ${ingredients.join(", ")}. 
-${budget ? `Budget: ${budget} SEK.` : ""} 
+  const prompt = lang === "en" ? `I have these ingredients: ${ingredients.join(", ")}.
+${budget ? `Budget: ${budget} SEK.` : ""}
+Number of servings: ${servings}.
+Suggest 3 specific recipes using these ingredients. For each recipe: give name, category, estimated cost per serving, and a short description (max 2 sentences).` : `Jag har dessa ingredienser: ${ingredients.join(", ")}.
+${budget ? `Budget: ${budget} SEK.` : ""}
 Antal portioner: ${servings}.
 F\xF6resl\xE5 3 konkreta recept med dessa ingredienser. F\xF6r varje recept: ge namn, kategori, uppskattad kostnad per portion, och en kort beskrivning (max 2 meningar).`;
   try {
     const response = await client.messages.create({
       model: "claude-haiku-4-5",
       max_tokens: 1024,
-      system: SYSTEM_PROMPT,
+      system: buildSystemPrompt(lang),
       messages: [{ role: "user", content: prompt }]
     });
     const reply = response.content[0]?.type === "text" ? response.content[0].text : "";

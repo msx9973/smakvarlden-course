@@ -60710,16 +60710,12 @@ var insertUserSchema = createInsertSchema(usersTable).omit({ id: true, createdAt
 
 // ../../lib/db/src/index.ts
 var { Pool: Pool3 } = esm_default;
-var _appDbUrl = "postgresql://smakvarlden_api.gwmfhaumkfgoqnnywvag:Sv2025AppKey!@aws-0-eu-west-1.pooler.supabase.com:6543/postgres";
-var _envDbUrl = process.env.DATABASE_URL || "";
-var _dbUrl = (_envDbUrl.includes("smakvarlden_api") || _envDbUrl.includes("smakvarlden-api")) ? _envDbUrl : _appDbUrl;
-var pool = new Pool3({
-  connectionString: _dbUrl,
-  ssl: { rejectUnauthorized: false },
-  max: 1,
-  idleTimeoutMillis: 10000,
-  connectionTimeoutMillis: 10000,
-});
+if (!process.env.DATABASE_URL) {
+  throw new Error(
+    "DATABASE_URL must be set. Did you forget to provision a database?"
+  );
+}
+var pool = new Pool3({ connectionString: process.env.DATABASE_URL });
 var db = drizzle(pool, { schema: schema_exports });
 
 // src/routes/recipes.ts
@@ -60858,8 +60854,8 @@ function formatRecipe(r) {
     sellingPriceSek: parseFloat(String(r.sellingPriceSek)),
     profitMarginPct: parseFloat(String(r.profitMarginPct)),
     isShared: r.isShared,
-    createdAt: new Date(r.createdAt).toISOString(),
-    updatedAt: new Date(r.updatedAt).toISOString()
+    createdAt: r.createdAt.toISOString(),
+    updatedAt: r.updatedAt.toISOString()
   };
 }
 var recipes_default = router2;
@@ -60982,7 +60978,7 @@ function formatIngredient(row) {
     currentPriceSek: parseFloat(String(row.currentPriceSek)),
     priceChangePct: parseFloat(String(row.priceChangePct)),
     supplier: row.supplier ?? void 0,
-    updatedAt: new Date(row.updatedAt).toISOString()
+    updatedAt: row.updatedAt.toISOString()
   };
 }
 var ingredients_default = router3;
@@ -61028,7 +61024,7 @@ router4.get("/recent-activity", async (req, res) => {
     type: r.type,
     title: r.title,
     subtitle: r.subtitle,
-    timestamp: new Date(r.timestamp).toISOString()
+    timestamp: r.timestamp.toISOString()
   })));
 });
 var dashboard_default = router4;
@@ -61059,13 +61055,6 @@ router5.post("/posts", async (req, res) => {
   });
   return res.status(201).json(formatPost(post));
 });
-router5.get("/posts/:id", async (req, res) => {
-  const id = Number(req.params.id);
-  if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
-  const [post] = await db.select().from(communityPostsTable).where(eq(communityPostsTable.id, id));
-  if (!post) return res.status(404).json({ error: "Not found" });
-  return res.json(formatPost(post));
-});
 router5.post("/posts/:id/like", async (req, res) => {
   const parsed = LikeCommunityPostParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
@@ -61082,7 +61071,7 @@ function formatPost(p) {
     category: p.category,
     costSek: parseFloat(String(p.costSek)),
     likes: p.likes,
-    createdAt: new Date(p.createdAt).toISOString()
+    createdAt: p.createdAt.toISOString()
   };
 }
 var community_default = router5;
@@ -62823,46 +62812,32 @@ function signToken(user) {
   return import_jsonwebtoken.default.sign({ id: user.id, email: user.email, role: user.role }, getSecret(), { expiresIn: "30d" });
 }
 function formatUser(u) {
-  return { id: u.id, name: u.name, email: u.email, role: u.role, plan: u.plan, createdAt: new Date(u.createdAt).toISOString() };
+  return { id: u.id, name: u.name, email: u.email, role: u.role, plan: u.plan, createdAt: u.createdAt.toISOString() };
 }
 router6.post("/auth/register", async (req, res) => {
-  try {
-    const { name, email: email3, password } = req.body ?? {};
-    if (!name || !email3 || !password) return res.status(400).json({ error: "Fyll i namn, e-post och l\xF6senord." });
-    if (password.length < 6) return res.status(400).json({ error: "L\xF6senordet m\xE5ste vara minst 6 tecken." });
-    const existing = await db.select().from(usersTable).where(eq(usersTable.email, email3.toLowerCase().trim()));
-    if (existing.length > 0) return res.status(400).json({ error: "E-postadressen anv\xE4nds redan." });
-    const passwordHash = await bcryptjs_default.hash(password, 12);
-    const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
-    const [user] = await db.insert(usersTable).values({
-      name: name.trim(),
-      email: email3.toLowerCase().trim(),
-      passwordHash,
-      role: isFirstUser ? "admin" : "user"
-    }).returning();
-    return res.status(201).json({ token: signToken(user), user: formatUser(user) });
-  } catch (err) {
-    console.error("[register]", err);
-    const cause = err.cause;
-    const causeInfo = cause ? { message: cause.message, code: cause.code } : undefined;
-    return res.status(500).json({ error: err instanceof Error ? err.message : "Registrering misslyckades.", cause: causeInfo });
-  }
+  const { name, email: email3, password } = req.body ?? {};
+  if (!name || !email3 || !password) return res.status(400).json({ error: "Fyll i namn, e-post och l\xF6senord." });
+  if (password.length < 6) return res.status(400).json({ error: "L\xF6senordet m\xE5ste vara minst 6 tecken." });
+  const existing = await db.select().from(usersTable).where(eq(usersTable.email, email3.toLowerCase().trim()));
+  if (existing.length > 0) return res.status(400).json({ error: "E-postadressen anv\xE4nds redan." });
+  const passwordHash = await bcryptjs_default.hash(password, 12);
+  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
+  const [user] = await db.insert(usersTable).values({
+    name: name.trim(),
+    email: email3.toLowerCase().trim(),
+    passwordHash,
+    role: isFirstUser ? "admin" : "user"
+  }).returning();
+  return res.status(201).json({ token: signToken(user), user: formatUser(user) });
 });
 router6.post("/auth/login", async (req, res) => {
-  try {
-    const { email: email3, password } = req.body ?? {};
-    if (!email3 || !password) return res.status(400).json({ error: "Fyll i e-post och l\xF6senord." });
-    const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email3.toLowerCase().trim()));
-    if (!user) return res.status(401).json({ error: "Felaktig e-post eller l\xF6senord." });
-    const ok = await bcryptjs_default.compare(password, user.passwordHash);
-    if (!ok) return res.status(401).json({ error: "Felaktig e-post eller l\xF6senord." });
-    return res.json({ token: signToken(user), user: formatUser(user) });
-  } catch (err) {
-    console.error("[login]", err);
-    const cause = err.cause;
-    const causeInfo = cause ? { message: cause.message, code: cause.code } : undefined;
-    return res.status(500).json({ error: err instanceof Error ? err.message : "Inloggning misslyckades.", cause: causeInfo });
-  }
+  const { email: email3, password } = req.body ?? {};
+  if (!email3 || !password) return res.status(400).json({ error: "Fyll i e-post och l\xF6senord." });
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email3.toLowerCase().trim()));
+  if (!user) return res.status(401).json({ error: "Felaktig e-post eller l\xF6senord." });
+  const ok = await bcryptjs_default.compare(password, user.passwordHash);
+  if (!ok) return res.status(401).json({ error: "Felaktig e-post eller l\xF6senord." });
+  return res.json({ token: signToken(user), user: formatUser(user) });
 });
 router6.get("/auth/me", async (req, res) => {
   const header = req.headers.authorization;
@@ -69132,7 +69107,18 @@ function getClient() {
   if (!key) return null;
   return new Anthropic({ apiKey: key });
 }
-var SYSTEM_PROMPT = `Du \xE4r Chef AI \u2013 en erfaren kockassistent p\xE5 Smakv\xE4rlden, Sveriges ledande plattform f\xF6r professionella kockar. Du hj\xE4lper kockar med:
+function buildSystemPrompt(lang) {
+  if (lang === "en") {
+    return `You are Chef AI \u2013 an experienced chef assistant on Smakv\xE4rlden, Sweden's leading platform for professional chefs. You help chefs with:
+- Recipe ideas and cooking techniques
+- Cost calculations and dish pricing
+- Ingredient substitutions and allergy adaptations
+- Menu planning and seasonal recipes
+- Professional restaurant-level kitchen advice
+
+Always respond in English, concisely and professionally. Be specific and practical. Include approximate costs in SEK when suggesting ingredients.`;
+  }
+  return `Du \xE4r Chef AI \u2013 en erfaren kockassistent p\xE5 Smakv\xE4rlden, Sveriges ledande plattform f\xF6r professionella kockar. Du hj\xE4lper kockar med:
 - Receptid\xE9er och matlagningstekniker
 - Kostnadsber\xE4kningar och priss\xE4ttning av r\xE4tter
 - R\xE5varusubstitutioner och allergianpassningar
@@ -69140,12 +69126,13 @@ var SYSTEM_PROMPT = `Du \xE4r Chef AI \u2013 en erfaren kockassistent p\xE5 Smak
 - Professionella k\xF6ksr\xE5d p\xE5 restaurangniv\xE5
 
 Svara alltid p\xE5 svenska, kortfattat och professionellt. Var specifik och praktisk. Inkludera g\xE4rna ungef\xE4rliga kostnader i SEK n\xE4r du f\xF6resl\xE5r ingredienser.`;
+}
 router7.post("/ai/chat", async (req, res) => {
   const client = getClient();
   if (!client) {
     return res.status(503).json({ error: "AI-funktionen \xE4r inte konfigurerad. L\xE4gg till ANTHROPIC_API_KEY i milj\xF6variabler." });
   }
-  const { message, history = [] } = req.body ?? {};
+  const { message, history = [], lang = "sv" } = req.body ?? {};
   if (!message?.trim()) return res.status(400).json({ error: "Meddelande saknas." });
   const messages = [
     ...history.slice(-10).map((h) => ({
@@ -69158,7 +69145,7 @@ router7.post("/ai/chat", async (req, res) => {
     const response = await client.messages.create({
       model: "claude-haiku-4-5",
       max_tokens: 1024,
-      system: SYSTEM_PROMPT,
+      system: buildSystemPrompt(lang),
       messages
     });
     const reply = response.content[0]?.type === "text" ? response.content[0].text : "";
@@ -69173,17 +69160,20 @@ router7.post("/ai/suggest", async (req, res) => {
   if (!client) {
     return res.status(503).json({ error: "AI-funktionen \xE4r inte konfigurerad." });
   }
-  const { ingredients = [], budget, servings = 4 } = req.body ?? {};
+  const { ingredients = [], budget, servings = 4, lang = "sv" } = req.body ?? {};
   if (!ingredients.length) return res.status(400).json({ error: "Inga ingredienser angivna." });
-  const prompt = `Jag har dessa ingredienser: ${ingredients.join(", ")}. 
-${budget ? `Budget: ${budget} SEK.` : ""} 
+  const prompt = lang === "en" ? `I have these ingredients: ${ingredients.join(", ")}.
+${budget ? `Budget: ${budget} SEK.` : ""}
+Number of servings: ${servings}.
+Suggest 3 specific recipes using these ingredients. For each recipe: give name, category, estimated cost per serving, and a short description (max 2 sentences).` : `Jag har dessa ingredienser: ${ingredients.join(", ")}.
+${budget ? `Budget: ${budget} SEK.` : ""}
 Antal portioner: ${servings}.
 F\xF6resl\xE5 3 konkreta recept med dessa ingredienser. F\xF6r varje recept: ge namn, kategori, uppskattad kostnad per portion, och en kort beskrivning (max 2 meningar).`;
   try {
     const response = await client.messages.create({
       model: "claude-haiku-4-5",
       max_tokens: 1024,
-      system: SYSTEM_PROMPT,
+      system: buildSystemPrompt(lang),
       messages: [{ role: "user", content: prompt }]
     });
     const reply = response.content[0]?.type === "text" ? response.content[0].text : "";
@@ -86778,7 +86768,7 @@ var routes_default = router13;
 
 // src/lib/logger.ts
 var import_pino = __toESM(require_pino(), 1);
-var isProduction = true;
+var isProduction = process.env.NODE_ENV === "production";
 var logger = (0, import_pino.default)({
   level: process.env.LOG_LEVEL ?? "info",
   redact: [
@@ -86819,15 +86809,7 @@ app.use((0, import_cors.default)());
 app.use(import_express14.default.json());
 app.use(import_express14.default.urlencoded({ extended: true }));
 app.use("/api", routes_default);
-app.use(function(err, req, res, _next) {
-  const status = err.status || err.statusCode || 500;
-  const cause = err.cause;
-  const causeInfo = cause ? { message: cause.message, code: cause.code, detail: cause.detail, severity: cause.severity, routine: cause.routine } : undefined;
-  console.error("[api error]", err.message, causeInfo || err.stack);
-  res.status(status).json({ error: err.message || "Internal server error", cause: causeInfo });
-});
-var __dirname2;
-try { __dirname2 = path2.dirname(fileURLToPath(import.meta.url)); } catch (_e) { __dirname2 = typeof __dirname !== "undefined" ? __dirname : "/tmp"; }
+var __dirname2 = path2.dirname(fileURLToPath(import.meta.url));
 var staticDir = process.env.STATIC_DIR ?? path2.resolve(__dirname2, "..", "..", "smakvarlden", "dist", "public");
 if (fs.existsSync(staticDir)) {
   app.use(import_express14.default.static(staticDir));
