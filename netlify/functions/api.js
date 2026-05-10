@@ -60677,6 +60677,7 @@ var recipesTable = pgTable("recipes", {
   profitMarginPct: numeric("profit_margin_pct", { precision: 6, scale: 2 }).notNull().default("0"),
   isShared: boolean("is_shared").notNull().default(false),
   userId: integer("user_id").references(() => usersTable.id, { onDelete: "set null" }),
+  ingredientsJson: json("ingredients").$type(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow()
 });
@@ -60705,7 +60706,7 @@ var communityPostsTable = pgTable("community_posts", {
   createdAt: timestamp("created_at").notNull().defaultNow()
 });
 var insertIngredientSchema = createInsertSchema(ingredientsTable).omit({ id: true, updatedAt: true });
-var insertRecipeSchema = createInsertSchema(recipesTable).omit({ id: true, createdAt: true, updatedAt: true });
+var insertRecipeSchema = createInsertSchema(recipesTable).omit({ id: true, createdAt: true, updatedAt: true, ingredientsJson: true });
 var insertCommunityPostSchema = createInsertSchema(communityPostsTable).omit({ id: true, likes: true, createdAt: true });
 var insertUserSchema = createInsertSchema(usersTable).omit({ id: true, createdAt: true, role: true });
 
@@ -60806,16 +60807,24 @@ router2.get("/:id", async (req, res) => {
     unit: recipeIngredientsTable.unit,
     unitPriceSek: ingredientsTable.currentPriceSek
   }).from(recipeIngredientsTable).innerJoin(ingredientsTable, eq(recipeIngredientsTable.ingredientId, ingredientsTable.id)).where(eq(recipeIngredientsTable.recipeId, recipe.id));
+  const ingredients = recipeIngredients.length > 0 ? recipeIngredients.map((ri) => ({
+    ingredientId: ri.ingredientId,
+    ingredientName: ri.ingredientName,
+    quantity: parseFloat(String(ri.quantity)),
+    unit: ri.unit,
+    unitPriceSek: parseFloat(String(ri.unitPriceSek)),
+    lineCostSek: Math.round(parseFloat(String(ri.quantity)) * parseFloat(String(ri.unitPriceSek)) * 100) / 100
+  })) : (recipe.ingredientsJson ?? []).map((ing, i) => ({
+    ingredientId: i,
+    ingredientName: ing.name,
+    quantity: ing.amount,
+    unit: ing.unit,
+    unitPriceSek: 0,
+    lineCostSek: 0
+  }));
   return res.json({
     ...formatRecipe(recipe),
-    ingredients: recipeIngredients.map((ri) => ({
-      ingredientId: ri.ingredientId,
-      ingredientName: ri.ingredientName,
-      quantity: parseFloat(String(ri.quantity)),
-      unit: ri.unit,
-      unitPriceSek: parseFloat(String(ri.unitPriceSek)),
-      lineCostSek: Math.round(parseFloat(String(ri.quantity)) * parseFloat(String(ri.unitPriceSek)) * 100) / 100
-    }))
+    ingredients
   });
 });
 router2.put("/:id", async (req, res) => {
@@ -60851,6 +60860,7 @@ router2.delete("/:id", async (req, res) => {
   return res.status(204).send();
 });
 function formatRecipe(r) {
+  const jsonIngredients = r.ingredientsJson ?? [];
   return {
     id: r.id,
     name: r.name,
@@ -60862,7 +60872,8 @@ function formatRecipe(r) {
     profitMarginPct: parseFloat(String(r.profitMarginPct)),
     isShared: r.isShared,
     createdAt: r.createdAt.toISOString(),
-    updatedAt: r.updatedAt.toISOString()
+    updatedAt: r.updatedAt.toISOString(),
+    ingredientNames: jsonIngredients.slice(0, 5).map((i) => i.name)
   };
 }
 var recipes_default = router2;

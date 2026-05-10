@@ -264,6 +264,17 @@ export default function Recipes() {
                         )}
                       </div>
 
+                      {recipe.ingredientNames && recipe.ingredientNames.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {recipe.ingredientNames.map((name) => (
+                            <span key={name} className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                              style={{ background: "var(--sv-muted)", color: "var(--sv-text-2)", border: "1px solid var(--sv-border)" }}>
+                              {name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
                       <div className="grid grid-cols-3 gap-2">
                         {[
                           { label: t("Kostnad"),  value: `${recipe.totalCostSek.toFixed(0)} kr`,    style: {} },

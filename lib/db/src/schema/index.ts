@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, numeric, boolean, timestamp, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, numeric, boolean, timestamp, pgEnum, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -46,6 +46,7 @@ export const recipesTable = pgTable("recipes", {
   profitMarginPct: numeric("profit_margin_pct", { precision: 6, scale: 2 }).notNull().default("0"),
   isShared: boolean("is_shared").notNull().default(false),
   userId: integer("user_id").references(() => usersTable.id, { onDelete: "set null" }),
+  ingredientsJson: json("ingredients").$type<Array<{ name: string; unit: string; amount: number; original?: string }>>(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -78,7 +79,7 @@ export const communityPostsTable = pgTable("community_posts", {
 });
 
 export const insertIngredientSchema = createInsertSchema(ingredientsTable).omit({ id: true, updatedAt: true });
-export const insertRecipeSchema = createInsertSchema(recipesTable).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertRecipeSchema = createInsertSchema(recipesTable).omit({ id: true, createdAt: true, updatedAt: true, ingredientsJson: true });
 export const insertCommunityPostSchema = createInsertSchema(communityPostsTable).omit({ id: true, likes: true, createdAt: true });
 export const insertUserSchema = createInsertSchema(usersTable).omit({ id: true, createdAt: true, role: true });
 

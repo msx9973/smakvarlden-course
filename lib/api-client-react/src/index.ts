@@ -74,6 +74,7 @@ export type Recipe = {
   isShared: boolean;
   createdAt: string;
   updatedAt: string;
+  ingredientNames?: string[];
 };
 
 export type RecipeDetail = Recipe & {

@@ -111,16 +111,27 @@ router.get("/:id", async (req, res) => {
     .innerJoin(ingredientsTable, eq(recipeIngredientsTable.ingredientId, ingredientsTable.id))
     .where(eq(recipeIngredientsTable.recipeId, recipe.id));
 
+  const ingredients = recipeIngredients.length > 0
+    ? recipeIngredients.map((ri) => ({
+        ingredientId: ri.ingredientId,
+        ingredientName: ri.ingredientName,
+        quantity: parseFloat(String(ri.quantity)),
+        unit: ri.unit,
+        unitPriceSek: parseFloat(String(ri.unitPriceSek)),
+        lineCostSek: Math.round(parseFloat(String(ri.quantity)) * parseFloat(String(ri.unitPriceSek)) * 100) / 100,
+      }))
+    : (recipe.ingredientsJson ?? []).map((ing, i) => ({
+        ingredientId: i,
+        ingredientName: ing.name,
+        quantity: ing.amount,
+        unit: ing.unit,
+        unitPriceSek: 0,
+        lineCostSek: 0,
+      }));
+
   return res.json({
     ...formatRecipe(recipe),
-    ingredients: recipeIngredients.map((ri) => ({
-      ingredientId: ri.ingredientId,
-      ingredientName: ri.ingredientName,
-      quantity: parseFloat(String(ri.quantity)),
-      unit: ri.unit,
-      unitPriceSek: parseFloat(String(ri.unitPriceSek)),
-      lineCostSek: Math.round(parseFloat(String(ri.quantity)) * parseFloat(String(ri.unitPriceSek)) * 100) / 100,
-    })),
+    ingredients,
   });
 });
 
@@ -169,6 +180,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 function formatRecipe(r: typeof recipesTable.$inferSelect) {
+  const jsonIngredients = r.ingredientsJson ?? [];
   return {
     id: r.id,
     name: r.name,
@@ -181,6 +193,7 @@ function formatRecipe(r: typeof recipesTable.$inferSelect) {
     isShared: r.isShared,
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
+    ingredientNames: jsonIngredients.slice(0, 5).map((i) => i.name),
   };
 }
 

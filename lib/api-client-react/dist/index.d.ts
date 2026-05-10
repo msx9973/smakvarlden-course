@@ -36,6 +36,7 @@ export type Recipe = {
     isShared: boolean;
     createdAt: string;
     updatedAt: string;
+    ingredientNames?: string[];
 };
 export type RecipeDetail = Recipe & {
     ingredients?: Array<{
@@ -148,6 +149,8 @@ export declare function useGetDashboardSummary(options?: QueryOptions<DashboardS
 export declare function useGetDashboardRecentActivity(params?: {
     limit?: number;
 }, options?: QueryOptions<Activity[]>): import("@tanstack/react-query").UseQueryResult<Activity[], Error>;
+export declare function getGetCommunityPostQueryKey(id: number): readonly ["getCommunityPost", number];
+export declare function useGetCommunityPost(id: number, options?: QueryOptions<CommunityPost>): import("@tanstack/react-query").UseQueryResult<CommunityPost, Error>;
 export declare function useListCommunityPosts(params?: {
     search?: string;
 }, options?: QueryOptions<CommunityPost[]>): import("@tanstack/react-query").UseQueryResult<CommunityPost[], Error>;
