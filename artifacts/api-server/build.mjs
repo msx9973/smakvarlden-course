@@ -30,4 +30,8 @@ await build({
   outExtension: { ".js": ".mjs" },
   sourcemap: false,
   logLevel: "info",
+  // serverless-http uses CJS require() for Node built-ins — inject a shim so it works in ESM
+  banner: {
+    js: "import { createRequire } from 'module';\nconst require = createRequire(import.meta.url);\n",
+  },
 });
