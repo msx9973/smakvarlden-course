@@ -50,9 +50,9 @@ if (fs.existsSync(staticDir)) {
   logger.warn({ staticDir }, "Static directory not found — frontend not served");
 }
 
-app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((err: Error & { cause?: Error }, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   logger.error({ err }, "Unhandled error");
-  res.status(500).json({ error: err.message, type: err.constructor?.name });
+  res.status(500).json({ error: err.message, cause: (err.cause as Error)?.message, type: err.constructor?.name });
 });
 
 export default app;
