@@ -18,16 +18,21 @@ import { useAuth } from "@/lib/auth";
 import { Link } from "wouter";
 import { ResponsiveContainer, BarChart, Bar, Cell, Tooltip, XAxis, YAxis } from "recharts";
 import { useI18n } from "@/lib/i18n";
+import { useState } from "react";
+import { RecipeSheet } from "@/components/RecipeSheet";
 
 function StatCard({
-  label, value, icon: Icon, sub, gradient, iconColor,
+  label, value, icon: Icon, sub, gradient, iconColor, href,
 }: {
   label: string; value: string | number; icon: React.ElementType;
-  sub?: string; gradient: string; iconColor: string;
+  sub?: string; gradient: string; iconColor: string; href?: string;
 }) {
-  return (
-    <div className="rounded-2xl p-5 flex flex-col gap-3 transition-all hover:-translate-y-0.5"
-      style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
+  const inner = (
+    <div className="rounded-2xl p-5 flex flex-col gap-3 transition-all hover:-translate-y-0.5 hover:shadow-md"
+      style={{
+        background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)",
+        cursor: href ? "pointer" : "default",
+      }}>
       <div className="flex items-center justify-between">
         <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "var(--sv-text-2)" }}>{label}</p>
         <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
@@ -37,8 +42,15 @@ function StatCard({
       </div>
       <p className="text-3xl font-serif font-bold tracking-tight" style={{ color: "var(--sv-text)" }}>{value}</p>
       {sub && <p className="text-[12px]" style={{ color: "var(--sv-text-2)" }}>{sub}</p>}
+      {href && (
+        <p className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "var(--sv-gold)" }}>
+          <ArrowRight className="w-3 h-3" /> Se mer
+        </p>
+      )}
     </div>
   );
+  if (href) return <Link href={href}>{inner}</Link>;
+  return inner;
 }
 
 function ActivityIcon({ type }: { type: string }) {
@@ -169,6 +181,7 @@ function StatsSidebar({ summary, catBreakdown }: {
 export default function Dashboard() {
   const { user } = useAuth();
   const { t, lang } = useI18n();
+  const [sheetRecipeId, setSheetRecipeId] = useState<number | null>(null);
   const summary      = useGetDashboardSummary({ query: { queryKey: getGetDashboardSummaryQueryKey() } });
   const activity     = useGetDashboardRecentActivity({ limit: 8 }, { query: { queryKey: getGetDashboardRecentActivityQueryKey({ limit: 8 }) } });
   const topRecipes   = useGetTopPerformingRecipes({ limit: 5 }, { query: { queryKey: getGetTopPerformingRecipesQueryKey({ limit: 5 }) } });
@@ -223,16 +236,16 @@ export default function Dashboard() {
             : summary.data ? (
               <>
                 <StatCard label={t("Recept")} value={summary.data.totalRecipes} icon={BookOpen} sub={t("I din kokbok")}
-                  gradient="rgba(59,130,246,.14)" iconColor="#3b82f6" />
+                  gradient="rgba(59,130,246,.14)" iconColor="#3b82f6" href="/recipes" />
                 <StatCard label={t("Ingredienser")} value={summary.data.totalIngredients} icon={Leaf} sub={t("Spårade råvaror")}
-                  gradient="rgba(16,185,129,.14)" iconColor="#10b981" />
+                  gradient="rgba(16,185,129,.14)" iconColor="#10b981" href="/ingredients" />
                 <StatCard label={t("Snitt marginal")} value={`${summary.data.avgProfitMarginPct.toFixed(1)}%`}
                   icon={TrendingUp} sub={t("Vinstmarginal")}
-                  gradient="rgba(201,168,76,.18)" iconColor="hsl(44 50% 44%)" />
+                  gradient="rgba(201,168,76,.18)" iconColor="hsl(44 50% 44%)" href="/market" />
                 <StatCard label={t("Prisvarningar")} value={summary.data.priceAlerts}
                   icon={AlertTriangle} sub={t("Råvaror med >5% ändring")}
                   gradient={summary.data.priceAlerts > 0 ? "rgba(239,68,68,.14)" : "rgba(16,185,129,.10)"}
-                  iconColor={summary.data.priceAlerts > 0 ? "#ef4444" : "#10b981"} />
+                  iconColor={summary.data.priceAlerts > 0 ? "#ef4444" : "#10b981"} href="/ingredients" />
               </>
             ) : null}
         </div>
@@ -256,8 +269,10 @@ export default function Dashboard() {
                     </div>
                   ))
                 : (activity.data ?? []).map((entry, i, arr) => (
-                    <div key={entry.id} className="px-6 py-3 flex items-center gap-3 transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.03]"
-                      style={{ borderBottom: i < arr.length - 1 ? `1px solid var(--sv-border)` : "none" }}>
+                    <Link key={entry.id}
+                      href={entry.type === "price_change" ? "/ingredients" : "/recipes"}
+                      className="px-6 py-3 flex items-center gap-3 transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.03]"
+                      style={{ borderBottom: i < arr.length - 1 ? `1px solid var(--sv-border)` : "none", display: "flex" }}>
                       <ActivityIcon type={entry.type} />
                       <div className="flex-1 min-w-0">
                         <p className="text-[13px] font-medium truncate" style={{ color: "var(--sv-text)" }}>{entry.title}</p>
@@ -266,7 +281,7 @@ export default function Dashboard() {
                       <span className="text-[11px] whitespace-nowrap shrink-0" style={{ color: "var(--sv-text-2)" }}>
                         {formatDistanceToNow(new Date(entry.timestamp), { addSuffix: true, locale: dateLocale })}
                       </span>
-                    </div>
+                    </Link>
                   ))
               }
             </div>
@@ -287,7 +302,8 @@ export default function Dashboard() {
                 ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-xl" />)
                 : (topRecipes.data ?? []).map((recipe, idx) => (
                     <div key={recipe.id}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.03]">
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.03] cursor-pointer"
+                      onClick={() => setSheetRecipeId(recipe.id)}>
                       <span className="font-serif font-bold text-base w-5 text-center shrink-0"
                         style={{ color: MEDAL_COLORS[idx] ?? "var(--sv-text-2)" }}>
                         {idx + 1}
@@ -312,6 +328,8 @@ export default function Dashboard() {
       <div className="w-72 shrink-0 hidden xl:block">
         <StatsSidebar summary={summary.data} catBreakdown={catBreakdown.data ?? []} />
       </div>
+
+      <RecipeSheet recipeId={sheetRecipeId} onClose={() => setSheetRecipeId(null)} />
     </div>
   );
 }

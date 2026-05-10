@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { X, Send, Bot, Sparkles, ChefHat, Minimize2 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 interface Message {
   role: "user" | "assistant";
@@ -8,7 +9,7 @@ interface Message {
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-async function fetchAI(message: string, history: Message[]): Promise<string> {
+async function fetchAI(message: string, history: Message[], lang: string): Promise<string> {
   const token = localStorage.getItem("smakvarlden_token");
   const res = await fetch(`${BASE}/api/ai/chat`, {
     method: "POST",
@@ -16,7 +17,7 @@ async function fetchAI(message: string, history: Message[]): Promise<string> {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: JSON.stringify({ message, history }),
+    body: JSON.stringify({ message, history, lang }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? "AI-tjänsten är inte tillgänglig.");
@@ -24,10 +25,18 @@ async function fetchAI(message: string, history: Message[]): Promise<string> {
 }
 
 export function AiChat() {
+  const { lang } = useI18n();
+  const isEn = lang === "en";
+
   const [open, setOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Hej! Jag är din AI-kockassistent. Fråga mig om recept, tekniker, prissättning eller matkombinationer! 🍽️" },
+    {
+      role: "assistant",
+      content: isEn
+        ? "Hi! I'm your AI chef assistant. Ask me about recipes, techniques, pricing or food combinations! 🍽️"
+        : "Hej! Jag är din AI-kockassistent. Fråga mig om recept, tekniker, prissättning eller matkombinationer! 🍽️",
+    },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -46,17 +55,22 @@ export function AiChat() {
     setMessages(newMessages);
     setLoading(true);
     try {
-      const reply = await fetchAI(msg, messages.slice(-10));
+      const reply = await fetchAI(msg, messages.slice(-10), lang);
       setMessages([...newMessages, { role: "assistant", content: reply }]);
     } catch (e: unknown) {
-      const errMsg = e instanceof Error ? e.message : "Fel uppstod";
+      const errMsg = e instanceof Error ? e.message : isEn ? "An error occurred" : "Fel uppstod";
       setMessages([...newMessages, { role: "assistant", content: `⚠️ ${errMsg}` }]);
     } finally {
       setLoading(false);
     }
   };
 
-  const quickActions = [
+  const quickActions = isEn ? [
+    { label: "💰 Cost Optimization", msg: "Help me reduce the cost of a recipe with salmon and vegetables without losing quality." },
+    { label: "🧠 Recipe Idea", msg: "Give me a creative recipe idea for an autumn menu with Swedish ingredients." },
+    { label: "✍️ Menu Description", msg: "Write an elegant menu description for a pan-fried salmon fillet with dill butter and root vegetables." },
+    { label: "⚠️ Allergens", msg: "What common allergens are in a classic Caesar salad?" },
+  ] : [
     { label: "💰 Kostnadsoptimering", msg: "Hjälp mig att minska kostnaden på ett recept med lax och grönsaker utan att tappa kvalitet." },
     { label: "🧠 Receptidé", msg: "Ge mig en kreativ receptidé för en höstmeny med svenska råvaror." },
     { label: "✍️ Menybeskrivning", msg: "Skriv en elegant menybeskrivning för en pannstekt laxfilé med dillsmör och rotfrukter." },
@@ -83,7 +97,7 @@ export function AiChat() {
               onClick={() => { setOpen(true); setMenuOpen(false); }}
               className="text-left text-xs px-3 py-2 rounded-lg hover:bg-muted transition-colors text-foreground font-medium"
             >
-              👨‍🍳 Chef AI — Fri fråga
+              {isEn ? "👨‍🍳 Chef AI — Free question" : "👨‍🍳 Chef AI — Fri fråga"}
             </button>
           </div>
         )}
@@ -171,7 +185,7 @@ export function AiChat() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()}
-              placeholder="Ställ en fråga…"
+              placeholder={isEn ? "Ask a question…" : "Ställ en fråga…"}
               className="flex-1 text-xs px-3 py-2 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
             <button

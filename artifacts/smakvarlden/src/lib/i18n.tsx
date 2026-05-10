@@ -331,6 +331,21 @@ const T: Record<string, { en: string }> = {
   "Logga in för att kalkylera": { en: "Log in to calculate" },
   "Spara dina kalkyler och håll koll på marginaler.": { en: "Save your calculations and track margins." },
 
+  // ── Ingredient sheet ─────────────────────────────────────────
+  "Stigande pris":              { en: "Rising price" },
+  "Fallande pris":              { en: "Falling price" },
+  "Stabilt pris":               { en: "Stable price" },
+  "Prisförändring sedan förra veckan": { en: "Price change since last week" },
+  "Prishistorik tillgänglig för topingredienster": { en: "Price history available for top ingredients" },
+  "Kostnadsinsikt":             { en: "Cost insight" },
+  "Premium råvara":             { en: "Premium ingredient" },
+  "överväg portionskontroll eller substitut vid högt svinn": { en: "consider portion control or substitutes with high waste" },
+  "Priset har stigit kraftigt": { en: "Price has risen sharply" },
+  "kontrollera receptmarginalerna": { en: "check your recipe margins" },
+  "Priset är stabilt":          { en: "Price is stable" },
+  "bra råvara att planera menyn runt": { en: "great ingredient to plan your menu around" },
+  "Fullständig vy":             { en: "Full view" },
+
   // ── Help center ──────────────────────────────────────────────
   "Hjälp & guide":              { en: "Help & guide" },
   "Hur använder du Smakvärlden?": { en: "How do you use Smakvärlden?" },
@@ -342,6 +357,29 @@ const T: Record<string, { en: string }> = {
   "Prova ett annat sökord eller kontakta oss nedan.": { en: "Try a different search term or contact us below." },
   "Hittade du inte svaret?":    { en: "Didn't find the answer?" },
   "Gå till Community":          { en: "Go to Community" },
+
+  // ── Login ────────────────────────────────────────────────────
+  "Kockens digitala verktyg":   { en: "The Chef's Digital Toolkit" },
+  "Minst 6 tecken":             { en: "At least 6 characters" },
+  "Laddar…":                    { en: "Loading…" },
+  "Fel uppstod.":               { en: "An error occurred." },
+  "Smakvärlden · Kockens digitala verktyg": { en: "Smakvärlden · The Chef's Digital Toolkit" },
+
+  // ── Upgrade ──────────────────────────────────────────────────
+  "Lås upp alla verktyg och ta ditt kök till nästa nivå": { en: "Unlock all tools and take your kitchen to the next level" },
+  "Sök bland miljoner recept via Spoonacular": { en: "Search millions of recipes via Spoonacular" },
+  "Generera recept och analyser utan begränsning": { en: "Generate recipes and analyses without limits" },
+  "Djupgående marginalrapporter och trender": { en: "In-depth margin reports and trends" },
+  "Snabbare svar från teamet":  { en: "Faster responses from the team" },
+  "Aktiv plan":                 { en: "Active plan" },
+  "kr / månad":                 { en: "SEK / month" },
+  "Upp till 10 recept":         { en: "Up to 10 recipes" },
+  "Grundläggande kalkylator":   { en: "Basic calculator" },
+  "Ingredienshantering":        { en: "Ingredient management" },
+  "Community-åtkomst":          { en: "Community access" },
+  "Betalning avbruten":         { en: "Payment cancelled" },
+  "Du kan försöka igen när du är redo.": { en: "You can try again when you're ready." },
+  "Något gick fel.":            { en: "Something went wrong." },
 };
 
 interface I18nCtx {

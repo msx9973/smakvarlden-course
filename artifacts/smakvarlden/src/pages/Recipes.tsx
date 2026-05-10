@@ -3,12 +3,13 @@ import { Link } from "wouter";
 import { useListRecipes, useDeleteRecipe, useCreateRecipe, getListRecipesQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Plus, Trash2, ExternalLink, ChefHat, Globe, Clock, Upload, Lock } from "lucide-react";
+import { Search, Plus, Trash2, ChefHat, Globe, Clock, Upload, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AddRecipeDialog } from "@/components/AddRecipeDialog";
 import { ImportDialog, type CsvRow } from "@/components/ImportDialog";
 import { useI18n, RECIPE_CATEGORIES, DIET_CATEGORIES, ALLERGY_CATEGORIES } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
+import { RecipeSheet } from "@/components/RecipeSheet";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -84,6 +85,7 @@ export default function Recipes() {
   const [spoonQuery, setSpoonQuery] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [sheetRecipeId, setSheetRecipeId] = useState<number | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -240,8 +242,9 @@ export default function Recipes() {
                 const catGrad = CAT_GRADIENT[recipe.category] ?? "linear-gradient(135deg,hsl(17 47% 20%),hsl(17 47% 13%))";
                 return (
                   <div key={recipe.id}
-                    className="group rounded-2xl overflow-hidden flex flex-col transition-all duration-200 hover:-translate-y-1"
-                    style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
+                    className="group rounded-2xl overflow-hidden flex flex-col transition-all duration-200 hover:-translate-y-1 cursor-pointer"
+                    style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}
+                    onClick={() => setSheetRecipeId(recipe.id)}>
                     <div className="h-2 shrink-0" style={{ background: catGrad }} />
                     <div className="p-5 flex flex-col gap-4 flex-1">
                       <div className="flex items-start justify-between gap-2">
@@ -263,9 +266,9 @@ export default function Recipes() {
 
                       <div className="grid grid-cols-3 gap-2">
                         {[
-                          { label: t("Kostnad"),  value: `${recipe.totalCostSek.toFixed(0)} kr`,       style: {} },
-                          { label: t("Pris"),     value: `${recipe.sellingPriceSek.toFixed(0)} kr`,    style: {} },
-                          { label: t("Marginal"), value: `${recipe.profitMarginPct.toFixed(1)}%`,      style: mg },
+                          { label: t("Kostnad"),  value: `${recipe.totalCostSek.toFixed(0)} kr`,    style: {} },
+                          { label: t("Pris"),     value: `${recipe.sellingPriceSek.toFixed(0)} kr`, style: {} },
+                          { label: t("Marginal"), value: `${recipe.profitMarginPct.toFixed(1)}%`,   style: mg },
                         ].map(({ label, value, style }) => (
                           <div key={label} className="rounded-xl p-2.5 text-center" style={{ background: "var(--sv-muted)" }}>
                             <p className="text-[10px] font-semibold uppercase tracking-wide mb-0.5" style={{ color: "var(--sv-text-2)" }}>{label}</p>
@@ -280,15 +283,9 @@ export default function Recipes() {
                           {t(recipe.category)}
                         </span>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Link href={`/recipes/${recipe.id}`}>
-                            <button className="w-7 h-7 rounded-lg flex items-center justify-center"
-                              style={{ color: "var(--sv-text-2)" }}>
-                              <ExternalLink className="w-3.5 h-3.5" />
-                            </button>
-                          </Link>
                           <button className="w-7 h-7 rounded-lg flex items-center justify-center"
                             style={{ color: "#dc2626" }}
-                            onClick={() => deleteRecipe.mutate({ id: recipe.id })}>
+                            onClick={(e) => { e.stopPropagation(); deleteRecipe.mutate({ id: recipe.id }); }}>
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -379,6 +376,7 @@ export default function Recipes() {
         example={"Pasta Carbonara,Klassisk pasta,Huvudrätter,4,185"}
         onImport={handleImport}
       />
+      <RecipeSheet recipeId={sheetRecipeId} onClose={() => setSheetRecipeId(null)} />
     </div>
   );
 }

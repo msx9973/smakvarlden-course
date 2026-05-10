@@ -3,24 +3,26 @@ import { useLocation } from "wouter";
 import { CheckCircle2, Crown, Zap, Globe, BarChart3, Loader2 } from "lucide-react";
 import { useAuth, apiFetch } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
-
-const FEATURES = [
-  { icon: Globe,     label: "Receptsök från hela världen",  desc: "Sök bland miljoner recept via Spoonacular" },
-  { icon: Zap,       label: "Obegränsade AI-förslag",        desc: "Generera recept och analyser utan begränsning" },
-  { icon: BarChart3, label: "Avancerad analytics",           desc: "Djupgående marginalrapporter och trender" },
-  { icon: CheckCircle2, label: "Prioriterad support",        desc: "Snabbare svar från teamet" },
-];
+import { useI18n } from "@/lib/i18n";
 
 export default function Upgrade() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
   const [, navigate] = useLocation();
   const [loading, setLoading] = useState(false);
+
+  const FEATURES = [
+    { icon: Globe,        label: t("Receptsök från hela världen"),  desc: t("Sök bland miljoner recept via Spoonacular") },
+    { icon: Zap,          label: t("Obegränsade AI-förslag"),        desc: t("Generera recept och analyser utan begränsning") },
+    { icon: BarChart3,    label: t("Avancerad analytics"),           desc: t("Djupgående marginalrapporter och trender") },
+    { icon: CheckCircle2, label: t("Prioriterad support"),           desc: t("Snabbare svar från teamet") },
+  ];
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("payment") === "cancelled") {
-      toast({ title: "Betalning avbruten", description: "Du kan försöka igen när du är redo." });
+      toast({ title: t("Betalning avbruten"), description: t("Du kan försöka igen när du är redo.") });
     }
   }, []);
 
@@ -34,7 +36,7 @@ export default function Upgrade() {
       });
       if (data.url) window.location.href = data.url;
     } catch (err: unknown) {
-      toast({ title: "Fel", description: err instanceof Error ? err.message : "Något gick fel.", variant: "destructive" });
+      toast({ title: t("Fel uppstod."), description: err instanceof Error ? err.message : t("Något gick fel."), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -55,7 +57,7 @@ export default function Upgrade() {
           Smakvärlden <span style={{ color: "var(--sv-gold)", fontStyle: "italic" }}>Pro Chef</span>
         </h1>
         <p className="mt-2 text-[14px]" style={{ color: "var(--sv-text-2)" }}>
-          Lås upp alla verktyg och ta ditt kök till nästa nivå
+          {t("Lås upp alla verktyg och ta ditt kök till nästa nivå")}
         </p>
       </div>
 
@@ -66,15 +68,15 @@ export default function Upgrade() {
         {isPro && (
           <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-bold"
             style={{ background: "rgba(201,168,76,.15)", color: "var(--sv-gold)" }}>
-            <CheckCircle2 className="w-3.5 h-3.5" /> Aktiv plan
+            <CheckCircle2 className="w-3.5 h-3.5" /> {t("Aktiv plan")}
           </div>
         )}
 
         <div className="flex items-end gap-1 mb-1">
           <span className="font-serif text-4xl font-bold" style={{ color: "var(--sv-text)" }}>89</span>
-          <span className="text-[14px] font-semibold mb-1.5" style={{ color: "var(--sv-text-2)" }}>kr&nbsp;/&nbsp;månad</span>
+          <span className="text-[14px] font-semibold mb-1.5" style={{ color: "var(--sv-text-2)" }}>{t("kr / månad")}</span>
         </div>
-        <p className="text-[12px] mb-6" style={{ color: "var(--sv-text-2)" }}>Avsluta när som helst · Inga bindningstider</p>
+        <p className="text-[12px] mb-6" style={{ color: "var(--sv-text-2)" }}>{t("Avsluta när som helst · Inga bindningstider")}</p>
 
         <div className="space-y-3 mb-6">
           {FEATURES.map(({ icon: Icon, label, desc }) => (
@@ -94,7 +96,7 @@ export default function Upgrade() {
         {isPro ? (
           <div className="w-full py-3 rounded-xl text-center text-[14px] font-semibold"
             style={{ background: "rgba(22,163,74,.1)", color: "#16a34a" }}>
-            Du är redan Pro-kock!
+            {t("Du är redan Pro-kock!")}
           </div>
         ) : (
           <button
@@ -103,9 +105,9 @@ export default function Upgrade() {
             className="w-full py-3 rounded-xl text-[14px] font-bold transition-all hover:opacity-90 flex items-center justify-center gap-2"
             style={{ background: "var(--sv-brown)", color: "var(--sv-surface)", boxShadow: "0 4px 14px var(--sv-shadow)" }}>
             {loading ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Hanterar...</>
+              <><Loader2 className="w-4 h-4 animate-spin" /> {t("Hanterar...")}</>
             ) : (
-              <><Crown className="w-4 h-4" /> Uppgradera till Pro</>
+              <><Crown className="w-4 h-4" /> {t("Uppgradera till Pro")}</>
             )}
           </button>
         )}
@@ -115,10 +117,10 @@ export default function Upgrade() {
       <div className="rounded-2xl p-5"
         style={{ background: "var(--sv-surface)", border: "1px solid var(--sv-border)" }}>
         <p className="text-[12px] font-bold uppercase tracking-widest mb-3" style={{ color: "var(--sv-gold)" }}>
-          Gratis plan inkluderar
+          {t("Gratis plan inkluderar")}
         </p>
         <ul className="space-y-2">
-          {["Upp till 10 recept", "Grundläggande kalkylator", "Ingredienshantering", "Community-åtkomst"].map((f) => (
+          {[t("Upp till 10 recept"), t("Grundläggande kalkylator"), t("Ingredienshantering"), t("Community-åtkomst")].map((f) => (
             <li key={f} className="flex items-center gap-2 text-[13px]" style={{ color: "var(--sv-text-2)" }}>
               <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: "var(--sv-text-2)" }} />
               {f}

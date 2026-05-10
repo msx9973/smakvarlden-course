@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 
 export default function Login({ onSuccess }: { onSuccess?: () => void }) {
   const { login, register } = useAuth();
+  const { t } = useI18n();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -22,7 +24,7 @@ export default function Login({ onSuccess }: { onSuccess?: () => void }) {
       }
       onSuccess?.();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Fel uppstod.");
+      setError(err instanceof Error ? err.message : t("Fel uppstod."));
     } finally {
       setLoading(false);
     }
@@ -45,7 +47,7 @@ export default function Login({ onSuccess }: { onSuccess?: () => void }) {
             Smakvärlden
           </h1>
           <p className="text-sm mt-1" style={{ color: "hsl(20 20% 53%)" }}>
-            Kockens digitala verktyg
+            {t("Kockens digitala verktyg")}
           </p>
         </div>
 
@@ -71,7 +73,7 @@ export default function Login({ onSuccess }: { onSuccess?: () => void }) {
                   color: "hsl(20 20% 53%)",
                 }}
               >
-                {m === "login" ? "Logga in" : "Skapa konto"}
+                {m === "login" ? t("Logga in") : t("Skapa konto")}
               </button>
             ))}
           </div>
@@ -80,7 +82,7 @@ export default function Login({ onSuccess }: { onSuccess?: () => void }) {
             {mode === "register" && (
               <div>
                 <label className="block text-xs font-semibold mb-1.5" style={{ color: "hsl(20 20% 53%)" }}>
-                  Namn
+                  {t("Namn")}
                 </label>
                 <input
                   value={name}
@@ -101,7 +103,7 @@ export default function Login({ onSuccess }: { onSuccess?: () => void }) {
             )}
             <div>
               <label className="block text-xs font-semibold mb-1.5" style={{ color: "hsl(20 20% 53%)" }}>
-                E-post
+                {t("E-post")}
               </label>
               <input
                 type="email"
@@ -122,13 +124,13 @@ export default function Login({ onSuccess }: { onSuccess?: () => void }) {
             </div>
             <div>
               <label className="block text-xs font-semibold mb-1.5" style={{ color: "hsl(20 20% 53%)" }}>
-                Lösenord
+                {t("Lösenord")}
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder={mode === "register" ? "Minst 6 tecken" : "••••••••"}
+                placeholder={mode === "register" ? t("Minst 6 tecken") : "••••••••"}
                 className="w-full px-3 py-2.5 rounded-lg text-sm outline-none transition-all"
                 style={{
                   border: "1.5px solid hsl(33 28% 89%)",
@@ -160,13 +162,13 @@ export default function Login({ onSuccess }: { onSuccess?: () => void }) {
                 fontFamily: "'DM Sans', sans-serif",
               }}
             >
-              {loading ? "Laddar…" : mode === "login" ? "Logga in" : "Skapa konto"}
+              {loading ? t("Laddar…") : mode === "login" ? t("Logga in") : t("Skapa konto")}
             </button>
           </form>
         </div>
 
         <p className="text-xs text-center mt-4" style={{ color: "hsl(20 20% 65%)" }}>
-          Smakvärlden · Kockens digitala verktyg
+          {t("Smakvärlden · Kockens digitala verktyg")}
         </p>
       </div>
     </div>

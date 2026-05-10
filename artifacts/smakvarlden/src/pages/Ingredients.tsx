@@ -11,6 +11,7 @@ import { AddIngredientDialog } from "@/components/AddIngredientDialog";
 import { ImportDialog, type CsvRow } from "@/components/ImportDialog";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useI18n, INGREDIENT_CATEGORIES } from "@/lib/i18n";
+import { IngredientSheet } from "@/components/IngredientSheet";
 
 const CHART_COLORS = ["hsl(44 50% 46%)", "#3b82f6", "#10b981", "#ef4444", "#8b5cf6"];
 
@@ -42,6 +43,10 @@ export default function Ingredients() {
   const [category, setCategory] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [selectedIngredient, setSelectedIngredient] = useState<{
+    id: number; name: string; category: string; unit: string;
+    currentPriceSek: number; priceChangePct: number; supplier?: string | null;
+  } | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -185,8 +190,10 @@ export default function Ingredients() {
             </thead>
             <tbody>
               {(ingredients.data ?? []).map((ing, i) => (
-                <tr key={ing.id} className="group transition-colors hover:bg-black/[.02] dark:hover:bg-white/[.02]"
-                  style={{ borderTop: i === 0 ? "none" : `1px solid var(--sv-border)` }}>
+                <tr key={ing.id}
+                  className="group transition-colors hover:bg-black/[.04] dark:hover:bg-white/[.04] cursor-pointer"
+                  style={{ borderTop: i === 0 ? "none" : `1px solid var(--sv-border)` }}
+                  onClick={() => setSelectedIngredient(ing)}>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: "rgba(22,163,74,.12)" }}>
@@ -207,7 +214,7 @@ export default function Ingredients() {
                   </td>
                   <td className="px-5 py-3.5 text-right"><PriceChangePill pct={ing.priceChangePct} /></td>
                   <td className="px-4 py-3.5">
-                    <button onClick={() => deleteIngredient.mutate({ id: ing.id })}
+                    <button onClick={(e) => { e.stopPropagation(); deleteIngredient.mutate({ id: ing.id }); }}
                       className="w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
                       style={{ color: "#dc2626" }}>
                       <Trash2 className="w-3.5 h-3.5" />
@@ -237,6 +244,7 @@ export default function Ingredients() {
         example={"Smör,Mejeri,kg,45.50,Arla"}
         onImport={handleImport}
       />
+      <IngredientSheet ingredient={selectedIngredient} onClose={() => setSelectedIngredient(null)} />
     </div>
   );
 }

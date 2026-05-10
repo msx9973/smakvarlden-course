@@ -11,6 +11,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { Link } from "wouter";
+import { RecipeSheet } from "@/components/RecipeSheet";
 
 const BAR_COLORS = ["hsl(44 50% 46%)","#3b82f6","#10b981","#8b5cf6","#ef4444","#06b6d4","#ec4899","#84cc16"];
 
@@ -297,6 +298,7 @@ function GuestCalculatorWall() {
 export default function Calculator() {
   const { t } = useI18n();
   const { user } = useAuth();
+  const [sheetRecipeId, setSheetRecipeId] = useState<number | null>(null);
   const topRecipes = useGetTopPerformingRecipes({ limit: 10 }, { query: { queryKey: getGetTopPerformingRecipesQueryKey({ limit: 10 }) } });
   const breakdown  = useGetIngredientCategoryBreakdown({ query: { queryKey: getGetIngredientCategoryBreakdownQueryKey() } });
 
@@ -390,8 +392,9 @@ export default function Calculator() {
               </thead>
               <tbody>
                 {(topRecipes.data ?? []).map((r, i) => (
-                  <tr key={r.id} className="transition-colors hover:bg-black/[.02] dark:hover:bg-white/[.02]"
-                    style={{ borderTop: i === 0 ? "none" : `1px solid var(--sv-border)` }}>
+                  <tr key={r.id} className="transition-colors hover:bg-black/[.02] dark:hover:bg-white/[.02] cursor-pointer"
+                    style={{ borderTop: i === 0 ? "none" : `1px solid var(--sv-border)` }}
+                    onClick={() => setSheetRecipeId(r.id)}>
                     <td className="px-5 py-3.5 text-[13px] font-semibold" style={{ color: "var(--sv-text)" }}>{r.name}</td>
                     <td className="px-5 py-3.5">
                       <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
@@ -417,6 +420,8 @@ export default function Calculator() {
             </table>
           )}
       </div>
+
+      <RecipeSheet recipeId={sheetRecipeId} onClose={() => setSheetRecipeId(null)} />
     </div>
   );
 }
