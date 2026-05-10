@@ -86841,6 +86841,10 @@ if (import_fs.default.existsSync(staticDir)) {
 } else {
   logger.warn({ staticDir }, "Static directory not found \u2014 frontend not served");
 }
+app.use((err, _req, res, _next) => {
+  logger.error({ err }, "Unhandled error");
+  res.status(500).json({ error: err.message, type: err.constructor?.name });
+});
 var app_default = app;
 
 // src/lambda.ts
