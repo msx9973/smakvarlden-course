@@ -42233,15 +42233,6 @@ router.get("/healthz", (_req, res) => {
   const data = HealthCheckResponse.parse({ status: "ok" });
   res.json(data);
 });
-router.get("/debug-env", (_req, res) => {
-  const dbUrl = process.env.DATABASE_URL;
-  res.json({
-    DATABASE_URL_set: !!dbUrl,
-    DATABASE_URL_preview: dbUrl ? `${dbUrl.slice(0, 20)}...${dbUrl.slice(-20)}` : null,
-    NODE_ENV: process.env.NODE_ENV ?? "(not set)",
-    node_version: process.version
-  });
-});
 var health_default = router;
 
 // src/routes/recipes.ts
@@ -86843,7 +86834,7 @@ if (import_fs.default.existsSync(staticDir)) {
 }
 app.use((err, _req, res, _next) => {
   logger.error({ err }, "Unhandled error");
-  res.status(500).json({ error: err.message, cause: err.cause?.message, type: err.constructor?.name });
+  res.status(500).json({ error: "Internal server error" });
 });
 var app_default = app;
 
