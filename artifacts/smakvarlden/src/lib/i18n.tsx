@@ -24,11 +24,14 @@ const T: Record<string, { en: string }> = {
 
   // ── Common actions ───────────────────────────────────────────
   "Spara":              { en: "Save" },
+  "Spara som recept":   { en: "Save as recipe" },
+  "Sparar...":          { en: "Saving..." },
   "Avbryt":             { en: "Cancel" },
   "Ta bort":            { en: "Delete" },
   "Stäng":              { en: "Close" },
   "Lägg till":          { en: "Add" },
   "Skapa":              { en: "Create" },
+  "Skapa ny ingrediens": { en: "Create new ingredient" },
   "Redigera":           { en: "Edit" },
   "Importera":          { en: "Import" },
   "Exportera":          { en: "Export" },
@@ -42,6 +45,7 @@ const T: Record<string, { en: string }> = {
   "av":                 { en: "by" },
   "st":                 { en: "pcs" },
   "Välj…":              { en: "Select…" },
+  "Ingen ingrediens hittades": { en: "No ingredient found" },
 
   // ── Dashboard ────────────────────────────────────────────────
   "God morgon":                   { en: "Good morning" },
@@ -134,6 +138,9 @@ const T: Record<string, { en: string }> = {
   "Enhet":              { en: "Unit" },
   "Beskrivning":        { en: "Description" },
   "Försäljningspris (kr)": { en: "Selling price (SEK)" },
+  "Totalt försäljningsvärde": { en: "Total selling value" },
+  "Kalkylen saknar uppgifter": { en: "The calculation is missing details" },
+  "Ange receptnamn, minst en ingrediens och försäljningspris.": { en: "Enter a recipe name, at least one ingredient, and a selling price." },
   "Ange ett namn":      { en: "Enter a name" },
   "Välj kategori":      { en: "Select category" },
   "Ange enhet":         { en: "Enter unit" },
