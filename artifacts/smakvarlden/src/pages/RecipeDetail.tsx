@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, TrendingUp, Leaf } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { getIngredientImage, getRecipeImage } from "@/lib/foodImages";
 
 export default function RecipeDetail({ id }: { id: number }) {
   const { t } = useI18n();
@@ -45,12 +46,22 @@ export default function RecipeDetail({ id }: { id: number }) {
             <ArrowLeft className="w-4 h-4" /> {t("Tillbaka till recept")}
           </Button>
         </Link>
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-serif font-bold tracking-tight">{r.name}</h1>
-            {r.description && <p className="text-muted-foreground mt-1.5 text-sm leading-relaxed">{r.description}</p>}
+        <div className="relative overflow-hidden rounded-xl p-6 min-h-64 flex items-end card-shadow"
+          style={{ background: "linear-gradient(135deg,hsl(17 47% 13%),hsl(17 37% 20%))" }}>
+          <img
+            src={getRecipeImage(r.name, r.category)}
+            alt={r.name}
+            className="absolute inset-0 h-full w-full object-cover opacity-55"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/20" />
+          <div className="relative flex items-end justify-between gap-4 w-full">
+            <div>
+              <h1 className="text-3xl font-serif font-bold tracking-tight text-white">{r.name}</h1>
+              {r.description && <p className="text-white/75 mt-1.5 text-sm leading-relaxed max-w-xl">{r.description}</p>}
+            </div>
+            <Badge variant="outline" className="rounded-lg shrink-0 bg-white/10 text-white border-white/25">{t(r.category)}</Badge>
           </div>
-          <Badge variant="outline" className="rounded-lg shrink-0">{t(r.category)}</Badge>
         </div>
       </div>
 
@@ -123,7 +134,20 @@ export default function RecipeDetail({ id }: { id: number }) {
             <tbody className="divide-y divide-border">
               {r.ingredients.map((ing) => (
                 <tr key={ing.ingredientId} className="hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3 font-semibold">{ing.ingredientName}</td>
+                  <td className="px-4 py-3 font-semibold">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-lg overflow-hidden bg-muted shrink-0">
+                        <img
+                          src={getIngredientImage(ing.ingredientName)}
+                          alt={ing.ingredientName}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                        />
+                      </div>
+                      {ing.ingredientName}
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-right text-muted-foreground">{ing.quantity} {ing.unit}</td>
                   <td className="px-4 py-3 text-right text-muted-foreground">{ing.unitPriceSek.toFixed(2)} kr</td>
                   <td className="px-4 py-3 text-right font-semibold">{ing.lineCostSek.toFixed(2)} kr</td>

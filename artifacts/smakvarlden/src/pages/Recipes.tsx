@@ -3,13 +3,14 @@ import { Link } from "wouter";
 import { useListRecipes, useDeleteRecipe, useCreateRecipe, getListRecipesQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Plus, Trash2, ChefHat, Globe, Clock, Upload, Lock } from "lucide-react";
+import { Search, Plus, Trash2, ChefHat, Globe, Clock, Upload, Lock, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AddRecipeDialog } from "@/components/AddRecipeDialog";
 import { ImportDialog, type CsvRow } from "@/components/ImportDialog";
 import { useI18n, RECIPE_CATEGORIES, DIET_CATEGORIES, ALLERGY_CATEGORIES } from "@/lib/i18n";
-import { useAuth } from "@/lib/auth";
+import { apiFetch, useAuth } from "@/lib/auth";
 import { RecipeSheet } from "@/components/RecipeSheet";
+import { getRecipeImage } from "@/lib/foodImages";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -86,6 +87,7 @@ export default function Recipes() {
   const [showAdd, setShowAdd] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [sheetRecipeId, setSheetRecipeId] = useState<number | null>(null);
+  const [seedingDemo, setSeedingDemo] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -101,6 +103,26 @@ export default function Recipes() {
   });
   const createRecipe = useCreateRecipe();
   const { results: spoonResults, loading: spoonLoading } = useSpoonSearch(spoonQuery, tab === "world");
+
+  async function seedDemoData() {
+    setSeedingDemo(true);
+    try {
+      const result = await apiFetch("/demo/seed", { method: "POST" });
+      await queryClient.invalidateQueries({ queryKey: getListRecipesQueryKey() });
+      toast({
+        title: t("Demodata laddad"),
+        description: `${result.ingredientsCreated ?? 0} ${t("ingredienser")} · ${result.recipesCreated ?? 0} ${t("recept")}`,
+      });
+    } catch (error) {
+      toast({
+        title: t("Fel uppstod."),
+        description: error instanceof Error ? error.message : t("Något gick fel."),
+        variant: "destructive",
+      });
+    } finally {
+      setSeedingDemo(false);
+    }
+  }
 
   async function handleImport(rows: CsvRow[]) {
     for (const row of rows) {
@@ -233,7 +255,16 @@ export default function Recipes() {
                 <ChefHat className="w-8 h-8" style={{ color: "var(--sv-text-2)" }} />
               </div>
               <p className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>{t("Inga recept hittades")}</p>
-              <p className="text-[13px] mt-1" style={{ color: "var(--sv-text-2)" }}>{t("Lägg till ditt första recept ovan")}</p>
+              <p className="text-[13px] mt-1 mb-5 max-w-sm" style={{ color: "var(--sv-text-2)" }}>{t("Lägg till ditt första recept ovan")}</p>
+              <button
+                onClick={seedDemoData}
+                disabled={seedingDemo}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-semibold transition-all hover:opacity-90 disabled:opacity-60"
+                style={{ background: "var(--sv-brown)", color: "var(--sv-surface)", boxShadow: "0 4px 14px var(--sv-shadow)" }}
+              >
+                <Sparkles className="w-4 h-4" />
+                {seedingDemo ? t("Laddar demodata...") : t("Ladda svensk demodata")}
+              </button>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -245,7 +276,20 @@ export default function Recipes() {
                     className="group rounded-2xl overflow-hidden flex flex-col transition-all duration-200 hover:-translate-y-1 cursor-pointer"
                     style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}
                     onClick={() => setSheetRecipeId(recipe.id)}>
-                    <div className="h-2 shrink-0" style={{ background: catGrad }} />
+                    <div className="relative h-36 shrink-0 overflow-hidden" style={{ background: catGrad }}>
+                      <img
+                        src={getRecipeImage(recipe.name, recipe.category)}
+                        alt={recipe.name}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/5 to-transparent" />
+                      <span className="absolute bottom-3 left-3 text-[11px] font-semibold px-2.5 py-1 rounded-full text-white"
+                        style={{ background: "rgba(0,0,0,.35)", backdropFilter: "blur(8px)" }}>
+                        {t(recipe.category)}
+                      </span>
+                    </div>
                     <div className="p-5 flex flex-col gap-4 flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
@@ -291,7 +335,7 @@ export default function Recipes() {
                       <div className="flex items-center justify-between mt-auto pt-1">
                         <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
                           style={{ background: "var(--sv-muted)", color: "var(--sv-text-2)" }}>
-                          {t(recipe.category)}
+                          {recipe.servings} {t("portioner")}
                         </span>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button className="w-7 h-7 rounded-lg flex items-center justify-center"

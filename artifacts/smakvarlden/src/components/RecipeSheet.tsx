@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, Leaf, ExternalLink, Calculator } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { getRecipeImage } from "@/lib/foodImages";
 
 interface RecipeSheetProps {
   recipeId: number | null;
@@ -45,17 +46,24 @@ export function RecipeSheet({ recipeId, onClose }: RecipeSheetProps) {
         ) : (
           <>
             {/* Hero */}
-            <div className="px-6 py-5 shrink-0"
+            <div className="relative px-6 py-5 shrink-0 overflow-hidden"
               style={{ background: "linear-gradient(135deg,hsl(17 47% 13%),hsl(17 37% 20%))" }}>
-              <SheetHeader className="mb-0">
+              <img
+                src={getRecipeImage(r.name, r.category)}
+                alt={r.name}
+                className="absolute inset-0 h-full w-full object-cover opacity-35"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-black/75 via-black/45 to-black/70" />
+              <SheetHeader className="relative mb-0">
                 <SheetTitle className="font-serif text-xl font-bold text-white pr-6">{r.name}</SheetTitle>
               </SheetHeader>
               {r.description && (
-                <p className="text-[12px] mt-1 leading-relaxed" style={{ color: "rgba(250,248,244,.55)" }}>
+                <p className="relative text-[12px] mt-1 leading-relaxed" style={{ color: "rgba(250,248,244,.78)" }}>
                   {r.description}
                 </p>
               )}
-              <div className="grid grid-cols-3 gap-3 mt-4">
+              <div className="relative grid grid-cols-3 gap-3 mt-4">
                 {[
                   { label: t("Kostnad"),  value: `${r.totalCostSek.toFixed(0)} kr` },
                   { label: t("Pris"),     value: `${r.sellingPriceSek.toFixed(0)} kr` },

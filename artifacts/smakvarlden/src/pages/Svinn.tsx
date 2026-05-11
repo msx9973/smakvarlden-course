@@ -111,6 +111,8 @@ export default function Svinn() {
   const { t, lang } = useI18n();
   const [view, setView] = useState<"table" | "chart">("table");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedTip, setSelectedTip] = useState<SvinnSummary["tips"][number] | null>(null);
+  const [selectedBenchmark, setSelectedBenchmark] = useState<(typeof SV_BENCHMARKS)[number] | null>(null);
 
   const { data, isLoading } = useQuery<SvinnSummary>({
     queryKey: ["svinn-summary"],
@@ -327,21 +329,62 @@ export default function Svinn() {
             {isLoading
               ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)
               : tips.map((tip, i) => (
-                  <div key={i} className="p-3.5 rounded-xl transition-colors hover:bg-muted/30"
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setSelectedTip(tip)}
+                    className="w-full text-left p-3.5 rounded-xl transition-colors hover:bg-muted/30"
                     style={{ background: i % 2 === 0 ? "hsl(36 27% 97%)" : "#fff", border: "1px solid hsl(33 28% 91%)" }}>
                     <div className="flex items-start gap-3">
                       <span className="text-xl shrink-0">{tip.icon}</span>
                       <div>
                         <p className="text-[12px] font-bold mb-0.5" style={{ color: "hsl(17 47% 13%)" }}>{tip.title}</p>
                         <p className="text-[11px] leading-relaxed" style={{ color: "hsl(20 20% 55%)" }}>{tip.desc}</p>
+                        <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold" style={{ color: "hsl(44 54% 46%)" }}>
+                          {lang === "en" ? "Open details" : "Visa detaljer"} <ArrowRight className="w-3 h-3" />
+                        </span>
                       </div>
                     </div>
-                  </div>
+                  </button>
                 ))
             }
           </div>
         </div>
       </div>
+
+      {selectedTip && (
+        <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(44,24,16,.07)", border: "1px solid hsl(33 28% 91%)" }}>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <span className="text-3xl shrink-0">{selectedTip.icon}</span>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "hsl(44 54% 46%)" }}>
+                  {lang === "en" ? "Saving tip details" : "Detaljerat spartips"}
+                </p>
+                <h3 className="font-serif text-lg font-semibold mt-1" style={{ color: "hsl(17 47% 13%)" }}>{selectedTip.title}</h3>
+                <p className="text-[13px] leading-relaxed mt-2 max-w-3xl" style={{ color: "hsl(20 20% 55%)" }}>{selectedTip.desc}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setSelectedTip(null)}
+              className="px-3 py-1.5 rounded-lg text-[12px] font-semibold shrink-0"
+              style={{ background: "hsl(36 27% 94%)", color: "hsl(20 20% 45%)" }}>
+              {lang === "en" ? "Close" : "Stäng"}
+            </button>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3 mt-5">
+            {[
+              lang === "en" ? "Assign one owner for the routine during service prep." : "Ge rutinen en tydlig ansvarig under mise en place.",
+              lang === "en" ? "Track before/after waste for one week to prove the effect." : "Mät svinn före/efter i en vecka för att se effekten.",
+              lang === "en" ? "Start with the category that currently has the highest weekly waste cost." : "Börja med kategorin som har högst svinnkostnad per vecka.",
+            ].map((item) => (
+              <div key={item} className="rounded-xl p-4" style={{ background: "hsl(36 27% 97%)", border: "1px solid hsl(33 28% 91%)" }}>
+                <p className="text-[12px] leading-relaxed" style={{ color: "hsl(20 20% 55%)" }}>{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {selected && (
         <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(44,24,16,.07)" }}>
@@ -447,7 +490,11 @@ export default function Svinn() {
         </h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {benchmarks.map((b) => (
-            <div key={b.label} className="rounded-xl p-4"
+            <button
+              key={b.label}
+              type="button"
+              onClick={() => setSelectedBenchmark(b)}
+              className="rounded-xl p-4 text-left transition-all hover:-translate-y-0.5"
               style={{ background: "hsl(36 27% 97%)", border: "1px solid hsl(33 28% 91%)" }}>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-2xl">{b.icon}</span>
@@ -461,10 +508,60 @@ export default function Svinn() {
                   style={{ width: `${Math.min(b.your, 25) * 4}%`, background: RATE_COLOR(b.your) }} />
               </div>
               <p className="text-[11px]" style={{ color: "hsl(20 20% 60%)" }}>{b.tip}</p>
-            </div>
+              <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold" style={{ color: RATE_COLOR(b.your) }}>
+                {lang === "en" ? "Open details" : "Visa detaljer"} <ArrowRight className="w-3 h-3" />
+              </span>
+            </button>
           ))}
         </div>
       </div>
+
+      {selectedBenchmark && (
+        <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(44,24,16,.07)", border: "1px solid hsl(33 28% 91%)" }}>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <span className="text-3xl shrink-0">{selectedBenchmark.icon}</span>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "hsl(44 54% 46%)" }}>
+                  {lang === "en" ? "Industry benchmark details" : "Detaljerad branschjämförelse"}
+                </p>
+                <h3 className="font-serif text-lg font-semibold mt-1" style={{ color: "hsl(17 47% 13%)" }}>{selectedBenchmark.label}</h3>
+                <p className="text-[13px] leading-relaxed mt-2 max-w-3xl" style={{ color: "hsl(20 20% 55%)" }}>{selectedBenchmark.tip}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setSelectedBenchmark(null)}
+              className="px-3 py-1.5 rounded-lg text-[12px] font-semibold shrink-0"
+              style={{ background: "hsl(36 27% 94%)", color: "hsl(20 20% 45%)" }}>
+              {lang === "en" ? "Close" : "Stäng"}
+            </button>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3 mt-5">
+            <div className="rounded-xl p-4" style={{ background: RATE_BG(selectedBenchmark.your), border: "1px solid hsl(33 28% 91%)" }}>
+              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: RATE_COLOR(selectedBenchmark.your) }}>
+                {lang === "en" ? "Reference range" : "Branschintervall"}
+              </p>
+              <p className="font-serif text-xl font-bold mt-1" style={{ color: "hsl(17 47% 13%)" }}>{selectedBenchmark.rate}</p>
+            </div>
+            <div className="rounded-xl p-4" style={{ background: "hsl(36 27% 97%)", border: "1px solid hsl(33 28% 91%)" }}>
+              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "hsl(20 20% 55%)" }}>
+                {lang === "en" ? "Modeled value" : "Modellerat värde"}
+              </p>
+              <p className="font-serif text-xl font-bold mt-1" style={{ color: RATE_COLOR(selectedBenchmark.your) }}>{selectedBenchmark.your}%</p>
+            </div>
+            <div className="rounded-xl p-4" style={{ background: "hsl(36 27% 97%)", border: "1px solid hsl(33 28% 91%)" }}>
+              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "hsl(20 20% 55%)" }}>
+                {lang === "en" ? "Action" : "Åtgärd"}
+              </p>
+              <p className="text-[12px] leading-relaxed mt-1" style={{ color: "hsl(20 20% 55%)" }}>
+                {lang === "en"
+                  ? "Compare this reference against your selected category and prioritize the highest weekly waste cost."
+                  : "Jämför referensen med vald kategori och prioritera den högsta svinnkostnaden per vecka."}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { TrendingUp, TrendingDown, Minus, Leaf, Package, Building2 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { useI18n } from "@/lib/i18n";
+import { getIngredientImage } from "@/lib/foodImages";
 
 interface Ingredient {
   id: number;
@@ -80,9 +81,16 @@ export function IngredientSheet({ ingredient, onClose }: IngredientSheetProps) {
         {!ingredient ? null : (
           <>
             {/* Hero */}
-            <div className="px-6 py-5 shrink-0"
+            <div className="relative px-6 py-5 shrink-0 overflow-hidden"
               style={{ background: "linear-gradient(135deg,hsl(147 40% 13%),hsl(147 30% 20%))" }}>
-              <SheetHeader>
+              <img
+                src={getIngredientImage(ingredient.name, ingredient.category)}
+                alt={ingredient.name}
+                className="absolute inset-0 h-full w-full object-cover opacity-35"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/45 to-black/70" />
+              <SheetHeader className="relative">
                 <div className="flex items-center gap-3 mb-1">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center"
                     style={{ background: "rgba(22,163,74,.2)" }}>
@@ -91,7 +99,7 @@ export function IngredientSheet({ ingredient, onClose }: IngredientSheetProps) {
                   <SheetTitle className="font-serif text-xl font-bold text-white">{ingredient.name}</SheetTitle>
                 </div>
               </SheetHeader>
-              <div className="grid grid-cols-3 gap-3 mt-4">
+              <div className="relative grid grid-cols-3 gap-3 mt-4">
                 <div className="rounded-xl p-3 text-center" style={{ background: "rgba(255,255,255,.08)" }}>
                   <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "rgba(250,248,244,.5)" }}>
                     {t("Pris")}

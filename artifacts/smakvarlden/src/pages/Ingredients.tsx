@@ -5,13 +5,15 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Plus, Trash2, TrendingUp, TrendingDown, Minus, Leaf, Upload } from "lucide-react";
+import { Search, Plus, Trash2, TrendingUp, TrendingDown, Minus, Leaf, Upload, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AddIngredientDialog } from "@/components/AddIngredientDialog";
 import { ImportDialog, type CsvRow } from "@/components/ImportDialog";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useI18n, INGREDIENT_CATEGORIES } from "@/lib/i18n";
 import { IngredientSheet } from "@/components/IngredientSheet";
+import { apiFetch } from "@/lib/auth";
+import { getIngredientImage } from "@/lib/foodImages";
 
 const CHART_COLORS = ["hsl(44 50% 46%)", "#3b82f6", "#10b981", "#ef4444", "#8b5cf6"];
 
@@ -43,6 +45,7 @@ export default function Ingredients() {
   const [category, setCategory] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [seedingDemo, setSeedingDemo] = useState(false);
   const [selectedIngredient, setSelectedIngredient] = useState<{
     id: number; name: string; category: string; unit: string;
     currentPriceSek: number; priceChangePct: number; supplier?: string | null;
@@ -62,6 +65,29 @@ export default function Ingredients() {
     },
   });
   const createIngredient = useCreateIngredient();
+
+  async function seedDemoData() {
+    setSeedingDemo(true);
+    try {
+      const result = await apiFetch("/demo/seed", { method: "POST" });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: getListIngredientsQueryKey() }),
+        queryClient.invalidateQueries({ queryKey: getGetIngredientPriceTrendsQueryKey() }),
+      ]);
+      toast({
+        title: t("Demodata laddad"),
+        description: `${result.ingredientsCreated ?? 0} ${t("ingredienser")} · ${result.recipesCreated ?? 0} ${t("recept")}`,
+      });
+    } catch (error) {
+      toast({
+        title: t("Fel uppstod."),
+        description: error instanceof Error ? error.message : t("Något gick fel."),
+        variant: "destructive",
+      });
+    } finally {
+      setSeedingDemo(false);
+    }
+  }
 
   async function handleImport(rows: CsvRow[]) {
     for (const row of rows) {
@@ -196,8 +222,14 @@ export default function Ingredients() {
                   onClick={() => setSelectedIngredient(ing)}>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: "rgba(22,163,74,.12)" }}>
-                        <Leaf className="w-3.5 h-3.5" style={{ color: "#16a34a" }} />
+                      <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0" style={{ background: "rgba(22,163,74,.12)" }}>
+                        <img
+                          src={getIngredientImage(ing.name, ing.category)}
+                          alt={ing.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                        />
                       </div>
                       <span className="text-[13px] font-semibold" style={{ color: "var(--sv-text)" }}>{ing.name}</span>
                     </div>
@@ -227,6 +259,15 @@ export default function Ingredients() {
                   <td colSpan={6} className="px-5 py-16 text-center">
                     <Leaf className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--sv-text-2)" }} />
                     <p className="text-[13px]" style={{ color: "var(--sv-text-2)" }}>{t("Inga ingredienser hittades")}</p>
+                    <button
+                      onClick={seedDemoData}
+                      disabled={seedingDemo}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-semibold transition-all hover:opacity-90 disabled:opacity-60 mt-5"
+                      style={{ background: "var(--sv-brown)", color: "var(--sv-surface)", boxShadow: "0 4px 14px var(--sv-shadow)" }}
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      {seedingDemo ? t("Laddar demodata...") : t("Ladda svensk demodata")}
+                    </button>
                   </td>
                 </tr>
               )}
