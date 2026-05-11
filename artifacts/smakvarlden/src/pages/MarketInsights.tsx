@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -102,6 +103,8 @@ const EN_BENCHMARKS_LABELS: Record<string, { label: string; desc: string }> = {
 export default function MarketInsights() {
   const { data, isLoading } = useMarketOverview();
   const { t, lang } = useI18n();
+  const [selectedInsight, setSelectedInsight] = useState<Overview["insights"][number] | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Overview["categoryStats"][number] | null>(null);
   const dataNote = lang === "en"
     ? "Modeled demo analysis. Recipe and ingredient costs come from the database, while price indexes, benchmarks, seasonal guidance, and market news are curated/estimated reference values for presentation."
     : data?.dataNote;
@@ -210,7 +213,12 @@ export default function MarketInsights() {
             {isLoading
               ? Array.from({ length: 4 }).map((_, i) => <div key={i} className="px-5 py-4"><Skeleton className="h-14 rounded-lg" /></div>)
               : insights.map((item) => (
-                  <div key={item.title} className="px-5 py-4">
+                  <button
+                    key={item.title}
+                    type="button"
+                    onClick={() => setSelectedInsight(item)}
+                    className="w-full text-left px-5 py-4 transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.04]"
+                  >
                     <div className="flex items-center gap-2 mb-1.5">
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                         style={{ background: `${item.color}18`, color: item.color }}>
@@ -219,12 +227,48 @@ export default function MarketInsights() {
                       <span className="text-[13px] font-semibold" style={{ color: "var(--sv-text)" }}>{item.title}</span>
                     </div>
                     <p className="text-[12px] leading-relaxed" style={{ color: "var(--sv-text-2)" }}>{item.desc}</p>
-                  </div>
+                    <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold" style={{ color: item.color }}>
+                      {lang === "en" ? "Open details" : "Visa detaljer"} <ArrowRight className="w-3 h-3" />
+                    </span>
+                  </button>
                 ))
             }
           </div>
         </div>
       </div>
+
+      {selectedInsight && (
+        <div className="rounded-2xl p-5"
+          style={{ background: "var(--sv-surface)", border: `1px solid ${selectedInsight.color}33`, boxShadow: "0 2px 10px var(--sv-shadow)" }}>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                style={{ background: `${selectedInsight.color}18`, color: selectedInsight.color }}>
+                {selectedInsight.tag}
+              </span>
+              <h3 className="font-serif text-lg font-semibold mt-3" style={{ color: "var(--sv-text)" }}>{selectedInsight.title}</h3>
+              <p className="text-[13px] leading-relaxed mt-2 max-w-3xl" style={{ color: "var(--sv-text-2)" }}>{selectedInsight.desc}</p>
+            </div>
+            <button
+              onClick={() => setSelectedInsight(null)}
+              className="px-3 py-1.5 rounded-lg text-[12px] font-semibold shrink-0"
+              style={{ background: "var(--sv-muted)", color: "var(--sv-text-2)" }}>
+              {lang === "en" ? "Close" : "Stäng"}
+            </button>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3 mt-5">
+            {[
+              lang === "en" ? "Check affected menu items and compare their current margin." : "Kontrollera berörda rätter och jämför aktuell marginal.",
+              lang === "en" ? "Update supplier quotes before changing menu prices." : "Uppdatera leverantörspriser innan du ändrar menypriser.",
+              lang === "en" ? "Use this as a planning signal, not audited live market data." : "Använd detta som planeringssignal, inte reviderad live-marknadsdata.",
+            ].map((text) => (
+              <div key={text} className="rounded-xl p-4" style={{ background: "var(--sv-muted)", border: "1px solid var(--sv-border)" }}>
+                <p className="text-[12px] leading-relaxed" style={{ color: "var(--sv-text-2)" }}>{text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="rounded-2xl p-6" style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
@@ -390,8 +434,14 @@ export default function MarketInsights() {
                 const range = max - min;
                 const pct   = max > 0 ? (avg / max) * 100 : 50;
                 return (
-                  <tr key={cat.category} className="transition-colors hover:bg-black/[.02] dark:hover:bg-white/[.02]"
-                    style={{ borderTop: i === 0 ? "none" : `1px solid var(--sv-border)` }}>
+                  <tr
+                    key={cat.category}
+                    onClick={() => setSelectedCategory(cat)}
+                    className="transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.04] cursor-pointer"
+                    style={{
+                      borderTop: i === 0 ? "none" : `1px solid var(--sv-border)`,
+                      background: selectedCategory?.category === cat.category ? "rgba(201,168,76,.10)" : undefined,
+                    }}>
                     <td className="px-5 py-3.5">
                       <span className="text-[13px] font-semibold" style={{ color: "var(--sv-text)" }}>{t(cat.category)}</span>
                     </td>
@@ -419,6 +469,53 @@ export default function MarketInsights() {
           </table>
         )}
       </div>
+
+      {selectedCategory && (
+        <div className="rounded-2xl p-5"
+          style={{ background: "var(--sv-surface)", border: "1px solid var(--sv-border)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--sv-gold)" }}>
+                {lang === "en" ? "Price category details" : "Prisregister detaljer"}
+              </p>
+              <h3 className="font-serif text-lg font-semibold mt-1" style={{ color: "var(--sv-text)" }}>
+                {t(selectedCategory.category)}
+              </h3>
+              <p className="text-[12px] mt-1" style={{ color: "var(--sv-text-2)" }}>
+                {lang === "en"
+                  ? `${selectedCategory.count} tracked ingredients in this category. Use the spread to spot unusually expensive items.`
+                  : `${selectedCategory.count} spårade ingredienser i kategorin. Använd prisintervallet för att hitta ovanligt dyra råvaror.`}
+              </p>
+            </div>
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className="px-3 py-1.5 rounded-lg text-[12px] font-semibold shrink-0"
+              style={{ background: "var(--sv-muted)", color: "var(--sv-text-2)" }}>
+              {lang === "en" ? "Close" : "Stäng"}
+            </button>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-4 mt-5">
+            {[
+              { label: lang === "en" ? "Lowest" : "Lägst", value: `${Number(selectedCategory.minPrice).toFixed(0)} kr/kg`, color: "#16a34a" },
+              { label: lang === "en" ? "Average" : "Snitt", value: `${Number(selectedCategory.avgPrice).toFixed(0)} kr/kg`, color: "var(--sv-text)" },
+              { label: lang === "en" ? "Highest" : "Högst", value: `${Number(selectedCategory.maxPrice).toFixed(0)} kr/kg`, color: "#dc2626" },
+              { label: lang === "en" ? "Spread" : "Intervall", value: `${(Number(selectedCategory.maxPrice) - Number(selectedCategory.minPrice)).toFixed(0)} kr`, color: "#d97706" },
+            ].map((item) => (
+              <div key={item.label} className="rounded-xl p-4" style={{ background: "var(--sv-muted)", border: "1px solid var(--sv-border)" }}>
+                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--sv-text-2)" }}>{item.label}</p>
+                <p className="font-serif text-xl font-bold mt-1" style={{ color: item.color }}>{item.value}</p>
+              </div>
+            ))}
+          </div>
+          <div className="rounded-xl p-4 mt-3" style={{ background: "rgba(59,130,246,.08)", border: "1px solid rgba(59,130,246,.18)" }}>
+            <p className="text-[12px] leading-relaxed" style={{ color: "var(--sv-text-2)" }}>
+              {lang === "en"
+                ? "Next action: compare the highest-priced ingredients against supplier alternatives, then check whether recipes using them still meet your target margin."
+                : "Nästa steg: jämför de dyraste råvarorna mot alternativa leverantörer och kontrollera om recepten som använder dem fortfarande når målmargin."}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
