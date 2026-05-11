@@ -20490,27 +20490,27 @@ var require_router = __commonJS({
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
-    module.exports = Router14;
+    module.exports = Router15;
     module.exports.Route = Route;
-    function Router14(options) {
-      if (!(this instanceof Router14)) {
-        return new Router14(options);
+    function Router15(options) {
+      if (!(this instanceof Router15)) {
+        return new Router15(options);
       }
       const opts = options || {};
-      function router14(req, res, next) {
-        router14.handle(req, res, next);
+      function router15(req, res, next) {
+        router15.handle(req, res, next);
       }
-      Object.setPrototypeOf(router14, this);
-      router14.caseSensitive = opts.caseSensitive;
-      router14.mergeParams = opts.mergeParams;
-      router14.params = {};
-      router14.strict = opts.strict;
-      router14.stack = [];
-      return router14;
+      Object.setPrototypeOf(router15, this);
+      router15.caseSensitive = opts.caseSensitive;
+      router15.mergeParams = opts.mergeParams;
+      router15.params = {};
+      router15.strict = opts.strict;
+      router15.stack = [];
+      return router15;
     }
-    Router14.prototype = function() {
+    Router15.prototype = function() {
     };
-    Router14.prototype.param = function param(name, fn) {
+    Router15.prototype.param = function param(name, fn) {
       if (!name) {
         throw new TypeError("argument name is required");
       }
@@ -20530,7 +20530,7 @@ var require_router = __commonJS({
       params.push(fn);
       return this;
     };
-    Router14.prototype.handle = function handle(req, res, callback) {
+    Router15.prototype.handle = function handle(req, res, callback) {
       if (!callback) {
         throw new TypeError("argument callback is required");
       }
@@ -20657,7 +20657,7 @@ var require_router = __commonJS({
         }
       }
     };
-    Router14.prototype.use = function use(handler) {
+    Router15.prototype.use = function use(handler) {
       let offset = 0;
       let path3 = "/";
       if (typeof handler !== "function") {
@@ -20690,7 +20690,7 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router14.prototype.route = function route(path3) {
+    Router15.prototype.route = function route(path3) {
       const route2 = new Route(path3);
       const layer = new Layer(path3, {
         sensitive: this.caseSensitive,
@@ -20705,7 +20705,7 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router14.prototype[method] = function(path3) {
+      Router15.prototype[method] = function(path3) {
         const route = this.route(path3);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
@@ -20888,13 +20888,13 @@ var require_application = __commonJS({
     var compileTrust = require_utils3().compileTrust;
     var resolve = __require("node:path").resolve;
     var once = require_once();
-    var Router14 = require_router();
+    var Router15 = require_router();
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var app2 = exports = module.exports = {};
     var trustProxyDefaultSymbol = "@@symbol:trust_proxy_default";
     app2.init = function init() {
-      var router14 = null;
+      var router15 = null;
       this.cache = /* @__PURE__ */ Object.create(null);
       this.engines = /* @__PURE__ */ Object.create(null);
       this.settings = /* @__PURE__ */ Object.create(null);
@@ -20903,13 +20903,13 @@ var require_application = __commonJS({
         configurable: true,
         enumerable: true,
         get: function getrouter() {
-          if (router14 === null) {
-            router14 = new Router14({
+          if (router15 === null) {
+            router15 = new Router15({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
           }
-          return router14;
+          return router15;
         }
       });
     };
@@ -20980,15 +20980,15 @@ var require_application = __commonJS({
       if (fns.length === 0) {
         throw new TypeError("app.use() requires a middleware function");
       }
-      var router14 = this.router;
+      var router15 = this.router;
       fns.forEach(function(fn2) {
         if (!fn2 || !fn2.handle || !fn2.set) {
-          return router14.use(path3, fn2);
+          return router15.use(path3, fn2);
         }
         debug(".use app under %s", path3);
         fn2.mountpath = path3;
         fn2.parent = this;
-        router14.use(path3, function mounted_app(req, res, next) {
+        router15.use(path3, function mounted_app(req, res, next) {
           var orig = req.app;
           fn2.handle(req, res, function(err) {
             Object.setPrototypeOf(req, orig.request);
@@ -23561,7 +23561,7 @@ var require_express = __commonJS({
     var EventEmitter2 = __require("node:events").EventEmitter;
     var mixin = require_merge_descriptors();
     var proto = require_application();
-    var Router14 = require_router();
+    var Router15 = require_router();
     var req = require_request();
     var res = require_response();
     exports = module.exports = createApplication;
@@ -23583,8 +23583,8 @@ var require_express = __commonJS({
     exports.application = proto;
     exports.request = req;
     exports.response = res;
-    exports.Route = Router14.Route;
-    exports.Router = Router14;
+    exports.Route = Router15.Route;
+    exports.Router = Router15;
     exports.json = bodyParser.json;
     exports.raw = bodyParser.raw;
     exports.static = require_serve_static();
@@ -37340,7 +37340,7 @@ var require_jsonwebtoken = __commonJS({
 });
 
 // src/app.ts
-var import_express14 = __toESM(require_express2(), 1);
+var import_express15 = __toESM(require_express2(), 1);
 var import_cors = __toESM(require_lib3(), 1);
 var import_pino_http = __toESM(require_logger(), 1);
 import path2 from "path";
@@ -37348,7 +37348,7 @@ import { fileURLToPath } from "url";
 import fs from "fs";
 
 // src/routes/index.ts
-var import_express13 = __toESM(require_express2(), 1);
+var import_express14 = __toESM(require_express2(), 1);
 
 // src/routes/health.ts
 var import_express = __toESM(require_express2(), 1);
@@ -86044,21 +86044,204 @@ router12.get("/status", async (req, res) => {
 });
 var stripe_default = router12;
 
-// src/routes/index.ts
+// src/routes/demo.ts
+var import_express13 = __toESM(require_express2(), 1);
 var router13 = (0, import_express13.Router)();
-router13.use(health_default);
-router13.use(auth_default);
-router13.use(ai_default);
-router13.use(scb_default);
-router13.use("/recipes", recipes_default);
-router13.use("/ingredients", ingredients_default);
-router13.use("/dashboard", dashboard_default);
-router13.use("/community", community_default);
-router13.use("/svinn", svinn_default);
-router13.use("/market", market_default);
-router13.use("/spoonacular", spoonacular_default);
-router13.use("/stripe", stripe_default);
-var routes_default = router13;
+var demoIngredients = [
+  { name: "H\xF6grev", category: "K\xF6tt", unit: "kg", currentPriceSek: 159, supplier: "Martin & Servera" },
+  { name: "Kycklingl\xE5r", category: "K\xF6tt", unit: "kg", currentPriceSek: 74, supplier: "Svensk F\xE5gel" },
+  { name: "Torskrygg", category: "Fisk & skaldjur", unit: "kg", currentPriceSek: 219, supplier: "Fiskhallen Sorunda" },
+  { name: "R\xE4kor skalade", category: "Fisk & skaldjur", unit: "kg", currentPriceSek: 168, supplier: "Fiskhallen Sorunda" },
+  { name: "Sm\xF6r", category: "Mejeri", unit: "kg", currentPriceSek: 92, supplier: "Arla" },
+  { name: "Vispgr\xE4dde", category: "Mejeri", unit: "liter", currentPriceSek: 49, supplier: "Arla" },
+  { name: "Parmesan", category: "Mejeri", unit: "kg", currentPriceSek: 238, supplier: "Werners Gourmetservice" },
+  { name: "\xC4gg", category: "\xC4gg & mejeriprodukter", unit: "st", currentPriceSek: 3.8, supplier: "Kron\xE4gg" },
+  { name: "Potatis", category: "Gronsaker", unit: "kg", currentPriceSek: 18, supplier: "Gronsakshallen" },
+  { name: "Morot", category: "Gronsaker", unit: "kg", currentPriceSek: 16, supplier: "Gronsakshallen" },
+  { name: "Gul l\xF6k", category: "Gr\xF6nsaker", unit: "kg", currentPriceSek: 15, supplier: "Gr\xF6nsakshallen" },
+  { name: "Tomat", category: "Gr\xF6nsaker", unit: "kg", currentPriceSek: 42, supplier: "Gr\xF6nsakshallen" },
+  { name: "Blandad sallad", category: "Gr\xF6nsaker", unit: "kg", currentPriceSek: 86, supplier: "Gr\xF6nsakshallen" },
+  { name: "Champinjoner", category: "Svamp & vilt", unit: "kg", currentPriceSek: 64, supplier: "Gr\xF6nsakshallen" },
+  { name: "Lingon", category: "Frukt", unit: "kg", currentPriceSek: 78, supplier: "Polarica" },
+  { name: "Vetemj\xF6l", category: "Spannm\xE5l", unit: "kg", currentPriceSek: 14, supplier: "Kungs\xF6rnen" },
+  { name: "Pasta linguine", category: "Pasta & ris", unit: "kg", currentPriceSek: 38, supplier: "Martin & Servera" },
+  { name: "Arborioris", category: "Pasta & ris", unit: "kg", currentPriceSek: 56, supplier: "Werners Gourmetservice" },
+  { name: "Olivolja", category: "Oljor", unit: "liter", currentPriceSek: 116, supplier: "Werners Gourmetservice" },
+  { name: "Rapsolja", category: "Oljor", unit: "liter", currentPriceSek: 34, supplier: "Martin & Servera" },
+  { name: "Dill", category: "Kryddor", unit: "kg", currentPriceSek: 210, supplier: "Gronsakshallen" },
+  { name: "Timjan", category: "Kryddor", unit: "kg", currentPriceSek: 248, supplier: "Gronsakshallen" },
+  { name: "Citron", category: "Frukt", unit: "kg", currentPriceSek: 36, supplier: "Gronsakshallen" },
+  { name: "Vitt vin matlagning", category: "Drycker", unit: "liter", currentPriceSek: 68, supplier: "Martin & Servera" }
+];
+var demoRecipes = [
+  {
+    name: "Linguine med r\xE4kor och citron",
+    description: "Snabb bistror\xE4tt med r\xE4kor, citron, dill och en blank sm\xF6rs\xE5s.",
+    category: "Huvudr\xE4tter",
+    servings: 4,
+    sellingPriceSek: 189,
+    ingredients: [
+      ["Pasta linguine", 0.42, "kg"],
+      ["R\xE4kor skalade", 0.32, "kg"],
+      ["Sm\xF6r", 0.08, "kg"],
+      ["Citron", 0.12, "kg"],
+      ["Dill", 0.02, "kg"]
+    ]
+  },
+  {
+    name: "L\xE5ngbakad h\xF6grev med rotfrukter",
+    description: "Mustig svensk huvudr\xE4tt med h\xF6grev, potatis, morot och timjan.",
+    category: "Huvudr\xE4tter",
+    servings: 6,
+    sellingPriceSek: 225,
+    ingredients: [
+      ["H\xF6grev", 1.15, "kg"],
+      ["Potatis", 0.9, "kg"],
+      ["Morot", 0.45, "kg"],
+      ["Gul l\xF6k", 0.22, "kg"],
+      ["Timjan", 0.02, "kg"]
+    ]
+  },
+  {
+    name: "Torskrygg med brynt sm\xF6r",
+    description: "Torskrygg med potatis, dill, citron och brynt sm\xF6r.",
+    category: "Huvudr\xE4tter",
+    servings: 4,
+    sellingPriceSek: 245,
+    ingredients: [
+      ["Torskrygg", 0.72, "kg"],
+      ["Potatis", 0.75, "kg"],
+      ["Sm\xF6r", 0.12, "kg"],
+      ["Dill", 0.02, "kg"],
+      ["Citron", 0.1, "kg"]
+    ]
+  },
+  {
+    name: "Svamprisotto med parmesan",
+    description: "Kr\xE4mig risotto med champinjoner, vitt vin och parmesan.",
+    category: "Vegetariskt",
+    servings: 4,
+    sellingPriceSek: 175,
+    ingredients: [
+      ["Arborioris", 0.36, "kg"],
+      ["Champinjoner", 0.42, "kg"],
+      ["Parmesan", 0.09, "kg"],
+      ["Vitt vin matlagning", 0.18, "liter"],
+      ["Sm\xF6r", 0.06, "kg"]
+    ]
+  },
+  {
+    name: "Kycklingsallad med citronvin\xE4grett",
+    description: "Lunchr\xE4tt med kyckling, tomat, sallad och frisk vin\xE4grett.",
+    category: "Sallader",
+    servings: 4,
+    sellingPriceSek: 159,
+    ingredients: [
+      ["Kycklingl\xE5r", 0.55, "kg"],
+      ["Blandad sallad", 0.28, "kg"],
+      ["Tomat", 0.32, "kg"],
+      ["Olivolja", 0.08, "liter"],
+      ["Citron", 0.1, "kg"]
+    ]
+  },
+  {
+    name: "Pannkaka med lingon och gr\xE4dde",
+    description: "Klassisk dessert eller barnmeny med tydlig portionskostnad.",
+    category: "Desserter",
+    servings: 8,
+    sellingPriceSek: 95,
+    ingredients: [
+      ["Vetemj\xF6l", 0.32, "kg"],
+      ["\xC4gg", 6, "st"],
+      ["Sm\xF6r", 0.08, "kg"],
+      ["Lingon", 0.28, "kg"],
+      ["Vispgr\xE4dde", 0.35, "liter"]
+    ]
+  }
+];
+router13.post("/seed", async (_req, res) => {
+  const existingIngredients = await db.select({ name: ingredientsTable.name }).from(ingredientsTable);
+  const existingIngredientNames = new Set(existingIngredients.map((row) => row.name));
+  const ingredientsToInsert = demoIngredients.filter((ingredient) => !existingIngredientNames.has(ingredient.name));
+  const insertedIngredients = ingredientsToInsert.length ? await db.insert(ingredientsTable).values(
+    ingredientsToInsert.map((ingredient, index) => ({
+      ...ingredient,
+      currentPriceSek: String(ingredient.currentPriceSek),
+      priceChangePct: String([2.4, -1.8, 0.9, 4.6, -0.7, 1.2][index % 6])
+    }))
+  ).returning() : [];
+  const allIngredientNames = demoIngredients.map((ingredient) => ingredient.name);
+  const existingDemoIngredients = await db.select().from(ingredientsTable).where(inArray(ingredientsTable.name, allIngredientNames));
+  const ingredientRows = [...insertedIngredients, ...existingDemoIngredients];
+  const ingredientByName = new Map(ingredientRows.map((ingredient) => [ingredient.name, ingredient]));
+  const existingRecipes = await db.select({ name: recipesTable.name }).from(recipesTable);
+  const existingRecipeNames = new Set(existingRecipes.map((row) => row.name));
+  let createdRecipes = 0;
+  for (const recipe of demoRecipes) {
+    if (existingRecipeNames.has(recipe.name)) continue;
+    const totalCostSek = recipe.ingredients.reduce((sum, [name, quantity]) => {
+      const ingredient = ingredientByName.get(String(name));
+      return sum + (ingredient ? Number(ingredient.currentPriceSek) * Number(quantity) : 0);
+    }, 0);
+    const profitMarginPct = recipe.sellingPriceSek > 0 ? (recipe.sellingPriceSek - totalCostSek) / recipe.sellingPriceSek * 100 : 0;
+    const [insertedRecipe] = await db.insert(recipesTable).values({
+      name: recipe.name,
+      description: recipe.description,
+      category: recipe.category,
+      servings: recipe.servings,
+      totalCostSek: String(Math.round(totalCostSek * 100) / 100),
+      sellingPriceSek: String(recipe.sellingPriceSek),
+      profitMarginPct: String(Math.round(profitMarginPct * 100) / 100),
+      ingredientsJson: recipe.ingredients.map(([name, amount, unit]) => ({
+        name: String(name),
+        amount: Number(amount),
+        unit: String(unit)
+      }))
+    }).returning();
+    await db.insert(recipeIngredientsTable).values(
+      recipe.ingredients.flatMap(([name, quantity, unit]) => {
+        const ingredient = ingredientByName.get(String(name));
+        if (!ingredient) return [];
+        return [{
+          recipeId: insertedRecipe.id,
+          ingredientId: ingredient.id,
+          quantity: String(quantity),
+          unit: String(unit)
+        }];
+      })
+    );
+    createdRecipes += 1;
+  }
+  if (ingredientsToInsert.length || createdRecipes) {
+    await db.insert(activityLogTable).values({
+      type: "recipe_created",
+      title: "Demodata laddad",
+      subtitle: `${ingredientsToInsert.length} ingredienser \xB7 ${createdRecipes} recept`
+    });
+  }
+  return res.status(201).json({
+    ingredientsCreated: ingredientsToInsert.length,
+    recipesCreated: createdRecipes
+  });
+});
+var demo_default = router13;
+
+// src/routes/index.ts
+var router14 = (0, import_express14.Router)();
+router14.use(health_default);
+router14.use(auth_default);
+router14.use(ai_default);
+router14.use(scb_default);
+router14.use("/recipes", recipes_default);
+router14.use("/ingredients", ingredients_default);
+router14.use("/dashboard", dashboard_default);
+router14.use("/community", community_default);
+router14.use("/svinn", svinn_default);
+router14.use("/market", market_default);
+router14.use("/spoonacular", spoonacular_default);
+router14.use("/stripe", stripe_default);
+router14.use("/demo", demo_default);
+var routes_default = router14;
 
 // src/lib/logger.ts
 var import_pino = __toESM(require_pino(), 1);
@@ -86079,7 +86262,7 @@ var logger = (0, import_pino.default)({
 });
 
 // src/app.ts
-var app = (0, import_express14.default)();
+var app = (0, import_express15.default)();
 app.use(
   (0, import_pino_http.default)({
     logger,
@@ -86100,9 +86283,9 @@ app.use(
   })
 );
 app.use((0, import_cors.default)());
-app.use("/api/stripe/webhook", import_express14.default.raw({ type: "application/json" }));
-app.use(import_express14.default.json());
-app.use(import_express14.default.urlencoded({ extended: true }));
+app.use("/api/stripe/webhook", import_express15.default.raw({ type: "application/json" }));
+app.use(import_express15.default.json());
+app.use(import_express15.default.urlencoded({ extended: true }));
 app.use("/api", routes_default);
 var staticDir = process.env.STATIC_DIR ?? (() => {
   try {
@@ -86112,7 +86295,7 @@ var staticDir = process.env.STATIC_DIR ?? (() => {
   }
 })();
 if (fs.existsSync(staticDir)) {
-  app.use(import_express14.default.static(staticDir));
+  app.use(import_express15.default.static(staticDir));
   app.get("*", (_req, res) => {
     res.sendFile(path2.join(staticDir, "index.html"));
   });

@@ -11,6 +11,7 @@ import svinnRouter from "./svinn";
 import marketRouter from "./market";
 import spoonacularRouter from "./spoonacular";
 import stripeRouter from "./stripe";
+import demoRouter from "./demo";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use("/svinn", svinnRouter);
 router.use("/market", marketRouter);
 router.use("/spoonacular", spoonacularRouter);
 router.use("/stripe", stripeRouter);
+router.use("/demo", demoRouter);
 
 export default router;
