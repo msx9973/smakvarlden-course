@@ -67,7 +67,7 @@ export default function Admin() {
           <h2 className="font-semibold text-foreground">SCB Prissynkronisering</h2>
         </div>
         <p className="text-sm text-muted-foreground">
-          Hämtar aktuella livsmedelspriser från Statistics Sweden (SCB) KPI-databas och uppdaterar ingredienspriserna i systemet. SCB publicerar nya data månadsvis.
+          Hämtar årsförändringar från Statistics Sweden (SCB) KPI-databas och uppdaterar prisförändringsindikatorer. Dina faktiska leverantörspriser sparas på ingredienserna.
         </p>
 
         <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
@@ -102,7 +102,7 @@ export default function Admin() {
           className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60"
         >
           <RefreshCw className={`w-4 h-4 ${scbLoading ? "animate-spin" : ""}`} />
-          {scbLoading ? "Hämtar SCB-data…" : "Synkronisera SCB-priser"}
+          {scbLoading ? "Hämtar SCB-data…" : "Synkronisera SCB-trender"}
         </button>
       </div>
 

@@ -1,17 +1,20 @@
 import { useState, useRef, useEffect } from "react";
 import {
-  useGetTopPerformingRecipes, useGetIngredientCategoryBreakdown, useListIngredients,
+  useCreateRecipe, useGetTopPerformingRecipes, useGetIngredientCategoryBreakdown, useListIngredients,
   getGetTopPerformingRecipesQueryKey, getGetIngredientCategoryBreakdownQueryKey,
-  getListIngredientsQueryKey,
+  getListIngredientsQueryKey, getListRecipesQueryKey,
 } from "@workspace/api-client-react";
 import type { Ingredient } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, BarChart2, Trash2, ChefHat, Search, Calculator as CalcIcon, Lock } from "lucide-react";
+import { TrendingUp, BarChart2, Trash2, ChefHat, Search, Calculator as CalcIcon, Lock, Plus, Save } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { useI18n } from "@/lib/i18n";
+import { ALL_RECIPE_CATEGORIES, useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { Link } from "wouter";
 import { RecipeSheet } from "@/components/RecipeSheet";
+import { AddIngredientDialog } from "@/components/AddIngredientDialog";
+import { useToast } from "@/hooks/use-toast";
 
 const BAR_COLORS = ["hsl(44 50% 46%)","#3b82f6","#10b981","#8b5cf6","#ef4444","#06b6d4","#ec4899","#84cc16"];
 
@@ -37,15 +40,32 @@ interface CalcLine {
 
 function DishCalculator() {
   const { t } = useI18n();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
   const ingredients = useListIngredients({}, { query: { queryKey: getListIngredientsQueryKey() } });
 
   const [lines, setLines] = useState<CalcLine[]>([]);
+  const [recipeName, setRecipeName] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState(ALL_RECIPE_CATEGORIES[0] ?? "Huvudrätter");
   const [servings, setServings] = useState(4);
   const [sellingPrice, setSellingPrice] = useState<number | "">("");
   const [search, setSearch] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showAddIngredient, setShowAddIngredient] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const createRecipe = useCreateRecipe({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListRecipesQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetTopPerformingRecipesQueryKey({ limit: 10 }) });
+        toast({ title: t("Recept skapat!") });
+      },
+      onError: () => toast({ title: t("Fel uppstod."), description: t("Något gick fel."), variant: "destructive" }),
+    },
+  });
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -83,8 +103,10 @@ function DishCalculator() {
   const safeServings = servings > 0 ? servings : 1;
   const costPerServing = totalCost / safeServings;
   const sp = typeof sellingPrice === "number" ? sellingPrice : 0;
+  const totalSellingPrice = sp * safeServings;
   const margin = sp > 0 ? ((sp - costPerServing) / sp) * 100 : null;
   const profit = sp > 0 ? sp - costPerServing : null;
+  const canSaveRecipe = recipeName.trim().length > 0 && lines.length > 0 && sp > 0;
 
   const mColor = margin !== null ? marginColor(margin) : "var(--sv-text-2)";
   const mGrad = margin !== null ? marginGrad(margin) : "var(--sv-muted)";
@@ -96,6 +118,40 @@ function DishCalculator() {
         ? t("⚠ Godkänd marginal (45–60%)")
         : t("✗ För låg marginal (<45%)")
     : null;
+
+  const saveCalculatedRecipe = () => {
+    if (!canSaveRecipe) {
+      toast({
+        title: t("Kalkylen saknar uppgifter"),
+        description: t("Ange receptnamn, minst en ingrediens och försäljningspris."),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createRecipe.mutate({
+      data: {
+        name: recipeName.trim(),
+        description: description.trim() || undefined,
+        category,
+        servings: safeServings,
+        sellingPriceSek: totalSellingPrice,
+        ingredients: lines.map((line) => ({
+          ingredientId: line.ingredientId,
+          quantity: line.quantity,
+          unit: line.unit,
+        })),
+      },
+    }, {
+      onSuccess: () => {
+        setRecipeName("");
+        setDescription("");
+        setLines([]);
+        setSellingPrice("");
+        setSearch("");
+      },
+    });
+  };
 
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
@@ -111,31 +167,82 @@ function DishCalculator() {
 
       <div className="p-6 grid gap-6 lg:grid-cols-2">
         <div className="flex flex-col gap-4">
-          <div className="relative">
-            <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl"
-              style={{ background: "var(--sv-muted)", border: "1.5px solid var(--sv-border)" }}>
-              <Search className="w-4 h-4 shrink-0" style={{ color: "var(--sv-text-2)" }} />
+          <div className="grid gap-3">
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_180px]">
               <input
-                ref={searchRef}
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setDropdownOpen(true); }}
-                onFocus={() => setDropdownOpen(true)}
-                placeholder={t("Sök och lägg till ingrediens…")}
-                className="flex-1 text-[13px] outline-none bg-transparent"
-                style={{ color: "var(--sv-text)", fontFamily: "'DM Sans', sans-serif" }}
+                value={recipeName}
+                onChange={(e) => setRecipeName(e.target.value)}
+                placeholder={t("Receptnamn")}
+                className="px-3.5 py-2.5 rounded-xl text-[13px] outline-none"
+                style={{ background: "var(--sv-muted)", border: "1.5px solid var(--sv-border)", color: "var(--sv-text)", fontFamily: "'DM Sans', sans-serif" }}
               />
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="px-3.5 py-2.5 rounded-xl text-[13px] outline-none"
+                style={{ background: "var(--sv-muted)", border: "1.5px solid var(--sv-border)", color: "var(--sv-text)", fontFamily: "'DM Sans', sans-serif" }}
+              >
+                {ALL_RECIPE_CATEGORIES.map((c) => <option key={c} value={c}>{t(c)}</option>)}
+              </select>
             </div>
-            {dropdownOpen && filtered.length > 0 && (
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t("Beskrivning (valfritt)")}
+              rows={2}
+              className="px-3.5 py-2.5 rounded-xl text-[13px] outline-none resize-none"
+              style={{ background: "var(--sv-muted)", border: "1.5px solid var(--sv-border)", color: "var(--sv-text)", fontFamily: "'DM Sans', sans-serif" }}
+            />
+          </div>
+
+          <div className="relative">
+            <div className="flex gap-2">
+              <div className="flex flex-1 items-center gap-2 px-3.5 py-2.5 rounded-xl"
+                style={{ background: "var(--sv-muted)", border: "1.5px solid var(--sv-border)" }}>
+                <Search className="w-4 h-4 shrink-0" style={{ color: "var(--sv-text-2)" }} />
+                <input
+                  ref={searchRef}
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); setDropdownOpen(true); }}
+                  onFocus={() => setDropdownOpen(true)}
+                  placeholder={t("Sök och lägg till ingrediens…")}
+                  className="flex-1 text-[13px] outline-none bg-transparent"
+                  style={{ color: "var(--sv-text)", fontFamily: "'DM Sans', sans-serif" }}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddIngredient(true)}
+                className="w-11 h-11 rounded-xl flex items-center justify-center transition-all hover:opacity-90"
+                title={t("Ny ingrediens")}
+                style={{ background: "var(--sv-brown)", color: "var(--sv-surface)" }}
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+            {dropdownOpen && search.trim().length > 0 && (filtered.length > 0 || !ingredients.isLoading) && (
               <div ref={dropdownRef}
                 className="absolute z-20 top-full mt-1 w-full rounded-xl overflow-hidden"
                 style={{ background: "var(--sv-surface)", border: "1px solid var(--sv-border)", boxShadow: "0 8px 24px var(--sv-shadow)" }}>
-                {filtered.map((ing) => (
-                  <button key={ing.id} onMouseDown={() => addIngredient(ing)}
-                    className="w-full flex items-center justify-between px-4 py-2.5 text-left transition-colors hover:bg-black/[.04] dark:hover:bg-white/[.04]">
-                    <span className="text-[13px] font-medium" style={{ color: "var(--sv-text)" }}>{ing.name}</span>
-                    <span className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>{ing.currentPriceSek.toFixed(2)} kr/{ing.unit}</span>
+                {filtered.length > 0 ? filtered.map((ing) => (
+                  <button key={ing.id} type="button" onMouseDown={() => addIngredient(ing)}
+                    className="w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors hover:bg-black/[.04] dark:hover:bg-white/[.04]">
+                    <span className="text-[13px] font-medium truncate" style={{ color: "var(--sv-text)" }}>{ing.name}</span>
+                    <span className="text-[11px] shrink-0" style={{ color: "var(--sv-text-2)" }}>{ing.currentPriceSek.toFixed(2)} kr/{ing.unit}</span>
                   </button>
-                ))}
+                )) : (
+                  <div className="p-4 flex items-center justify-between gap-3">
+                    <span className="text-[12px]" style={{ color: "var(--sv-text-2)" }}>{t("Ingen ingrediens hittades")}</span>
+                    <button
+                      type="button"
+                      onMouseDown={(e) => { e.preventDefault(); setShowAddIngredient(true); setDropdownOpen(false); }}
+                      className="px-3 py-2 rounded-lg text-[12px] font-semibold"
+                      style={{ background: "var(--sv-brown)", color: "var(--sv-surface)" }}
+                    >
+                      {t("Skapa ny ingrediens")}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -231,6 +338,7 @@ function DishCalculator() {
               { label: t("Total råvarukostnad"), value: `${totalCost.toFixed(2)} kr`, muted: true },
               { label: t("Kostnad per portion"),  value: `${costPerServing.toFixed(2)} kr`, muted: true },
               { label: t("Försäljningspris (kr)"), value: sp > 0 ? `${sp.toFixed(2)} kr` : "—", muted: false },
+              { label: t("Totalt försäljningsvärde"), value: sp > 0 ? `${totalSellingPrice.toFixed(2)} kr` : "—", muted: true },
             ].map((row) => (
               <div key={row.label} className="flex justify-between items-center">
                 <span className="text-[12px]" style={{ color: "var(--sv-text-2)" }}>{row.label}</span>
@@ -260,6 +368,16 @@ function DishCalculator() {
                 </>
               )}
             </div>
+            <button
+              type="button"
+              onClick={saveCalculatedRecipe}
+              disabled={!canSaveRecipe || createRecipe.isPending}
+              className="w-full mt-1 px-4 py-3 rounded-xl flex items-center justify-center gap-2 text-[13px] font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ background: "var(--sv-brown)", color: "var(--sv-surface)" }}
+            >
+              <Save className="w-4 h-4" />
+              {createRecipe.isPending ? t("Sparar...") : t("Spara som recept")}
+            </button>
           </div>
 
           {lines.length === 0 && (
@@ -269,6 +387,7 @@ function DishCalculator() {
           )}
         </div>
       </div>
+      <AddIngredientDialog open={showAddIngredient} onClose={() => setShowAddIngredient(false)} />
     </div>
   );
 }

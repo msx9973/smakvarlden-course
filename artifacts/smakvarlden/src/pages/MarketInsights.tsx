@@ -106,7 +106,7 @@ export default function MarketInsights() {
   const [selectedInsight, setSelectedInsight] = useState<Overview["insights"][number] | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Overview["categoryStats"][number] | null>(null);
   const dataNote = lang === "en"
-    ? "Modeled demo analysis. Recipe and ingredient costs come from the database, while price indexes, benchmarks, seasonal guidance, and market news are curated/estimated reference values for presentation."
+    ? "Recipe and ingredient costs come from the database. Price indexes are fetched from Statistics Sweden (SCB) when available. Industry targets and seasonal guidance are planning references."
     : data?.dataNote;
 
   const insights      = lang === "en" ? EN_INSIGHTS      : (data?.insights ?? []);

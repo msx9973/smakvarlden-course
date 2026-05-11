@@ -69,8 +69,8 @@ const SV_FAQ_SECTIONS: FaqSection[] = [
     title: "Ingredienser & priser",
     color: "#0891b2",
     items: [
-      { q: "Var kommer prisdata ifrån?", a: "Prisdata hämtas från SCB (Statistikmyndigheten) via deras öppna API för livsmedelspriser. Data kompletteras med simulerade grossistpriser för de kategorier SCB inte täcker." },
-      { q: "Hur ofta uppdateras priserna?", a: "SCB publicerar prisdata varje måndag, onsdag och fredag. Admin kan dessutom trigga en manuell synkronisering via Admin-panelen." },
+      { q: "Var kommer prisdata ifrån?", a: "Dina råvarupriser kommer från de ingredienser du lägger in i databasen. SCB används som prisindex och årsförändring per livsmedelskategori, inte som exakt grossistpris för en specifik leverantör." },
+      { q: "Hur ofta uppdateras priserna?", a: "SCB:s KPI-data publiceras månadsvis. Admin kan trigga en manuell SCB-synkronisering via Admin-panelen för att uppdatera prisförändringsindikatorer." },
       { q: "Vad betyder prisvarningar på dashboarden?", a: "En prisvarning visas när en ingrediens pris förändrats med mer än 5% sedan senaste uppdateringen. Dashboard visar antal aktiva prisvarningar — gå till Ingredienser-fliken och sortera på 'Förändring' för att se vilka råvaror som stigit mest." },
       { q: "Vilka råvaror brukar variera mest i pris?", a: "Fisk och skaldjur (+/- 15–25% säsongsvis), färska örter (+/- 20% beroende på väder), kött (+/- 10% beroende på tillgång). Håll extra koll på dessa kategorier inför menybyte." },
       { q: "Kan jag lägga till egna leverantörspriser?", a: "Ja! Gå till Ingredienser och klicka '+ Ny ingrediens'. Ange ditt eget avtalspris från din leverantör — det används sedan i alla dina receptkalkyler." },
@@ -176,8 +176,8 @@ const EN_FAQ_SECTIONS: FaqSection[] = [
     title: "Ingredients & prices",
     color: "#0891b2",
     items: [
-      { q: "Where does price data come from?", a: "Price data is fetched from SCB (Statistics Sweden) via their open API for food prices. Data is supplemented with simulated wholesale prices for categories not covered by SCB." },
-      { q: "How often are prices updated?", a: "SCB publishes price data every Monday, Wednesday and Friday. Admin can also trigger a manual synchronisation via the Admin panel." },
+      { q: "Where does price data come from?", a: "Your raw material prices come from the ingredients saved in the database. SCB is used as a price index and annual-change source per food category, not as an exact supplier wholesale price." },
+      { q: "How often are prices updated?", a: "SCB CPI data is published monthly. Admin can trigger a manual SCB sync from the Admin panel to update price-change indicators." },
       { q: "What do price alerts on the dashboard mean?", a: "A price alert appears when an ingredient's price has changed by more than 5% since the last update. Dashboard shows the number of active price alerts — go to the Ingredients tab and sort by 'Change' to see which raw materials have risen most." },
       { q: "Which raw materials tend to vary most in price?", a: "Fish and seafood (+/- 15–25% seasonally), fresh herbs (+/- 20% depending on weather), meat (+/- 10% depending on supply). Pay extra attention to these categories before menu changes." },
       { q: "Can I add my own supplier prices?", a: "Yes! Go to Ingredients and click '+ New ingredient'. Enter your own contract price from your supplier — this is then used in all your recipe calculations." },

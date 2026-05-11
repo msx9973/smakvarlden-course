@@ -191,7 +191,7 @@ router.post("/seed", async (_req, res) => {
   if (ingredientsToInsert.length || createdRecipes) {
     await db.insert(activityLogTable).values({
       type: "recipe_created",
-      title: "Demodata laddad",
+      title: "Startdata laddad",
       subtitle: `${ingredientsToInsert.length} ingredienser · ${createdRecipes} recept`,
     });
   }

@@ -27,6 +27,7 @@ router.use("/svinn", svinnRouter);
 router.use("/market", marketRouter);
 router.use("/spoonacular", spoonacularRouter);
 router.use("/stripe", stripeRouter);
+router.use("/starter", demoRouter);
 router.use("/demo", demoRouter);
 
 export default router;

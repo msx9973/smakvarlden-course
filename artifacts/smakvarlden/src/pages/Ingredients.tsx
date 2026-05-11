@@ -45,7 +45,7 @@ export default function Ingredients() {
   const [category, setCategory] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [showImport, setShowImport] = useState(false);
-  const [seedingDemo, setSeedingDemo] = useState(false);
+  const [seedingStarter, setSeedingStarter] = useState(false);
   const [selectedIngredient, setSelectedIngredient] = useState<{
     id: number; name: string; category: string; unit: string;
     currentPriceSek: number; priceChangePct: number; supplier?: string | null;
@@ -66,16 +66,16 @@ export default function Ingredients() {
   });
   const createIngredient = useCreateIngredient();
 
-  async function seedDemoData() {
-    setSeedingDemo(true);
+  async function seedStarterData() {
+    setSeedingStarter(true);
     try {
-      const result = await apiFetch("/demo/seed", { method: "POST" });
+      const result = await apiFetch("/starter/seed", { method: "POST" });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: getListIngredientsQueryKey() }),
         queryClient.invalidateQueries({ queryKey: getGetIngredientPriceTrendsQueryKey() }),
       ]);
       toast({
-        title: t("Demodata laddad"),
+        title: t("Startdata laddad"),
         description: `${result.ingredientsCreated ?? 0} ${t("ingredienser")} · ${result.recipesCreated ?? 0} ${t("recept")}`,
       });
     } catch (error) {
@@ -85,7 +85,7 @@ export default function Ingredients() {
         variant: "destructive",
       });
     } finally {
-      setSeedingDemo(false);
+      setSeedingStarter(false);
     }
   }
 
@@ -260,13 +260,13 @@ export default function Ingredients() {
                     <Leaf className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--sv-text-2)" }} />
                     <p className="text-[13px]" style={{ color: "var(--sv-text-2)" }}>{t("Inga ingredienser hittades")}</p>
                     <button
-                      onClick={seedDemoData}
-                      disabled={seedingDemo}
+                      onClick={seedStarterData}
+                      disabled={seedingStarter}
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-semibold transition-all hover:opacity-90 disabled:opacity-60 mt-5"
                       style={{ background: "var(--sv-brown)", color: "var(--sv-surface)", boxShadow: "0 4px 14px var(--sv-shadow)" }}
                     >
                       <Sparkles className="w-4 h-4" />
-                      {seedingDemo ? t("Laddar demodata...") : t("Ladda svensk demodata")}
+                      {seedingStarter ? t("Laddar startdata...") : t("Ladda svensk startdata")}
                     </button>
                   </td>
                 </tr>
