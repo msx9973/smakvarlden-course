@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import {
-  Trash2, TrendingDown, AlertTriangle, Leaf, Lightbulb, BarChart2, Calendar, DollarSign,
+  Trash2, TrendingDown, AlertTriangle, Leaf, Lightbulb, BarChart2, Calendar, DollarSign, Info,
 } from "lucide-react";
 import {
   RadialBarChart, RadialBar, ResponsiveContainer, Cell, BarChart, Bar,
@@ -22,6 +22,8 @@ interface CategorySvinn {
   estimatedWeeklyWasteSek: number;
 }
 interface SvinnSummary {
+  dataNote: string;
+  assumptions: { avgDailyPortions: number; monthlyWeeks: number; method: string };
   totalWasteCostSek: number;
   weeklyWasteSek: number;
   monthlyWasteSek: number;
@@ -110,6 +112,11 @@ export default function Svinn() {
 
   const tips = lang === "en" ? EN_TIPS : (data?.tips ?? []);
   const benchmarks = lang === "en" ? EN_BENCHMARKS : SV_BENCHMARKS;
+  const dataNote = data
+    ? lang === "en"
+      ? `Estimated waste analysis. Costs are based on your ingredient categories, standard industry reference rates, and the assumption of ${data.assumptions.avgDailyPortions} portions per day.`
+      : data.dataNote
+    : "";
 
   return (
     <div className="flex flex-col gap-7 max-w-6xl">
@@ -157,8 +164,8 @@ export default function Svinn() {
               </p>
               <p className="text-red-200 text-[13px] mt-1">
                 {lang === "en"
-                  ? `Based on ${data.categorySvinn.length} ingredient categories · Industry average waste rate ${data.avgWasteRatePct}%`
-                  : `Baserat på ${data.categorySvinn.length} ingredientskategorier · Branschsnittlig svinnfrekvens ${data.avgWasteRatePct}%`
+                  ? `Estimate based on ${data.categorySvinn.length} ingredient categories · Modeled average waste rate ${data.avgWasteRatePct}%`
+                  : `Estimat baserat på ${data.categorySvinn.length} ingredientskategorier · Modellerad snittfrekvens ${data.avgWasteRatePct}%`
                 }
               </p>
             </div>
@@ -171,13 +178,21 @@ export default function Svinn() {
         </div>
       )}
 
+      {!isLoading && dataNote && (
+        <div className="rounded-2xl px-5 py-3 flex items-start gap-3 bg-white"
+          style={{ border: "1px solid hsl(33 28% 89%)", boxShadow: "0 2px 10px rgba(44,24,16,.05)" }}>
+          <Info className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "#d97706" }} />
+          <p className="text-[12px] leading-relaxed" style={{ color: "hsl(20 20% 55%)" }}>{dataNote}</p>
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {isLoading ? (
           Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)
         ) : data ? (
           <>
             <StatBox label={t("Svinn per vecka")} value={`${data.weeklyWasteSek.toFixed(0)} kr`}
-              sub={t("Baserat på 40 portioner/dag")}
+              sub={lang === "en" ? `Estimate based on ${data.assumptions.avgDailyPortions} portions/day` : `Estimat baserat på ${data.assumptions.avgDailyPortions} portioner/dag`}
               icon={Calendar} color="#f59e0b" bg="rgba(245,158,11,.1)" />
             <StatBox label={t("Svinn per månad")} value={`${data.monthlyWasteSek.toFixed(0)} kr`}
               sub={t("4.33 veckor per månad")}

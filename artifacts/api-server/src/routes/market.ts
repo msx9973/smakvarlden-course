@@ -94,6 +94,7 @@ router.get("/overview", async (_req, res) => {
   ];
 
   res.json({
+    dataNote: "Modellerad demoanalys. Recept- och råvarukostnader hämtas från databasen, men prisindex, branschbenchmarks, säsongsguide och marknadsnyheter är kuraterade/estimerade referensvärden för presentation.",
     priceIndex:    buildPriceIndex(),
     categoryStats,
     benchmarks,

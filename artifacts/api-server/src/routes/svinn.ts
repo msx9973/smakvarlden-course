@@ -80,6 +80,12 @@ router.get("/summary", async (_req, res) => {
   const yearlyWasteSek = monthlyWasteSek * 12;
 
   return res.json({
+    dataNote: "Estimerad svinnanalys. Kostnader baseras på dina ingredienskategorier, schabloniserade branschvärden och antagandet 40 portioner per dag.",
+    assumptions: {
+      avgDailyPortions,
+      monthlyWeeks: 4.33,
+      method: "category-rate-estimate",
+    },
     totalWasteCostSek: Math.round(totalWasteCostSek * 100) / 100,
     weeklyWasteSek: Math.round(weeklyWasteSek * 100) / 100,
     monthlyWasteSek: Math.round(monthlyWasteSek * 100) / 100,
