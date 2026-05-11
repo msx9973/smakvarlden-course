@@ -68437,79 +68437,70 @@ var ai_default = router7;
 // src/routes/scb.ts
 var import_express8 = __toESM(require_express2(), 1);
 var router8 = (0, import_express8.Router)();
-var SCB_FOOD_CATEGORIES = {
-  "0111": ["N\xF6tfil\xE9", "N\xF6tf\xE4rs", "Lammskuldra", "Fl\xE4skbuk"],
-  "0112": ["Kycklingfil\xE9", "Kycklingl\xE5r"],
-  "0113": ["Laxfil\xE9", "Torskfil\xE9", "R\xE4kor"],
-  "0114": ["Mj\xF6lk", "Vispgr\xE4dde", "Sm\xF6r", "Parmesan", "Mozzarella"],
-  "0115": ["\xC4gg"],
-  "0116": ["Olivolja", "Majsst\xE4rkelse", "Mj\xF6l", "Ris", "Pasta", "Socker"],
-  "0117": ["Tomat", "Potatis", "L\xF6k", "Morot", "Svamp", "Broccoli", "Spenat", "Vitl\xF6k", "Paprika"],
-  "0118": ["\xC4pple", "Citron", "Lime", "Banan", "Mango"],
-  "0119": ["Socker", "Svartpeppar", "Salt", "Spiskummin", "Basilika", "Dill", "Persilja"]
+var SCB_KPI_URL = "https://api.scb.se/OV0104/v1/doris/sv/ssd/START/PR/PR0101/PR0101A/KPI2020COICOPM";
+var SCB_INGREDIENT_GROUPS = {
+  "01.1.2": ["h\xF6grev", "n\xF6t", "kyckling", "k\xF6tt", "fl\xE4sk"],
+  "01.1.3": ["torsk", "lax", "r\xE4kor", "fisk", "skaldjur"],
+  "01.1.4": ["mj\xF6lk", "gr\xE4dde", "sm\xF6r", "parmesan", "ost", "yoghurt"],
+  "01.1.4.8": ["\xE4gg"],
+  "01.1.6": ["\xE4pple", "citron", "lime", "banan", "lingon", "frukt"],
+  "01.1.7": ["tomat", "potatis", "l\xF6k", "morot", "sallad", "gr\xF6nsak"],
+  "01.1.9.3": ["salt", "peppar", "dill", "timjan", "s\xE5s"]
 };
-var BASE_YEAR_INDEX = 100;
-async function syncSCBPrices() {
-  const url2 = "https://api.scb.se/OV0104/v1/doris/sv/ssd/START/PR/PR0101/PR0101A/KPIAktMan";
+async function fetchLatestScbAnnualChanges() {
   const query = {
     query: [
       {
-        code: "Varugrupp",
-        selection: {
-          filter: "item",
-          values: ["0111", "0112", "0113", "0114", "0115", "0116", "0117", "0118", "0119"]
-        }
+        code: "VaruTjanstegrupp",
+        selection: { filter: "item", values: Object.keys(SCB_INGREDIENT_GROUPS) }
+      },
+      {
+        code: "ContentsCode",
+        selection: { filter: "item", values: ["00000805"] }
       },
       {
         code: "Tid",
-        selection: { filter: "top", values: ["2"] }
+        selection: { filter: "top", values: ["1"] }
       }
     ],
     response: { format: "json" }
   };
-  const res = await fetch(url2, {
+  const response = await fetch(SCB_KPI_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(query)
   });
-  if (!res.ok) {
-    throw new Error(`SCB API returned ${res.status}`);
+  if (!response.ok) throw new Error(`SCB API returned ${response.status}`);
+  const payload = await response.json();
+  const changes = {};
+  let lastUpdated = "";
+  for (const row of payload.data ?? []) {
+    const [categoryCode, month] = row.key;
+    const value = Number(row.values[0]);
+    if (Number.isFinite(value)) changes[categoryCode] = Math.round(value * 100) / 100;
+    lastUpdated = month;
   }
-  const data = await res.json();
-  if (!data.data?.length) {
-    return { updated: 0, message: "SCB returnerade inga data." };
-  }
-  const latestIndex = {};
-  data.data.forEach((row) => {
-    const cat = row.key[0];
-    const val = parseFloat(row.values[0]);
-    if (!isNaN(val)) latestIndex[cat] = val;
-  });
-  const allIngredients = await db.select().from(ingredientsTable);
+  return { changes, lastUpdated };
+}
+async function syncSCBPrices() {
+  const { changes, lastUpdated } = await fetchLatestScbAnnualChanges();
   let updated = 0;
-  for (const ingredient of allIngredients) {
-    let catKey;
-    for (const [key, names] of Object.entries(SCB_FOOD_CATEGORIES)) {
-      if (names.includes(ingredient.name)) {
-        catKey = key;
-        break;
-      }
-    }
-    if (!catKey) continue;
-    const idx = latestIndex[catKey] ?? BASE_YEAR_INDEX;
-    const multiplier = idx / BASE_YEAR_INDEX;
-    const oldPrice = parseFloat(String(ingredient.currentPriceSek));
-    const newPrice = +(oldPrice * multiplier).toFixed(2);
-    const changePct = oldPrice > 0 ? +((newPrice - oldPrice) / oldPrice * 100).toFixed(2) : 0;
-    await db.update(ingredientsTable).set({
-      currentPriceSek: String(newPrice),
-      priceChangePct: String(changePct),
+  for (const [categoryCode, names] of Object.entries(SCB_INGREDIENT_GROUPS)) {
+    const annualChange = changes[categoryCode];
+    if (!Number.isFinite(annualChange)) continue;
+    const conditions = names.map((name) => ilike(ingredientsTable.name, `%${name}%`));
+    if (!conditions.length) continue;
+    const rows = await db.update(ingredientsTable).set({
+      priceChangePct: String(annualChange),
       updatedAt: /* @__PURE__ */ new Date()
-    }).where(eq(ingredientsTable.id, ingredient.id));
-    updated++;
+    }).where(or(...conditions)).returning({ id: ingredientsTable.id });
+    updated += rows.length;
   }
-  const lastUpdated = (/* @__PURE__ */ new Date()).toLocaleDateString("sv-SE");
-  return { updated, message: `${updated} ingredienspriser uppdaterade fr\xE5n SCB KPI.`, lastUpdated };
+  return {
+    updated,
+    message: `${updated} ingrediensers pris\xE4ndring uppdaterades fr\xE5n SCB KPI \xE5rsf\xF6r\xE4ndring.`,
+    lastUpdated
+  };
 }
 router8.post("/ingredients/sync-scb", async (_req, res) => {
   const result = await syncSCBPrices();
@@ -68627,15 +68618,75 @@ var svinn_default = router9;
 // src/routes/market.ts
 var import_express10 = __toESM(require_express2(), 1);
 var router10 = (0, import_express10.Router)();
-function buildPriceIndex() {
-  const labels = ["Jun '25", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec", "Jan '26", "Feb", "Mar", "Apr", "Maj"];
-  return labels.map((month, i) => ({
-    month,
-    livsmedel: parseFloat((100 + i * 0.33 + Math.sin(i * 0.8) * 0.6).toFixed(2)),
-    restaurang: parseFloat((100 + i * 0.42 + Math.sin(i * 0.5) * 0.4).toFixed(2)),
-    kott: parseFloat((100 + i * 0.5 + Math.sin(i * 1.1) * 1.2).toFixed(2)),
-    fisk: parseFloat((100 + i * 0.6 + Math.sin(i * 0.9) * 2.1).toFixed(2))
-  }));
+var SCB_KPI_URL2 = "https://api.scb.se/OV0104/v1/doris/sv/ssd/START/PR/PR0101/PR0101A/KPI2020COICOPM";
+var SCB_SERIES = {
+  livsmedel: "01",
+  restaurang: "11.1",
+  kott: "01.1.2",
+  fisk: "01.1.3"
+};
+function formatScbMonth(value) {
+  const [year, month] = value.split("M");
+  const date6 = new Date(Number(year), Number(month) - 1, 1);
+  return date6.toLocaleDateString("sv-SE", { month: "short", year: month === "01" ? "2-digit" : void 0 });
+}
+async function fetchScbMarketData() {
+  const query = {
+    query: [
+      {
+        code: "VaruTjanstegrupp",
+        selection: { filter: "item", values: Object.values(SCB_SERIES) }
+      },
+      {
+        code: "ContentsCode",
+        selection: { filter: "item", values: ["0000080H", "00000805"] }
+      },
+      {
+        code: "Tid",
+        selection: { filter: "top", values: ["12"] }
+      }
+    ],
+    response: { format: "json" }
+  };
+  const response = await fetch(SCB_KPI_URL2, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(query)
+  });
+  if (!response.ok) return null;
+  const payload = await response.json();
+  if (!payload.data?.length) return null;
+  const byMonth = /* @__PURE__ */ new Map();
+  const yearlyChange = {};
+  for (const row of payload.data) {
+    const [seriesCode, month] = row.key;
+    const seriesKey = Object.entries(SCB_SERIES).find(([, code]) => code === seriesCode)?.[0] ?? "";
+    if (!seriesKey) continue;
+    const index = Number(row.values[0]);
+    const annualChange = Number(row.values[1]);
+    if (!Number.isFinite(index)) continue;
+    byMonth.set(month, { ...byMonth.get(month) ?? {}, [seriesKey]: Math.round(index * 100) / 100 });
+    if (Number.isFinite(annualChange)) yearlyChange[seriesKey] = Math.round(annualChange * 10) / 10;
+  }
+  const priceIndex = [...byMonth.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([month, values]) => ({
+    month: formatScbMonth(month),
+    livsmedel: values.livsmedel ?? 0,
+    restaurang: values.restaurang ?? 0,
+    kott: values.kott ?? 0,
+    fisk: values.fisk ?? 0
+  })).filter((row) => row.livsmedel && row.restaurang && row.kott && row.fisk);
+  const latestMonth = [...byMonth.keys()].sort().at(-1) ?? "";
+  return {
+    priceIndex,
+    yearlyChange: {
+      livsmedel: yearlyChange.livsmedel ?? 0,
+      restaurang: yearlyChange.restaurang ?? 0,
+      kott: yearlyChange.kott ?? 0,
+      fisk: yearlyChange.fisk ?? 0
+    },
+    latestMonth,
+    source: "SCB KPI 2020 COICOP, tabell KPI2020COICOPM"
+  };
 }
 router10.get("/overview", async (_req, res) => {
   const categoryStats = await db.select({
@@ -68645,70 +68696,98 @@ router10.get("/overview", async (_req, res) => {
     maxPrice: sql`round(max(${ingredientsTable.currentPriceSek})::numeric, 2)`,
     count: sql`count(*)::int`
   }).from(ingredientsTable).groupBy(ingredientsTable.category).orderBy(sql`avg(${ingredientsTable.currentPriceSek}) desc`);
-  const recipeEcon = await db.select({
+  const [recipeEcon] = await db.select({
     avgCost: sql`round(avg(${recipesTable.totalCostSek})::numeric, 2)`,
     avgMargin: sql`round(avg(${recipesTable.profitMarginPct})::numeric, 1)`,
-    avgPrice: sql`round(avg(${recipesTable.sellingPriceSek})::numeric, 2)`
+    avgPrice: sql`round(avg(${recipesTable.sellingPriceSek})::numeric, 2)`,
+    recipeCount: sql`count(*)::int`
   }).from(recipesTable);
-  const econ = recipeEcon[0] ?? { avgCost: 0, avgMargin: 65, avgPrice: 0 };
-  const foodCostPct = econ.avgPrice > 0 ? parseFloat((econ.avgCost / econ.avgPrice * 100).toFixed(1)) : 29.5;
-  const markup = econ.avgCost > 0 ? parseFloat((econ.avgPrice / econ.avgCost).toFixed(2)) : 3;
+  const [priceAlerts] = await db.select({ count: sql`count(*)::int` }).from(ingredientsTable).where(sql`abs(${ingredientsTable.priceChangePct}::numeric) > 5`);
+  const econ = recipeEcon ?? { avgCost: 0, avgMargin: 0, avgPrice: 0, recipeCount: 0 };
+  const foodCostPct = Number(econ.avgPrice) > 0 ? Number((Number(econ.avgCost) / Number(econ.avgPrice) * 100).toFixed(1)) : 0;
+  const markup = Number(econ.avgCost) > 0 ? Number((Number(econ.avgPrice) / Number(econ.avgCost)).toFixed(2)) : 0;
+  const scb = await fetchScbMarketData();
   const benchmarks = [
     { label: "R\xE5varukostnad", yours: foodCostPct, industry: 30, unit: "%", desc: "Av f\xF6rs\xE4ljningspriset", goodIfLower: true },
-    { label: "Vinstmarginal", yours: econ.avgMargin, industry: 62, unit: "%", desc: "Livsmedelsmarginal", goodIfLower: false },
+    { label: "Vinstmarginal", yours: Number(econ.avgMargin ?? 0), industry: 62, unit: "%", desc: "Livsmedelsmarginal", goodIfLower: false },
     { label: "Menymarkup", yours: markup, industry: 3.3, unit: "\xD7", desc: "Kostnad \xD7 faktor", goodIfLower: false },
-    { label: "Svinnfrekvens", yours: 10.7, industry: 11.2, unit: "%", desc: "Branschsnitt SE 2025", goodIfLower: true },
-    { label: "Pris\xE4ndringar", yours: 6, industry: 8, unit: " st", desc: "Varningar senaste veckan", goodIfLower: true }
+    { label: "Pris\xE4ndringar", yours: priceAlerts?.count ?? 0, industry: 8, unit: " st", desc: "Aktiva r\xE5varuvarningar", goodIfLower: true }
   ];
   const seasonalGuide = [
     {
-      season: "Vinter (Dec\u2013Feb)",
-      emoji: "\u2744\uFE0F",
-      cheap: ["Rotfrukter", "K\xE5l", "Citrusfrukter", "Vinter\xE4pplen", "Fl\xE4skk\xF6tt"],
+      season: "Vinter (Dec-Feb)",
+      emoji: "\u2744",
+      cheap: ["Rotfrukter", "K\xE5l", "Citrusfrukter", "Vinter\xE4pplen"],
       expensive: ["Tomater", "Gurka", "Sommarb\xE4r", "Sparris"],
-      tip: "Satsa p\xE5 rotmos, k\xE5lsoppa och l\xE5ngkokta grytor. Byt ut tomater mot konserverade."
+      tip: "Planera menyn runt lagringsdugliga r\xE5varor och kontrollera egna leverant\xF6rspriser innan prisjustering."
     },
     {
-      season: "V\xE5r (Mar\u2013Maj)",
+      season: "V\xE5r (Mar-Maj)",
       emoji: "\u{1F331}",
-      cheap: ["Sparris", "Ramsl\xF6k", "Spenat", "R\xE4disor", "Lammk\xF6tt"],
-      expensive: ["Vilt", "Svamp", "Pumpa", "Rotfrukter (sluts\xE4song)"],
-      tip: "Sparris h\xE5ller l\xE5gt pris mars\u2013maj. Ramsl\xF6k ers\xE4tter vitl\xF6k i sallader och s\xE5ser."
+      cheap: ["Sparris", "Spenat", "R\xE4disor", "Lamm"],
+      expensive: ["Vilt", "Pumpa", "Sena rotfrukter"],
+      tip: "Anv\xE4nd SCB-trenden som inflationssignal och dina egna ink\xF6pspriser som beslutsunderlag."
     },
     {
-      season: "Sommar (Jun\u2013Aug)",
-      emoji: "\u2600\uFE0F",
-      cheap: ["Tomater", "Gurka", "Zucchini", "Jordgubbar", "Bl\xE5b\xE4r"],
-      expensive: ["Hummer", "Kr\xE4ftor (kr\xE4ftpremi\xE4r aug)", "Importerat k\xF6tt"],
-      tip: "Fyll menyn med lokala gr\xF6nsaker. V\xE4lj torsk eller sej ist\xE4llet f\xF6r lax (laxen stiger sommar)."
+      season: "Sommar (Jun-Aug)",
+      emoji: "\u2600",
+      cheap: ["Tomater", "Gurka", "Zucchini", "B\xE4r"],
+      expensive: ["Kr\xE4ftor", "Hummer", "Importerat k\xF6tt"],
+      tip: "L\xE5t lokala gr\xF6nsaker b\xE4ra menyn och f\xF6lj fisk/skaldjur extra noga i prisregistret."
     },
     {
-      season: "H\xF6st (Sep\u2013Nov)",
+      season: "H\xF6st (Sep-Nov)",
       emoji: "\u{1F342}",
-      cheap: ["Kantareller", "Vilt", "Squash", "P\xE4ron", "\xC4pplen", "Pumpa"],
-      expensive: ["Sparris", "Sommar\xF6rter", "Jordgubbar"],
-      tip: "Oktober\u2013november \xE4r b\xE4st f\xF6r vilt (\xE4lg, r\xE5djur). Svamp \xE4r billigast i september."
+      cheap: ["Svamp", "Vilt", "\xC4pplen", "Pumpa"],
+      expensive: ["Sparris", "Sommar\xF6rter", "F\xE4rska b\xE4r"],
+      tip: "Passar f\xF6r l\xE5ngkok, svamp och rotfrukter. Kontrollera marginalen efter varje st\xF6rre menybyte."
     }
   ];
-  const insights = [
-    { tag: "SCB", color: "#3b82f6", title: "Livsmedelsprisindex +3.8% YoY", desc: "Konsumentprisindex f\xF6r livsmedel steg 3.8% under 2025 j\xE4mf\xF6rt med 2024 enligt SCB. Mj\xF6lk, ost och \xE4gg drev uppg\xE5ngen med +5.2%." },
-    { tag: "Trend", color: "#10b981", title: "Vegetariska r\xE4tter +22%", desc: "Andelen vegetariska best\xE4llningar i svenska restauranger \xF6kade med 22% 2024\u20132025 (Visita). Menyer med v\xE4xtbaserade alternativ \xF6kar oms\xE4ttningen med i snitt 8%." },
-    { tag: "R\xE5varor", color: "#ef4444", title: "Lax +11%, r\xE4kor +8% YoY", desc: "Norsk lax kostade i snitt 145 kr/kg Q1 2026 (+11% YoY). R\xE4kor fr\xE5n Nordsj\xF6n +8%. Byt ut mot torsk eller sej f\xF6r att bevara marginalen." },
-    { tag: "Energi", color: "#d97706", title: "Elkostnad stabiliseras", desc: "Elpriset f\xF6r stork\xF6k SE3/SE4 stabiliserades till ~1.10 kr/kWh Q1 2026 efter toppen p\xE5 2.30 kr/kWh. Energikostnaden belastar nu marginalen med 3\u20135% mot tidigare 8\u201310%." },
-    { tag: "HRF", color: "#8b5cf6", title: "Restaurangbranschens l\xE4ge", desc: "Hotell- och restaurangfacket (HRF) rapporterar att 67% av svenska restauranger klarar 60%+ livsmedelsmarginal. Lunchrestauranger har l\xE4gst marginal (52% snitt)." }
+  const insights = scb ? [
+    {
+      tag: "SCB",
+      color: "#3b82f6",
+      title: `Livsmedel ${scb.yearlyChange.livsmedel >= 0 ? "+" : ""}${scb.yearlyChange.livsmedel}% \xE5r/\xE5r`,
+      desc: `Senaste SCB-m\xE5naden ${scb.latestMonth}. Avser KPI f\xF6r livsmedel och alkoholfria drycker, inte dina exakta grossistavtal.`
+    },
+    {
+      tag: "SCB",
+      color: "#d97706",
+      title: `Restaurangtj\xE4nster ${scb.yearlyChange.restaurang >= 0 ? "+" : ""}${scb.yearlyChange.restaurang}% \xE5r/\xE5r`,
+      desc: "Visar prisutveckling f\xF6r bar- och restaurangtj\xE4nster i KPI. J\xE4mf\xF6r med dina egna menypriser och marginaler."
+    },
+    {
+      tag: "SCB",
+      color: "#ef4444",
+      title: `K\xF6tt ${scb.yearlyChange.kott >= 0 ? "+" : ""}${scb.yearlyChange.kott}% \xB7 Fisk ${scb.yearlyChange.fisk >= 0 ? "+" : ""}${scb.yearlyChange.fisk}%`,
+      desc: "Anv\xE4nd kategoritrenden f\xF6r att prioritera vilka r\xE5varor som ska kontrolleras mot leverant\xF6rspris."
+    },
+    {
+      tag: "DB",
+      color: "#10b981",
+      title: `${econ.recipeCount ?? 0} recept \xB7 ${categoryStats.length} r\xE5varukategorier`,
+      desc: "Dina recept, ingredienser, snittpriser och marginaler kommer fr\xE5n databasen."
+    }
+  ] : [
+    {
+      tag: "DB",
+      color: "#10b981",
+      title: `${econ.recipeCount ?? 0} recept \xB7 ${categoryStats.length} r\xE5varukategorier`,
+      desc: "SCB kunde inte h\xE4mtas just nu. Sidan visar dina databasv\xE4rden och d\xF6ljer live-index."
+    }
   ];
-  res.json({
-    dataNote: "Modellerad demoanalys. Recept- och r\xE5varukostnader h\xE4mtas fr\xE5n databasen, men prisindex, branschbenchmarks, s\xE4songsguide och marknadsnyheter \xE4r kuraterade/estimerade referensv\xE4rden f\xF6r presentation.",
-    priceIndex: buildPriceIndex(),
+  return res.json({
+    dataNote: scb ? `Recept, r\xE5varukostnader och prisregister h\xE4mtas fr\xE5n databasen. Prisindex och \xE5rsf\xF6r\xE4ndringar h\xE4mtas fr\xE5n ${scb.source}. Branschm\xE5l \xE4r referensv\xE4rden och ska j\xE4mf\xF6ras med dina egna leverant\xF6rspriser.` : "Recept, r\xE5varukostnader och prisregister h\xE4mtas fr\xE5n databasen. SCB-index kunde inte h\xE4mtas vid detta anrop.",
+    priceIndex: scb?.priceIndex ?? [],
     categoryStats,
     benchmarks,
     seasonalGuide,
     insights,
     summary: {
-      foodInflationPct: 3.8,
-      restaurantPricePct: 4.9,
+      foodInflationPct: scb?.yearlyChange.livsmedel ?? 0,
+      restaurantPricePct: scb?.yearlyChange.restaurang ?? 0,
       avgFoodCostPct: foodCostPct,
-      avgMarginPct: econ.avgMargin
+      avgMarginPct: Number(econ.avgMargin ?? 0)
     }
   });
 });
@@ -86215,7 +86294,7 @@ router13.post("/seed", async (_req, res) => {
   if (ingredientsToInsert.length || createdRecipes) {
     await db.insert(activityLogTable).values({
       type: "recipe_created",
-      title: "Demodata laddad",
+      title: "Startdata laddad",
       subtitle: `${ingredientsToInsert.length} ingredienser \xB7 ${createdRecipes} recept`
     });
   }
@@ -86240,6 +86319,7 @@ router14.use("/svinn", svinn_default);
 router14.use("/market", market_default);
 router14.use("/spoonacular", spoonacular_default);
 router14.use("/stripe", stripe_default);
+router14.use("/starter", demo_default);
 router14.use("/demo", demo_default);
 var routes_default = router14;
 

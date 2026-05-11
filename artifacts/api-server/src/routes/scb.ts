@@ -1,94 +1,90 @@
 import { Router } from "express";
 import { db, ingredientsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { ilike, or } from "drizzle-orm";
 
 const router = Router();
 
-const SCB_FOOD_CATEGORIES: Record<string, string[]> = {
-  "0111": ["Nötfilé", "Nötfärs", "Lammskuldra", "Fläskbuk"],
-  "0112": ["Kycklingfilé", "Kycklinglår"],
-  "0113": ["Laxfilé", "Torskfilé", "Räkor"],
-  "0114": ["Mjölk", "Vispgrädde", "Smör", "Parmesan", "Mozzarella"],
-  "0115": ["Ägg"],
-  "0116": ["Olivolja", "Majsstärkelse", "Mjöl", "Ris", "Pasta", "Socker"],
-  "0117": ["Tomat", "Potatis", "Lök", "Morot", "Svamp", "Broccoli", "Spenat", "Vitlök", "Paprika"],
-  "0118": ["Äpple", "Citron", "Lime", "Banan", "Mango"],
-  "0119": ["Socker", "Svartpeppar", "Salt", "Spiskummin", "Basilika", "Dill", "Persilja"],
+const SCB_KPI_URL = "https://api.scb.se/OV0104/v1/doris/sv/ssd/START/PR/PR0101/PR0101A/KPI2020COICOPM";
+
+const SCB_INGREDIENT_GROUPS: Record<string, string[]> = {
+  "01.1.2": ["högrev", "nöt", "kyckling", "kött", "fläsk"],
+  "01.1.3": ["torsk", "lax", "räkor", "fisk", "skaldjur"],
+  "01.1.4": ["mjölk", "grädde", "smör", "parmesan", "ost", "yoghurt"],
+  "01.1.4.8": ["ägg"],
+  "01.1.6": ["äpple", "citron", "lime", "banan", "lingon", "frukt"],
+  "01.1.7": ["tomat", "potatis", "lök", "morot", "sallad", "grönsak"],
+  "01.1.9.3": ["salt", "peppar", "dill", "timjan", "sås"],
 };
 
-const BASE_YEAR_INDEX = 100;
-
-export async function syncSCBPrices(): Promise<{ updated: number; message: string; lastUpdated?: string }> {
-  const url = "https://api.scb.se/OV0104/v1/doris/sv/ssd/START/PR/PR0101/PR0101A/KPIAktMan";
+async function fetchLatestScbAnnualChanges() {
   const query = {
     query: [
       {
-        code: "Varugrupp",
-        selection: {
-          filter: "item",
-          values: ["0111", "0112", "0113", "0114", "0115", "0116", "0117", "0118", "0119"],
-        },
+        code: "VaruTjanstegrupp",
+        selection: { filter: "item", values: Object.keys(SCB_INGREDIENT_GROUPS) },
+      },
+      {
+        code: "ContentsCode",
+        selection: { filter: "item", values: ["00000805"] },
       },
       {
         code: "Tid",
-        selection: { filter: "top", values: ["2"] },
+        selection: { filter: "top", values: ["1"] },
       },
     ],
     response: { format: "json" },
   };
 
-  const res = await fetch(url, {
+  const response = await fetch(SCB_KPI_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(query),
   });
 
-  if (!res.ok) {
-    throw new Error(`SCB API returned ${res.status}`);
+  if (!response.ok) throw new Error(`SCB API returned ${response.status}`);
+
+  const payload = await response.json() as { data?: { key: [string, string]; values: [string] }[] };
+  const changes: Record<string, number> = {};
+  let lastUpdated = "";
+
+  for (const row of payload.data ?? []) {
+    const [categoryCode, month] = row.key;
+    const value = Number(row.values[0]);
+    if (Number.isFinite(value)) changes[categoryCode] = Math.round(value * 100) / 100;
+    lastUpdated = month;
   }
 
-  const data = await res.json() as { data?: { key: string[]; values: string[] }[] };
+  return { changes, lastUpdated };
+}
 
-  if (!data.data?.length) {
-    return { updated: 0, message: "SCB returnerade inga data." };
-  }
-
-  const latestIndex: Record<string, number> = {};
-  data.data.forEach((row) => {
-    const cat = row.key[0];
-    const val = parseFloat(row.values[0]);
-    if (!isNaN(val)) latestIndex[cat] = val;
-  });
-
-  const allIngredients = await db.select().from(ingredientsTable);
+export async function syncSCBPrices(): Promise<{ updated: number; message: string; lastUpdated?: string }> {
+  const { changes, lastUpdated } = await fetchLatestScbAnnualChanges();
   let updated = 0;
 
-  for (const ingredient of allIngredients) {
-    let catKey: string | undefined;
-    for (const [key, names] of Object.entries(SCB_FOOD_CATEGORIES)) {
-      if (names.includes(ingredient.name)) {
-        catKey = key;
-        break;
-      }
-    }
-    if (!catKey) continue;
+  for (const [categoryCode, names] of Object.entries(SCB_INGREDIENT_GROUPS)) {
+    const annualChange = changes[categoryCode];
+    if (!Number.isFinite(annualChange)) continue;
 
-    const idx = latestIndex[catKey] ?? BASE_YEAR_INDEX;
-    const multiplier = idx / BASE_YEAR_INDEX;
-    const oldPrice = parseFloat(String(ingredient.currentPriceSek));
-    const newPrice = +(oldPrice * multiplier).toFixed(2);
-    const changePct = oldPrice > 0 ? +((newPrice - oldPrice) / oldPrice * 100).toFixed(2) : 0;
+    const conditions = names.map((name) => ilike(ingredientsTable.name, `%${name}%`));
+    if (!conditions.length) continue;
 
-    await db.update(ingredientsTable).set({
-      currentPriceSek: String(newPrice),
-      priceChangePct: String(changePct),
-      updatedAt: new Date(),
-    }).where(eq(ingredientsTable.id, ingredient.id));
-    updated++;
+    const rows = await db
+      .update(ingredientsTable)
+      .set({
+        priceChangePct: String(annualChange),
+        updatedAt: new Date(),
+      })
+      .where(or(...conditions))
+      .returning({ id: ingredientsTable.id });
+
+    updated += rows.length;
   }
 
-  const lastUpdated = new Date().toLocaleDateString("sv-SE");
-  return { updated, message: `${updated} ingredienspriser uppdaterade från SCB KPI.`, lastUpdated };
+  return {
+    updated,
+    message: `${updated} ingrediensers prisändring uppdaterades från SCB KPI årsförändring.`,
+    lastUpdated,
+  };
 }
 
 router.post("/ingredients/sync-scb", async (_req, res) => {

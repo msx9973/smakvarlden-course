@@ -9,8 +9,8 @@ The app is built as a TypeScript monorepo with a React/Vite frontend, an Express
 - Recipe cost and margin calculation
 - Ingredient price tracking with category breakdowns
 - Clickable recipe and ingredient detail panels
-- Swedish demo data for empty accounts
-- Food imagery for demo recipes and ingredients
+- Swedish starter data for empty accounts
+- Food imagery for starter recipes and ingredients
 - Waste analysis by ingredient category
 - Clickable waste category details with ingredient-level estimates
 - Detailed saving tips and industry waste benchmarks
@@ -108,11 +108,11 @@ Important: Netlify serves the committed build artifacts. After changing frontend
 
 Once the changes are merged into `main`, Netlify can redeploy automatically.
 
-## Demo Data
+## Starter Data
 
-Empty accounts can load a Swedish demo dataset from the app. The demo seed creates realistic ingredients, suppliers, prices, recipes, recipe ingredients, and activity entries without requiring the user to manually enter data first.
+Empty accounts can load a Swedish starter dataset from the app. The starter seed creates realistic ingredients, suppliers, prices, recipes, recipe ingredients, and activity entries without requiring the user to manually enter data first.
 
-Demo images are deterministic public food-image URLs used by the frontend helper in:
+Starter images are deterministic public food-image URLs used by the frontend helper in:
 
 ```text
 artifacts/smakvarlden/src/lib/foodImages.ts
@@ -124,7 +124,7 @@ This avoids a database migration for image storage while still making the app fe
 
 Some dashboards use modeled or curated reference values for presentation:
 
-- market indexes
+- market indexes from SCB when available
 - industry benchmarks
 - seasonal guidance
 - waste assumptions

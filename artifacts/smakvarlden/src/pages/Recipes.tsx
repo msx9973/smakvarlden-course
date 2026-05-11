@@ -87,7 +87,7 @@ export default function Recipes() {
   const [showAdd, setShowAdd] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [sheetRecipeId, setSheetRecipeId] = useState<number | null>(null);
-  const [seedingDemo, setSeedingDemo] = useState(false);
+  const [seedingStarter, setSeedingStarter] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -104,13 +104,13 @@ export default function Recipes() {
   const createRecipe = useCreateRecipe();
   const { results: spoonResults, loading: spoonLoading } = useSpoonSearch(spoonQuery, tab === "world");
 
-  async function seedDemoData() {
-    setSeedingDemo(true);
+  async function seedStarterData() {
+    setSeedingStarter(true);
     try {
-      const result = await apiFetch("/demo/seed", { method: "POST" });
+      const result = await apiFetch("/starter/seed", { method: "POST" });
       await queryClient.invalidateQueries({ queryKey: getListRecipesQueryKey() });
       toast({
-        title: t("Demodata laddad"),
+        title: t("Startdata laddad"),
         description: `${result.ingredientsCreated ?? 0} ${t("ingredienser")} · ${result.recipesCreated ?? 0} ${t("recept")}`,
       });
     } catch (error) {
@@ -120,7 +120,7 @@ export default function Recipes() {
         variant: "destructive",
       });
     } finally {
-      setSeedingDemo(false);
+      setSeedingStarter(false);
     }
   }
 
@@ -257,13 +257,13 @@ export default function Recipes() {
               <p className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>{t("Inga recept hittades")}</p>
               <p className="text-[13px] mt-1 mb-5 max-w-sm" style={{ color: "var(--sv-text-2)" }}>{t("Lägg till ditt första recept ovan")}</p>
               <button
-                onClick={seedDemoData}
-                disabled={seedingDemo}
+                onClick={seedStarterData}
+                disabled={seedingStarter}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-semibold transition-all hover:opacity-90 disabled:opacity-60"
                 style={{ background: "var(--sv-brown)", color: "var(--sv-surface)", boxShadow: "0 4px 14px var(--sv-shadow)" }}
               >
                 <Sparkles className="w-4 h-4" />
-                {seedingDemo ? t("Laddar demodata...") : t("Ladda svensk demodata")}
+                {seedingStarter ? t("Laddar startdata...") : t("Ladda svensk startdata")}
               </button>
             </div>
           ) : (
