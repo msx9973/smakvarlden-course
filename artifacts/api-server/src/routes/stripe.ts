@@ -1,32 +1,50 @@
-import { Router } from "express";
+import { Router, type Request } from "express";
 import Stripe from "stripe";
 import { db, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import jwt from "jsonwebtoken";
 
 const router = Router();
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) return null;
-  return new Stripe(key, { apiVersion: "2024-11-20.acacia" as Parameters<typeof Stripe>[1]["apiVersion"] });
+  return new Stripe(key, { apiVersion: "2024-11-20.acacia" as never });
 }
 
 const PLAN_PRICE_SEK = 8900; // 89.00 SEK in öre
+
+function getSecret(): string {
+  return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
+}
+
+async function getAuthenticatedUser(req: Request) {
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) return null;
+
+  try {
+    const payload = jwt.verify(header.slice(7), getSecret()) as { id: number };
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, payload.id));
+    return user ?? null;
+  } catch {
+    return null;
+  }
+}
 
 router.post("/checkout", async (req, res) => {
   const stripe = getStripe();
   if (!stripe) return res.status(503).json({ error: "Stripe inte konfigurerat." });
 
-  const { userId, email, name } = req.body ?? {};
-  if (!email) return res.status(400).json({ error: "email krävs" });
+  const user = await getAuthenticatedUser(req);
+  if (!user) return res.status(401).json({ error: "Ej inloggad" });
 
   const origin = req.headers.origin ?? "https://smakvarlden.se";
 
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      customer_email: email,
-      metadata: { user_id: String(userId ?? ""), name: name ?? "" },
+      customer_email: user.email,
+      metadata: { user_id: String(user.id), name: user.name },
       line_items: [
         {
           price_data: {
@@ -62,11 +80,15 @@ router.post("/webhook", async (req, res) => {
 
   let event: Stripe.Event;
   try {
-    const raw = (req as unknown as { rawBody?: Buffer }).rawBody ?? Buffer.from(JSON.stringify(req.body));
+    const raw = Buffer.isBuffer(req.body)
+      ? req.body
+      : (req as unknown as { rawBody?: Buffer }).rawBody ?? Buffer.from(JSON.stringify(req.body));
     if (webhookSecret && sig) {
       event = stripe.webhooks.constructEvent(raw, sig, webhookSecret);
     } else {
-      event = req.body as Stripe.Event;
+      event = Buffer.isBuffer(req.body)
+        ? JSON.parse(req.body.toString("utf8")) as Stripe.Event
+        : req.body as Stripe.Event;
     }
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Webhook-fel";
@@ -99,10 +121,9 @@ router.post("/webhook", async (req, res) => {
 });
 
 router.get("/status", async (req, res) => {
-  const userId = (req as unknown as { user?: { id: number } }).user?.id;
-  if (!userId) return res.status(401).json({ error: "Ej inloggad" });
-  const [user] = await db.select({ plan: usersTable.plan }).from(usersTable).where(eq(usersTable.id, userId));
-  return res.json({ plan: user?.plan ?? "free" });
+  const user = await getAuthenticatedUser(req);
+  if (!user) return res.status(401).json({ error: "Ej inloggad" });
+  return res.json({ plan: user.plan ?? "free" });
 });
 
 export default router;

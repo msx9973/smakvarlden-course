@@ -11,6 +11,7 @@ import {
 import { useI18n } from "@/lib/i18n";
 
 interface Overview {
+  dataNote:      string;
   priceIndex:    { month: string; livsmedel: number; restaurang: number; kott: number; fisk: number }[];
   categoryStats: { category: string; avgPrice: number; minPrice: number; maxPrice: number; count: number }[];
   benchmarks:    { label: string; yours: number; industry: number; unit: string; desc: string; goodIfLower: boolean }[];
@@ -101,6 +102,9 @@ const EN_BENCHMARKS_LABELS: Record<string, { label: string; desc: string }> = {
 export default function MarketInsights() {
   const { data, isLoading } = useMarketOverview();
   const { t, lang } = useI18n();
+  const dataNote = lang === "en"
+    ? "Modeled demo analysis. Recipe and ingredient costs come from the database, while price indexes, benchmarks, seasonal guidance, and market news are curated/estimated reference values for presentation."
+    : data?.dataNote;
 
   const insights      = lang === "en" ? EN_INSIGHTS      : (data?.insights ?? []);
   const seasonalGuide = lang === "en" ? EN_SEASONAL      : (data?.seasonalGuide ?? []);
@@ -129,7 +133,7 @@ export default function MarketInsights() {
               <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "rgba(59,130,246,.25)" }}>
                 <Globe className="w-4 h-4" style={{ color: "#93c5fd" }} />
               </div>
-              <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#93c5fd" }}>{t("Live marknadsdata")}</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#93c5fd" }}>{t("Modellerad marknadsdata")}</span>
             </div>
             <h1 className="font-serif text-2xl font-bold text-white">{t("Marknadsinsikter & Ekonomi")}</h1>
             <p className="text-[13px] mt-1" style={{ color: "rgba(255,255,255,.55)" }}>
@@ -138,16 +142,24 @@ export default function MarketInsights() {
           </div>
           <div className="flex gap-2 text-[11px] text-white/60 items-center shrink-0">
             <Info className="w-3.5 h-3.5" />
-            <span>Data: SCB · HRF · Visita · 2025–2026</span>
+            <span>{lang === "en" ? "Curated references: SCB · HRF · Visita · 2025–2026" : "Kuraterade referenser: SCB · HRF · Visita · 2025–2026"}</span>
           </div>
         </div>
       </div>
+
+      {!isLoading && dataNote && (
+        <div className="rounded-2xl px-5 py-3 flex items-start gap-3"
+          style={{ background: "rgba(59,130,246,.08)", border: "1px solid rgba(59,130,246,.18)", color: "var(--sv-text-2)" }}>
+          <Info className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "#3b82f6" }} />
+          <p className="text-[12px] leading-relaxed">{dataNote}</p>
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {isLoading ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />) : data && (
           <>
             <StatCard label={t("Livsmedelsindex")} value={`+${data.summary.foodInflationPct}%`}
-              sub={t("YoY inflation (SCB 2025)")} icon={TrendingUp} color="#ef4444" />
+              sub={t("Estimerad YoY-referens (SCB 2025)")} icon={TrendingUp} color="#ef4444" />
             <StatCard label={t("Restaurangprisindex")} value={`+${data.summary.restaurantPricePct}%`}
               sub={t("Prisstegring på menyer")} icon={TrendingUp} color="#d97706" />
             <StatCard label={t("Din råvarukostnad")} value={`${Number(data.summary.avgFoodCostPct).toFixed(1)}%`}

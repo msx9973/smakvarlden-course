@@ -32,7 +32,6 @@ export default function Upgrade() {
     try {
       const data = await apiFetch("/stripe/checkout", {
         method: "POST",
-        body: JSON.stringify({ userId: user.id, email: user.email, name: user.name }),
       });
       if (data.url) window.location.href = data.url;
     } catch (err: unknown) {

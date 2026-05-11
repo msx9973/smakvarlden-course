@@ -44,6 +44,18 @@ router.get("/summary", async (_req, res) => {
     .from(ingredientsTable)
     .groupBy(ingredientsTable.category);
 
+  const ingredients = await db
+    .select({
+      id: ingredientsTable.id,
+      name: ingredientsTable.name,
+      category: ingredientsTable.category,
+      unit: ingredientsTable.unit,
+      currentPriceSek: ingredientsTable.currentPriceSek,
+      priceChangePct: ingredientsTable.priceChangePct,
+      supplier: ingredientsTable.supplier,
+    })
+    .from(ingredientsTable);
+
   const [recipeSummary] = await db
     .select({
       avgCost: sql<number>`avg(total_cost_sek::numeric)`,
@@ -58,6 +70,24 @@ router.get("/summary", async (_req, res) => {
     const totalCost = Number(row.totalPriceSek ?? 0);
     const wasteCost = totalCost * (rate / 100);
     const weeklyCost = wasteCost * avgDailyPortions * 7 * 0.001;
+    const categoryIngredients = ingredients
+      .filter((ingredient) => ingredient.category === row.category)
+      .map((ingredient) => {
+        const currentPriceSek = Number(ingredient.currentPriceSek);
+        const ingredientWasteCostSek = currentPriceSek * (rate / 100);
+        return {
+          id: ingredient.id,
+          name: ingredient.name,
+          unit: ingredient.unit,
+          currentPriceSek: Math.round(currentPriceSek * 100) / 100,
+          priceChangePct: Number(ingredient.priceChangePct),
+          supplier: ingredient.supplier ?? null,
+          estimatedWasteCostSek: Math.round(ingredientWasteCostSek * 100) / 100,
+          estimatedWeeklyWasteSek: Math.round(ingredientWasteCostSek * avgDailyPortions * 7 * 0.001 * 100) / 100,
+        };
+      })
+      .sort((a, b) => b.estimatedWasteCostSek - a.estimatedWasteCostSek);
+
     return {
       category: row.category,
       svinnRatePct: rate,
@@ -66,6 +96,7 @@ router.get("/summary", async (_req, res) => {
       totalIngredientCostSek: Math.round(totalCost * 100) / 100,
       wasteCostSek: Math.round(wasteCost * 100) / 100,
       estimatedWeeklyWasteSek: Math.round(weeklyCost * 100) / 100,
+      ingredients: categoryIngredients,
     };
   }).sort((a, b) => b.wasteCostSek - a.wasteCostSek);
 
@@ -80,6 +111,12 @@ router.get("/summary", async (_req, res) => {
   const yearlyWasteSek = monthlyWasteSek * 12;
 
   return res.json({
+    dataNote: "Estimerad svinnanalys. Kostnader baseras på dina ingredienskategorier, schabloniserade branschvärden och antagandet 40 portioner per dag.",
+    assumptions: {
+      avgDailyPortions,
+      monthlyWeeks: 4.33,
+      method: "category-rate-estimate",
+    },
     totalWasteCostSek: Math.round(totalWasteCostSek * 100) / 100,
     weeklyWasteSek: Math.round(weeklyWasteSek * 100) / 100,
     monthlyWasteSek: Math.round(monthlyWasteSek * 100) / 100,
