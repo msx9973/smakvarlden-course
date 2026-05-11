@@ -34316,9 +34316,9 @@ var require_jws = __commonJS({
 var require_decode = __commonJS({
   "../../node_modules/.pnpm/jsonwebtoken@9.0.3/node_modules/jsonwebtoken/decode.js"(exports, module) {
     var jws = require_jws();
-    module.exports = function(jwt3, options) {
+    module.exports = function(jwt4, options) {
       options = options || {};
-      var decoded = jws.decode(jwt3, options);
+      var decoded = jws.decode(jwt4, options);
       if (!decoded) {
         return null;
       }
@@ -34413,9 +34413,9 @@ var require_timespan = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/internal/constants.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/constants.js
 var require_constants2 = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/internal/constants.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/constants.js"(exports, module) {
     "use strict";
     var SEMVER_SPEC_VERSION = "2.0.0";
     var MAX_LENGTH = 256;
@@ -34445,9 +34445,9 @@ var require_constants2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/internal/debug.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/debug.js
 var require_debug = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/internal/debug.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/debug.js"(exports, module) {
     "use strict";
     var debug = typeof process === "object" && process.env && process.env.NODE_DEBUG && /\bsemver\b/i.test(process.env.NODE_DEBUG) ? (...args) => console.error("SEMVER", ...args) : () => {
     };
@@ -34455,9 +34455,9 @@ var require_debug = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/internal/re.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/re.js
 var require_re = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/internal/re.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/re.js"(exports, module) {
     "use strict";
     var {
       MAX_SAFE_COMPONENT_LENGTH,
@@ -34543,9 +34543,9 @@ var require_re = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/internal/parse-options.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/parse-options.js
 var require_parse_options = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/internal/parse-options.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/parse-options.js"(exports, module) {
     "use strict";
     var looseOption = Object.freeze({ loose: true });
     var emptyOpts = Object.freeze({});
@@ -34562,9 +34562,9 @@ var require_parse_options = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/internal/identifiers.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/identifiers.js
 var require_identifiers = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/internal/identifiers.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/identifiers.js"(exports, module) {
     "use strict";
     var numeric2 = /^[0-9]+$/;
     var compareIdentifiers = (a, b) => {
@@ -34587,9 +34587,9 @@ var require_identifiers = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/classes/semver.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/classes/semver.js
 var require_semver = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/classes/semver.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/classes/semver.js"(exports, module) {
     "use strict";
     var debug = require_debug();
     var { MAX_LENGTH, MAX_SAFE_INTEGER } = require_constants2();
@@ -34866,9 +34866,9 @@ var require_semver = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/parse.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/parse.js
 var require_parse2 = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/parse.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/parse.js"(exports, module) {
     "use strict";
     var SemVer = require_semver();
     var parse3 = (version3, options, throwErrors = false) => {
@@ -34888,9 +34888,9 @@ var require_parse2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/valid.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/valid.js
 var require_valid = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/valid.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/valid.js"(exports, module) {
     "use strict";
     var parse3 = require_parse2();
     var valid = (version3, options) => {
@@ -34901,9 +34901,9 @@ var require_valid = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/clean.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/clean.js
 var require_clean = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/clean.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/clean.js"(exports, module) {
     "use strict";
     var parse3 = require_parse2();
     var clean = (version3, options) => {
@@ -34914,9 +34914,9 @@ var require_clean = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/inc.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/inc.js
 var require_inc = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/inc.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/inc.js"(exports, module) {
     "use strict";
     var SemVer = require_semver();
     var inc = (version3, release2, options, identifier, identifierBase) => {
@@ -34938,9 +34938,9 @@ var require_inc = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/diff.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/diff.js
 var require_diff = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/diff.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/diff.js"(exports, module) {
     "use strict";
     var parse3 = require_parse2();
     var diff = (version1, version22) => {
@@ -34982,9 +34982,9 @@ var require_diff = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/major.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/major.js
 var require_major = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/major.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/major.js"(exports, module) {
     "use strict";
     var SemVer = require_semver();
     var major = (a, loose) => new SemVer(a, loose).major;
@@ -34992,9 +34992,9 @@ var require_major = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/minor.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/minor.js
 var require_minor = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/minor.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/minor.js"(exports, module) {
     "use strict";
     var SemVer = require_semver();
     var minor = (a, loose) => new SemVer(a, loose).minor;
@@ -35002,9 +35002,9 @@ var require_minor = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/patch.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/patch.js
 var require_patch = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/patch.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/patch.js"(exports, module) {
     "use strict";
     var SemVer = require_semver();
     var patch = (a, loose) => new SemVer(a, loose).patch;
@@ -35012,9 +35012,9 @@ var require_patch = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/prerelease.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/prerelease.js
 var require_prerelease = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/prerelease.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/prerelease.js"(exports, module) {
     "use strict";
     var parse3 = require_parse2();
     var prerelease = (version3, options) => {
@@ -35025,9 +35025,9 @@ var require_prerelease = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/compare.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/compare.js
 var require_compare = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/compare.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/compare.js"(exports, module) {
     "use strict";
     var SemVer = require_semver();
     var compare2 = (a, b, loose) => new SemVer(a, loose).compare(new SemVer(b, loose));
@@ -35035,9 +35035,9 @@ var require_compare = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/rcompare.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/rcompare.js
 var require_rcompare = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/rcompare.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/rcompare.js"(exports, module) {
     "use strict";
     var compare2 = require_compare();
     var rcompare = (a, b, loose) => compare2(b, a, loose);
@@ -35045,9 +35045,9 @@ var require_rcompare = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/compare-loose.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/compare-loose.js
 var require_compare_loose = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/compare-loose.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/compare-loose.js"(exports, module) {
     "use strict";
     var compare2 = require_compare();
     var compareLoose = (a, b) => compare2(a, b, true);
@@ -35055,9 +35055,9 @@ var require_compare_loose = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/compare-build.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/compare-build.js
 var require_compare_build = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/compare-build.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/compare-build.js"(exports, module) {
     "use strict";
     var SemVer = require_semver();
     var compareBuild = (a, b, loose) => {
@@ -35069,9 +35069,9 @@ var require_compare_build = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/sort.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/sort.js
 var require_sort = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/sort.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/sort.js"(exports, module) {
     "use strict";
     var compareBuild = require_compare_build();
     var sort = (list, loose) => list.sort((a, b) => compareBuild(a, b, loose));
@@ -35079,9 +35079,9 @@ var require_sort = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/rsort.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/rsort.js
 var require_rsort = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/rsort.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/rsort.js"(exports, module) {
     "use strict";
     var compareBuild = require_compare_build();
     var rsort = (list, loose) => list.sort((a, b) => compareBuild(b, a, loose));
@@ -35089,9 +35089,9 @@ var require_rsort = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/gt.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/gt.js
 var require_gt = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/gt.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/gt.js"(exports, module) {
     "use strict";
     var compare2 = require_compare();
     var gt2 = (a, b, loose) => compare2(a, b, loose) > 0;
@@ -35099,9 +35099,9 @@ var require_gt = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/lt.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/lt.js
 var require_lt = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/lt.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/lt.js"(exports, module) {
     "use strict";
     var compare2 = require_compare();
     var lt2 = (a, b, loose) => compare2(a, b, loose) < 0;
@@ -35109,9 +35109,9 @@ var require_lt = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/eq.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/eq.js
 var require_eq = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/eq.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/eq.js"(exports, module) {
     "use strict";
     var compare2 = require_compare();
     var eq2 = (a, b, loose) => compare2(a, b, loose) === 0;
@@ -35119,9 +35119,9 @@ var require_eq = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/neq.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/neq.js
 var require_neq = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/neq.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/neq.js"(exports, module) {
     "use strict";
     var compare2 = require_compare();
     var neq = (a, b, loose) => compare2(a, b, loose) !== 0;
@@ -35129,9 +35129,9 @@ var require_neq = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/gte.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/gte.js
 var require_gte = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/gte.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/gte.js"(exports, module) {
     "use strict";
     var compare2 = require_compare();
     var gte2 = (a, b, loose) => compare2(a, b, loose) >= 0;
@@ -35139,9 +35139,9 @@ var require_gte = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/lte.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/lte.js
 var require_lte = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/lte.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/lte.js"(exports, module) {
     "use strict";
     var compare2 = require_compare();
     var lte2 = (a, b, loose) => compare2(a, b, loose) <= 0;
@@ -35149,9 +35149,9 @@ var require_lte = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/cmp.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/cmp.js
 var require_cmp = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/cmp.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/cmp.js"(exports, module) {
     "use strict";
     var eq2 = require_eq();
     var neq = require_neq();
@@ -35199,9 +35199,9 @@ var require_cmp = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/coerce.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/coerce.js
 var require_coerce = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/coerce.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/coerce.js"(exports, module) {
     "use strict";
     var SemVer = require_semver();
     var parse3 = require_parse2();
@@ -35245,9 +35245,50 @@ var require_coerce = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/internal/lrucache.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/truncate.js
+var require_truncate = __commonJS({
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/truncate.js"(exports, module) {
+    "use strict";
+    var parse3 = require_parse2();
+    var constants = require_constants2();
+    var SemVer = require_semver();
+    var truncate = (version3, truncation, options) => {
+      if (!constants.RELEASE_TYPES.includes(truncation)) {
+        return null;
+      }
+      const clonedVersion = cloneInputVersion(version3, options);
+      return clonedVersion && doTruncation(clonedVersion, truncation);
+    };
+    var cloneInputVersion = (version3, options) => {
+      const versionStringToParse = version3 instanceof SemVer ? version3.version : version3;
+      return parse3(versionStringToParse, options);
+    };
+    var doTruncation = (version3, truncation) => {
+      if (isPrerelease(truncation)) {
+        return version3.version;
+      }
+      version3.prerelease = [];
+      switch (truncation) {
+        case "major":
+          version3.minor = 0;
+          version3.patch = 0;
+          break;
+        case "minor":
+          version3.patch = 0;
+          break;
+      }
+      return version3.format();
+    };
+    var isPrerelease = (type) => {
+      return type.startsWith("pre");
+    };
+    module.exports = truncate;
+  }
+});
+
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/lrucache.js
 var require_lrucache = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/internal/lrucache.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/lrucache.js"(exports, module) {
     "use strict";
     var LRUCache = class {
       constructor() {
@@ -35283,9 +35324,9 @@ var require_lrucache = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/classes/range.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/classes/range.js
 var require_range2 = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/classes/range.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/classes/range.js"(exports, module) {
     "use strict";
     var SPACE_CHARACTERS = /\s+/g;
     var Range = class _Range {
@@ -35660,9 +35701,9 @@ var require_range2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/classes/comparator.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/classes/comparator.js
 var require_comparator = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/classes/comparator.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/classes/comparator.js"(exports, module) {
     "use strict";
     var ANY = /* @__PURE__ */ Symbol("SemVer ANY");
     var Comparator = class _Comparator {
@@ -35773,9 +35814,9 @@ var require_comparator = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/satisfies.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/satisfies.js
 var require_satisfies = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/functions/satisfies.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/satisfies.js"(exports, module) {
     "use strict";
     var Range = require_range2();
     var satisfies = (version3, range, options) => {
@@ -35790,9 +35831,9 @@ var require_satisfies = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/to-comparators.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/to-comparators.js
 var require_to_comparators = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/to-comparators.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/to-comparators.js"(exports, module) {
     "use strict";
     var Range = require_range2();
     var toComparators = (range, options) => new Range(range, options).set.map((comp) => comp.map((c) => c.value).join(" ").trim().split(" "));
@@ -35800,9 +35841,9 @@ var require_to_comparators = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/max-satisfying.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/max-satisfying.js
 var require_max_satisfying = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/max-satisfying.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/max-satisfying.js"(exports, module) {
     "use strict";
     var SemVer = require_semver();
     var Range = require_range2();
@@ -35829,9 +35870,9 @@ var require_max_satisfying = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/min-satisfying.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/min-satisfying.js
 var require_min_satisfying = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/min-satisfying.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/min-satisfying.js"(exports, module) {
     "use strict";
     var SemVer = require_semver();
     var Range = require_range2();
@@ -35858,9 +35899,9 @@ var require_min_satisfying = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/min-version.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/min-version.js
 var require_min_version = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/min-version.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/min-version.js"(exports, module) {
     "use strict";
     var SemVer = require_semver();
     var Range = require_range2();
@@ -35917,9 +35958,9 @@ var require_min_version = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/valid.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/valid.js
 var require_valid2 = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/valid.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/valid.js"(exports, module) {
     "use strict";
     var Range = require_range2();
     var validRange = (range, options) => {
@@ -35933,9 +35974,9 @@ var require_valid2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/outside.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/outside.js
 var require_outside = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/outside.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/outside.js"(exports, module) {
     "use strict";
     var SemVer = require_semver();
     var Comparator = require_comparator();
@@ -36002,9 +36043,9 @@ var require_outside = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/gtr.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/gtr.js
 var require_gtr = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/gtr.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/gtr.js"(exports, module) {
     "use strict";
     var outside = require_outside();
     var gtr = (version3, range, options) => outside(version3, range, ">", options);
@@ -36012,9 +36053,9 @@ var require_gtr = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/ltr.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/ltr.js
 var require_ltr = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/ltr.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/ltr.js"(exports, module) {
     "use strict";
     var outside = require_outside();
     var ltr = (version3, range, options) => outside(version3, range, "<", options);
@@ -36022,9 +36063,9 @@ var require_ltr = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/intersects.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/intersects.js
 var require_intersects = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/intersects.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/intersects.js"(exports, module) {
     "use strict";
     var Range = require_range2();
     var intersects = (r1, r2, options) => {
@@ -36036,9 +36077,9 @@ var require_intersects = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/simplify.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/simplify.js
 var require_simplify = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/simplify.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/simplify.js"(exports, module) {
     "use strict";
     var satisfies = require_satisfies();
     var compare2 = require_compare();
@@ -36086,9 +36127,9 @@ var require_simplify = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/subset.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/subset.js
 var require_subset = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/ranges/subset.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/subset.js"(exports, module) {
     "use strict";
     var Range = require_range2();
     var Comparator = require_comparator();
@@ -36248,9 +36289,9 @@ var require_subset = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/index.js
+// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/index.js
 var require_semver2 = __commonJS({
-  "../../node_modules/.pnpm/semver@7.7.4/node_modules/semver/index.js"(exports, module) {
+  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/index.js"(exports, module) {
     "use strict";
     var internalRe = require_re();
     var constants = require_constants2();
@@ -36279,6 +36320,7 @@ var require_semver2 = __commonJS({
     var lte2 = require_lte();
     var cmp = require_cmp();
     var coerce2 = require_coerce();
+    var truncate = require_truncate();
     var Comparator = require_comparator();
     var Range = require_range2();
     var satisfies = require_satisfies();
@@ -36317,6 +36359,7 @@ var require_semver2 = __commonJS({
       lte: lte2,
       cmp,
       coerce: coerce2,
+      truncate,
       Comparator,
       Range,
       satisfies,
@@ -36488,18 +36531,18 @@ var require_verify = __commonJS({
         return done(new JsonWebTokenError("invalid token"));
       }
       const header = decodedToken.header;
-      let getSecret2;
+      let getSecret3;
       if (typeof secretOrPublicKey === "function") {
         if (!callback) {
           return done(new JsonWebTokenError("verify must be called asynchronous if secret or public key is provided as a callback"));
         }
-        getSecret2 = secretOrPublicKey;
+        getSecret3 = secretOrPublicKey;
       } else {
-        getSecret2 = function(header2, secretCallback) {
+        getSecret3 = function(header2, secretCallback) {
           return secretCallback(null, secretOrPublicKey);
         };
       }
-      return getSecret2(header, function(err, secretOrPublicKey2) {
+      return getSecret3(header, function(err, secretOrPublicKey2) {
         if (err) {
           return done(new JsonWebTokenError("error in secret or public key callback: " + err.message));
         }
@@ -38297,11 +38340,11 @@ function isValidIP(ip, version3) {
   }
   return false;
 }
-function isValidJWT(jwt3, alg) {
-  if (!jwtRegex.test(jwt3))
+function isValidJWT(jwt4, alg) {
+  if (!jwtRegex.test(jwt4))
     return false;
   try {
-    const [header] = jwt3.split(".");
+    const [header] = jwt4.split(".");
     if (!header)
       return false;
     const base643 = header.replace(/-/g, "+").replace(/_/g, "/").padEnd(header.length + (4 - header.length % 4) % 4, "=");
@@ -59865,6 +59908,7 @@ var recipesTable = pgTable("recipes", {
   profitMarginPct: numeric("profit_margin_pct", { precision: 6, scale: 2 }).notNull().default("0"),
   isShared: boolean("is_shared").notNull().default(false),
   userId: integer("user_id").references(() => usersTable.id, { onDelete: "set null" }),
+  ingredientsJson: json("ingredients").$type(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow()
 });
@@ -59893,7 +59937,7 @@ var communityPostsTable = pgTable("community_posts", {
   createdAt: timestamp("created_at").notNull().defaultNow()
 });
 var insertIngredientSchema = createInsertSchema(ingredientsTable).omit({ id: true, updatedAt: true });
-var insertRecipeSchema = createInsertSchema(recipesTable).omit({ id: true, createdAt: true, updatedAt: true });
+var insertRecipeSchema = createInsertSchema(recipesTable).omit({ id: true, createdAt: true, updatedAt: true, ingredientsJson: true });
 var insertCommunityPostSchema = createInsertSchema(communityPostsTable).omit({ id: true, likes: true, createdAt: true });
 var insertUserSchema = createInsertSchema(usersTable).omit({ id: true, createdAt: true, role: true });
 
@@ -59904,7 +59948,13 @@ if (!process.env.DATABASE_URL) {
     "DATABASE_URL must be set. Did you forget to provision a database?"
   );
 }
-var pool = new Pool3({ connectionString: process.env.DATABASE_URL });
+var pool = new Pool3({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL.includes("supabase") ? { rejectUnauthorized: false } : false
+});
+pool.on("error", (err) => {
+  console.error("DB pool error:", err.message);
+});
 var db = drizzle(pool, { schema: schema_exports });
 
 // src/routes/recipes.ts
@@ -59988,16 +60038,24 @@ router2.get("/:id", async (req, res) => {
     unit: recipeIngredientsTable.unit,
     unitPriceSek: ingredientsTable.currentPriceSek
   }).from(recipeIngredientsTable).innerJoin(ingredientsTable, eq(recipeIngredientsTable.ingredientId, ingredientsTable.id)).where(eq(recipeIngredientsTable.recipeId, recipe.id));
+  const ingredients = recipeIngredients.length > 0 ? recipeIngredients.map((ri) => ({
+    ingredientId: ri.ingredientId,
+    ingredientName: ri.ingredientName,
+    quantity: parseFloat(String(ri.quantity)),
+    unit: ri.unit,
+    unitPriceSek: parseFloat(String(ri.unitPriceSek)),
+    lineCostSek: Math.round(parseFloat(String(ri.quantity)) * parseFloat(String(ri.unitPriceSek)) * 100) / 100
+  })) : (recipe.ingredientsJson ?? []).map((ing, i) => ({
+    ingredientId: i,
+    ingredientName: ing.name,
+    quantity: ing.amount,
+    unit: ing.unit,
+    unitPriceSek: 0,
+    lineCostSek: 0
+  }));
   return res.json({
     ...formatRecipe(recipe),
-    ingredients: recipeIngredients.map((ri) => ({
-      ingredientId: ri.ingredientId,
-      ingredientName: ri.ingredientName,
-      quantity: parseFloat(String(ri.quantity)),
-      unit: ri.unit,
-      unitPriceSek: parseFloat(String(ri.unitPriceSek)),
-      lineCostSek: Math.round(parseFloat(String(ri.quantity)) * parseFloat(String(ri.unitPriceSek)) * 100) / 100
-    }))
+    ingredients
   });
 });
 router2.put("/:id", async (req, res) => {
@@ -60033,6 +60091,7 @@ router2.delete("/:id", async (req, res) => {
   return res.status(204).send();
 });
 function formatRecipe(r) {
+  const jsonIngredients = r.ingredientsJson ?? [];
   return {
     id: r.id,
     name: r.name,
@@ -60044,7 +60103,8 @@ function formatRecipe(r) {
     profitMarginPct: parseFloat(String(r.profitMarginPct)),
     isShared: r.isShared,
     createdAt: r.createdAt.toISOString(),
-    updatedAt: r.updatedAt.toISOString()
+    updatedAt: r.updatedAt.toISOString(),
+    ingredientNames: jsonIngredients.slice(0, 5).map((i) => i.name)
   };
 }
 var recipes_default = router2;
@@ -68493,6 +68553,15 @@ router9.get("/summary", async (_req, res) => {
     avgPriceSek: sql`avg(current_price_sek::numeric)`,
     totalPriceSek: sql`sum(current_price_sek::numeric)`
   }).from(ingredientsTable).groupBy(ingredientsTable.category);
+  const ingredients = await db.select({
+    id: ingredientsTable.id,
+    name: ingredientsTable.name,
+    category: ingredientsTable.category,
+    unit: ingredientsTable.unit,
+    currentPriceSek: ingredientsTable.currentPriceSek,
+    priceChangePct: ingredientsTable.priceChangePct,
+    supplier: ingredientsTable.supplier
+  }).from(ingredientsTable);
   const [recipeSummary] = await db.select({
     avgCost: sql`avg(total_cost_sek::numeric)`,
     totalRecipes: sql`count(*)::int`
@@ -68503,6 +68572,20 @@ router9.get("/summary", async (_req, res) => {
     const totalCost = Number(row.totalPriceSek ?? 0);
     const wasteCost = totalCost * (rate / 100);
     const weeklyCost = wasteCost * avgDailyPortions * 7 * 1e-3;
+    const categoryIngredients = ingredients.filter((ingredient) => ingredient.category === row.category).map((ingredient) => {
+      const currentPriceSek = Number(ingredient.currentPriceSek);
+      const ingredientWasteCostSek = currentPriceSek * (rate / 100);
+      return {
+        id: ingredient.id,
+        name: ingredient.name,
+        unit: ingredient.unit,
+        currentPriceSek: Math.round(currentPriceSek * 100) / 100,
+        priceChangePct: Number(ingredient.priceChangePct),
+        supplier: ingredient.supplier ?? null,
+        estimatedWasteCostSek: Math.round(ingredientWasteCostSek * 100) / 100,
+        estimatedWeeklyWasteSek: Math.round(ingredientWasteCostSek * avgDailyPortions * 7 * 1e-3 * 100) / 100
+      };
+    }).sort((a, b) => b.estimatedWasteCostSek - a.estimatedWasteCostSek);
     return {
       category: row.category,
       svinnRatePct: rate,
@@ -68510,7 +68593,8 @@ router9.get("/summary", async (_req, res) => {
       avgPriceSek: Math.round(Number(row.avgPriceSek) * 100) / 100,
       totalIngredientCostSek: Math.round(totalCost * 100) / 100,
       wasteCostSek: Math.round(wasteCost * 100) / 100,
-      estimatedWeeklyWasteSek: Math.round(weeklyCost * 100) / 100
+      estimatedWeeklyWasteSek: Math.round(weeklyCost * 100) / 100,
+      ingredients: categoryIngredients
     };
   }).sort((a, b) => b.wasteCostSek - a.wasteCostSek);
   const totalWasteCostSek = categorySvinn.reduce((s, r) => s + r.wasteCostSek, 0);
@@ -68520,6 +68604,12 @@ router9.get("/summary", async (_req, res) => {
   const monthlyWasteSek = weeklyWasteSek * 4.33;
   const yearlyWasteSek = monthlyWasteSek * 12;
   return res.json({
+    dataNote: "Estimerad svinnanalys. Kostnader baseras p\xE5 dina ingredienskategorier, schabloniserade branschv\xE4rden och antagandet 40 portioner per dag.",
+    assumptions: {
+      avgDailyPortions,
+      monthlyWeeks: 4.33,
+      method: "category-rate-estimate"
+    },
     totalWasteCostSek: Math.round(totalWasteCostSek * 100) / 100,
     weeklyWasteSek: Math.round(weeklyWasteSek * 100) / 100,
     monthlyWasteSek: Math.round(monthlyWasteSek * 100) / 100,
@@ -68608,6 +68698,7 @@ router10.get("/overview", async (_req, res) => {
     { tag: "HRF", color: "#8b5cf6", title: "Restaurangbranschens l\xE4ge", desc: "Hotell- och restaurangfacket (HRF) rapporterar att 67% av svenska restauranger klarar 60%+ livsmedelsmarginal. Lunchrestauranger har l\xE4gst marginal (52% snitt)." }
   ];
   res.json({
+    dataNote: "Modellerad demoanalys. Recept- och r\xE5varukostnader h\xE4mtas fr\xE5n databasen, men prisindex, branschbenchmarks, s\xE4songsguide och marknadsnyheter \xE4r kuraterade/estimerade referensv\xE4rden f\xF6r presentation.",
     priceIndex: buildPriceIndex(),
     categoryStats,
     benchmarks,
@@ -68676,7 +68767,7 @@ var spoonacular_default = router11;
 // src/routes/stripe.ts
 var import_express12 = __toESM(require_express2(), 1);
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/Error.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/Error.js
 var Error_exports = {};
 __export(Error_exports, {
   RateLimitError: () => RateLimitError2,
@@ -68878,7 +68969,7 @@ var TemporarySessionExpiredError = class extends StripeError {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/net/HttpClient.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/net/HttpClient.js
 var HttpClient = class _HttpClient {
   /** The client name used for diagnostics. */
   getClientName() {
@@ -68918,7 +69009,7 @@ var HttpClientResponse = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/Types.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/Types.js
 var DEFAULT_BASE_ADDRESSES = {
   api: "api.stripe.com",
   files: "files.stripe.com",
@@ -68926,7 +69017,7 @@ var DEFAULT_BASE_ADDRESSES = {
   meter_events: "meter-events.stripe.com"
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/utils.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/utils.js
 function queryStringifyRequestData(data) {
   return stringifyRequestData(data);
 }
@@ -69202,7 +69293,7 @@ function attachCallSiteToError(err, callSiteStack) {
 ${callerFrames}`;
 }
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/RequestSender.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/RequestSender.js
 var MAX_RETRY_AFTER_WAIT = 60;
 var RequestSender = class _RequestSender {
   constructor(stripe, maxBufferedRequestMetric) {
@@ -69580,7 +69671,7 @@ var RequestSender = class _RequestSender {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/Decimal.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/Decimal.js
 var ROUNDING_PRESETS = {
   "ubb-usage-count": { mode: "significant-figures", value: 15 },
   "v1-api": { mode: "decimal-places", value: 12 }
@@ -70284,7 +70375,7 @@ var Decimal = {
   zero: new DecimalImpl(0n, 0)
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/V2Coercion.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/V2Coercion.js
 var coerceV2RequestData = (data, schema) => {
   if (data == null) {
     return data;
@@ -70365,7 +70456,7 @@ var coerceV2ResponseData = (data, schema) => {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/autoPagination.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/autoPagination.js
 var V1Iterator = class {
   constructor(firstPagePromise, params, options, method, path3, spec, stripeResource) {
     this.index = 0;
@@ -70631,7 +70722,7 @@ function wrapAsyncIteratorWithCallback(asyncIteratorNext, onItem) {
   });
 }
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/StripeResource.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/StripeResource.js
 var StripeResource = class {
   constructor(stripe, deprecatedUrlData) {
     this.resourcePath = "";
@@ -70711,7 +70802,7 @@ var StripeResource = class {
 };
 StripeResource.MAX_BUFFERED_REQUEST_METRICS = 100;
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/StripeContext.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/StripeContext.js
 var StripeContext = class _StripeContext {
   /**
    * Creates a new StripeContext with the given segments.
@@ -70761,14 +70852,14 @@ var StripeContext = class _StripeContext {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/platform/NodePlatformFunctions.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/platform/NodePlatformFunctions.js
 import * as crypto3 from "crypto";
 import { EventEmitter } from "events";
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/crypto/NodeCryptoProvider.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/crypto/NodeCryptoProvider.js
 import * as crypto2 from "crypto";
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/crypto/CryptoProvider.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/crypto/CryptoProvider.js
 var CryptoProvider = class {
   /**
    * Computes a SHA-256 HMAC given a secret and a payload (encoded in UTF-8).
@@ -70805,7 +70896,7 @@ var CryptoProvider = class {
 var CryptoProviderOnlySupportsAsyncError = class extends Error {
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/crypto/NodeCryptoProvider.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/crypto/NodeCryptoProvider.js
 var NodeCryptoProvider = class extends CryptoProvider {
   /** @override */
   computeHMACSignature(payload, secret) {
@@ -70822,7 +70913,7 @@ var NodeCryptoProvider = class extends CryptoProvider {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/net/NodeHttpClient.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/net/NodeHttpClient.js
 import * as http_ from "http";
 import * as https_ from "https";
 var http = http_.default || http_;
@@ -70911,7 +71002,7 @@ var NodeHttpClientResponse = class extends HttpClientResponse {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/net/FetchHttpClient.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/net/FetchHttpClient.js
 var FetchHttpClient = class _FetchHttpClient extends HttpClient {
   constructor(fetchFn) {
     super();
@@ -71026,7 +71117,7 @@ var FetchHttpClientResponse = class _FetchHttpClientResponse extends HttpClientR
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/crypto/SubtleCryptoProvider.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/crypto/SubtleCryptoProvider.js
 var SubtleCryptoProvider = class extends CryptoProvider {
   constructor(subtleCrypto) {
     super();
@@ -71061,7 +71152,7 @@ for (let i = 0; i < byteHexMapping.length; i++) {
   byteHexMapping[i] = i.toString(16).padStart(2, "0");
 }
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/platform/PlatformFunctions.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/platform/PlatformFunctions.js
 var PlatformFunctions = class {
   constructor() {
     this._fetchFn = null;
@@ -71150,7 +71241,7 @@ var PlatformFunctions = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/platform/NodePlatformFunctions.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/platform/NodePlatformFunctions.js
 import { arch, release } from "os";
 var StreamProcessingError = class extends StripeError {
 };
@@ -71227,7 +71318,7 @@ var NodePlatformFunctions = class extends PlatformFunctions {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/Webhooks.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/Webhooks.js
 function createWebhooks(platformFunctions) {
   const Webhook = {
     DEFAULT_TOLERANCE: 300,
@@ -71416,10 +71507,10 @@ function createWebhooks(platformFunctions) {
   return Webhook;
 }
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/apiVersion.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/apiVersion.js
 var ApiVersion = "2026-04-22.dahlia";
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources.js
 var resources_exports3 = {};
 __export(resources_exports3, {
   Account: () => AccountResource3,
@@ -71500,7 +71591,7 @@ __export(resources_exports3, {
   WebhookEndpoints: () => WebhookEndpointResource
 });
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/ResourceNamespace.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/ResourceNamespace.js
 function ResourceNamespace(stripe, resources) {
   for (const name in resources) {
     if (!Object.prototype.hasOwnProperty.call(resources, name)) {
@@ -71517,7 +71608,7 @@ function resourceNamespace(namespace, resources) {
   };
 }
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/V2/Core/AccountLinks.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Core/AccountLinks.js
 var AccountLinkResource = class extends StripeResource {
   /**
    * Creates an AccountLink object that includes a single-use URL that an account can use to access a Stripe-hosted flow for collecting or updating required information.
@@ -71528,7 +71619,7 @@ var AccountLinkResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/V2/Core/AccountTokens.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Core/AccountTokens.js
 var AccountTokenResource = class extends StripeResource {
   /**
    * Creates an Account Token.
@@ -71566,7 +71657,7 @@ var AccountTokenResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/FinancialConnections/Accounts.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/FinancialConnections/Accounts.js
 var AccountResource = class extends StripeResource {
   /**
    * Returns a list of Financial Connections Account objects.
@@ -71616,7 +71707,7 @@ var AccountResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/V2/Core/Accounts/Persons.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Core/Accounts/Persons.js
 var PersonResource = class extends StripeResource {
   /**
    * Returns a paginated list of Persons associated with an Account.
@@ -71722,7 +71813,7 @@ var PersonResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/V2/Core/Accounts/PersonTokens.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Core/Accounts/PersonTokens.js
 var PersonTokenResource = class extends StripeResource {
   /**
    * Creates a Person Token associated with an Account.
@@ -71750,7 +71841,7 @@ var PersonTokenResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/V2/Core/Accounts.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Core/Accounts.js
 var AccountResource2 = class extends StripeResource {
   constructor(stripe) {
     super(stripe);
@@ -71942,7 +72033,7 @@ var AccountResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Entitlements/ActiveEntitlements.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Entitlements/ActiveEntitlements.js
 var ActiveEntitlementResource = class extends StripeResource {
   /**
    * Retrieve a list of active entitlements for a customer
@@ -71960,7 +72051,7 @@ var ActiveEntitlementResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Billing/Alerts.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Billing/Alerts.js
 var AlertResource = class extends StripeResource {
   /**
    * Lists billing active and inactive alerts
@@ -72002,7 +72093,7 @@ var AlertResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Tax/Associations.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Tax/Associations.js
 var AssociationResource = class extends StripeResource {
   /**
    * Finds a tax association object by PaymentIntent id.
@@ -72012,7 +72103,7 @@ var AssociationResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Issuing/Authorizations.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/Authorizations.js
 var AuthorizationResource = class extends StripeResource {
   /**
    * Returns a list of Issuing Authorization objects. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -72882,7 +72973,7 @@ var AuthorizationResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/Issuing/Authorizations.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Issuing/Authorizations.js
 var AuthorizationResource2 = class extends StripeResource {
   /**
    * Create a test-mode authorization.
@@ -74196,7 +74287,7 @@ var AuthorizationResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Tax/Calculations.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Tax/Calculations.js
 var CalculationResource = class extends StripeResource {
   /**
    * Retrieves a Tax Calculation object, if the calculation hasn't expired.
@@ -74220,7 +74311,7 @@ var CalculationResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Issuing/Cardholders.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/Cardholders.js
 var CardholderResource = class extends StripeResource {
   /**
    * Returns a list of Issuing Cardholder objects. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -74250,7 +74341,7 @@ var CardholderResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Issuing/Cards.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/Cards.js
 var CardResource = class extends StripeResource {
   /**
    * Returns a list of Issuing Card objects. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -74280,7 +74371,7 @@ var CardResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/Issuing/Cards.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Issuing/Cards.js
 var CardResource2 = class extends StripeResource {
   /**
    * Updates the shipping status of the specified Issuing Card object to delivered.
@@ -74314,7 +74405,7 @@ var CardResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/BillingPortal/Configurations.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/BillingPortal/Configurations.js
 var ConfigurationResource = class extends StripeResource {
   /**
    * Returns a list of configurations that describe the functionality of the customer portal.
@@ -74344,7 +74435,7 @@ var ConfigurationResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Terminal/Configurations.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Terminal/Configurations.js
 var ConfigurationResource2 = class extends StripeResource {
   /**
    * Deletes a Configuration object.
@@ -74380,7 +74471,7 @@ var ConfigurationResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/ConfirmationTokens.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/ConfirmationTokens.js
 var ConfirmationTokenResource = class extends StripeResource {
   /**
    * Creates a test mode Confirmation Token server side for your integration tests.
@@ -74390,7 +74481,7 @@ var ConfirmationTokenResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Terminal/ConnectionTokens.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Terminal/ConnectionTokens.js
 var ConnectionTokenResource = class extends StripeResource {
   /**
    * To connect to a reader the Stripe Terminal SDK needs to retrieve a short-lived connection token from Stripe, proxied through your server. On your backend, add an endpoint that creates and returns a connection token.
@@ -74400,7 +74491,7 @@ var ConnectionTokenResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Billing/CreditBalanceSummary.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Billing/CreditBalanceSummary.js
 var CreditBalanceSummaryResource = class extends StripeResource {
   /**
    * Retrieves the credit balance summary for a customer.
@@ -74410,7 +74501,7 @@ var CreditBalanceSummaryResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Billing/CreditBalanceTransactions.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Billing/CreditBalanceTransactions.js
 var CreditBalanceTransactionResource = class extends StripeResource {
   /**
    * Retrieve a list of credit balance transactions.
@@ -74428,7 +74519,7 @@ var CreditBalanceTransactionResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Billing/CreditGrants.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Billing/CreditGrants.js
 var CreditGrantResource = class extends StripeResource {
   /**
    * Retrieve a list of credit grants.
@@ -74470,7 +74561,7 @@ var CreditGrantResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Treasury/CreditReversals.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/CreditReversals.js
 var CreditReversalResource = class extends StripeResource {
   /**
    * Returns a list of CreditReversals.
@@ -74494,7 +74585,7 @@ var CreditReversalResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/Customers.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Customers.js
 var CustomerResource = class extends StripeResource {
   /**
    * Create an incoming testmode bank transfer
@@ -74504,7 +74595,7 @@ var CustomerResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Treasury/DebitReversals.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/DebitReversals.js
 var DebitReversalResource = class extends StripeResource {
   /**
    * Returns a list of DebitReversals.
@@ -74528,7 +74619,7 @@ var DebitReversalResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Issuing/Disputes.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/Disputes.js
 var DisputeResource = class extends StripeResource {
   /**
    * Returns a list of Issuing Dispute objects. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -74564,7 +74655,7 @@ var DisputeResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Radar/EarlyFraudWarnings.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Radar/EarlyFraudWarnings.js
 var EarlyFraudWarningResource = class extends StripeResource {
   /**
    * Returns a list of early fraud warnings.
@@ -74584,7 +74675,7 @@ var EarlyFraudWarningResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/V2/Core/EventDestinations.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Core/EventDestinations.js
 var EventDestinationResource = class extends StripeResource {
   /**
    * Lists all event destinations.
@@ -74638,7 +74729,7 @@ var EventDestinationResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/V2/Core/Events.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Core/Events.js
 var EventResource = class extends StripeResource {
   /**
    * List events, going back up to 30 days.
@@ -74691,7 +74782,7 @@ var EventResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Entitlements/Features.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Entitlements/Features.js
 var FeatureResource = class extends StripeResource {
   /**
    * Retrieve a list of features
@@ -74721,7 +74812,7 @@ var FeatureResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Treasury/FinancialAccounts.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/FinancialAccounts.js
 var FinancialAccountResource = class extends StripeResource {
   /**
    * Returns a list of FinancialAccounts.
@@ -74769,7 +74860,7 @@ var FinancialAccountResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/Treasury/InboundTransfers.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Treasury/InboundTransfers.js
 var InboundTransferResource = class extends StripeResource {
   /**
    * Transitions a test mode created InboundTransfer to the failed status. The InboundTransfer must already be in the processing state.
@@ -74791,7 +74882,7 @@ var InboundTransferResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Treasury/InboundTransfers.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/InboundTransfers.js
 var InboundTransferResource2 = class extends StripeResource {
   /**
    * Returns a list of InboundTransfers sent from the specified FinancialAccount.
@@ -74821,7 +74912,7 @@ var InboundTransferResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Terminal/Locations.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Terminal/Locations.js
 var LocationResource = class extends StripeResource {
   /**
    * Deletes a Location object.
@@ -74858,7 +74949,7 @@ var LocationResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Billing/MeterEventAdjustments.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Billing/MeterEventAdjustments.js
 var MeterEventAdjustmentResource = class extends StripeResource {
   /**
    * Creates a billing meter event adjustment.
@@ -74868,7 +74959,7 @@ var MeterEventAdjustmentResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/V2/Billing/MeterEventAdjustments.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Billing/MeterEventAdjustments.js
 var MeterEventAdjustmentResource2 = class extends StripeResource {
   /**
    * Creates a meter event adjustment to cancel a previously sent meter event.
@@ -74878,7 +74969,7 @@ var MeterEventAdjustmentResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/V2/Billing/MeterEventSession.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Billing/MeterEventSession.js
 var MeterEventSessionResource = class extends StripeResource {
   /**
    * Creates a meter event session to send usage on the high-throughput meter event stream. Authentication tokens are only valid for 15 minutes, so you will need to create a new meter event session when your token expires.
@@ -74888,7 +74979,7 @@ var MeterEventSessionResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/V2/Billing/MeterEventStream.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Billing/MeterEventStream.js
 var MeterEventStreamResource = class extends StripeResource {
   /**
    * Creates meter events. Events are processed asynchronously, including validation. Requires a meter event session for authentication. Supports up to 10,000 requests per second in livemode. For even higher rate-limits, contact sales.
@@ -74901,7 +74992,7 @@ var MeterEventStreamResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Billing/MeterEvents.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Billing/MeterEvents.js
 var MeterEventResource = class extends StripeResource {
   /**
    * Creates a billing meter event.
@@ -74911,7 +75002,7 @@ var MeterEventResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/V2/Billing/MeterEvents.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Billing/MeterEvents.js
 var MeterEventResource2 = class extends StripeResource {
   /**
    * Creates a meter event. Events are validated synchronously, but are processed asynchronously. Supports up to 1,000 events per second in livemode. For higher rate-limits, please use meter event streams instead.
@@ -74921,7 +75012,7 @@ var MeterEventResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Billing/Meters.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Billing/Meters.js
 var MeterResource = class extends StripeResource {
   /**
    * Retrieve a list of billing meters.
@@ -74971,7 +75062,7 @@ var MeterResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Terminal/OnboardingLinks.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Terminal/OnboardingLinks.js
 var OnboardingLinkResource = class extends StripeResource {
   /**
    * Creates a new OnboardingLink object that contains a redirect_url used for onboarding onto Tap to Pay on iPhone.
@@ -74981,7 +75072,7 @@ var OnboardingLinkResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Climate/Orders.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Climate/Orders.js
 var OrderResource = class extends StripeResource {
   /**
    * Lists all Climate order objects. The orders are returned sorted by creation date, with the
@@ -75058,7 +75149,7 @@ var OrderResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/Treasury/OutboundPayments.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Treasury/OutboundPayments.js
 var OutboundPaymentResource = class extends StripeResource {
   /**
    * Updates a test mode created OutboundPayment with tracking details. The OutboundPayment must not be cancelable, and cannot be in the canceled or failed states.
@@ -75086,7 +75177,7 @@ var OutboundPaymentResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Treasury/OutboundPayments.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/OutboundPayments.js
 var OutboundPaymentResource2 = class extends StripeResource {
   /**
    * Returns a list of OutboundPayments sent from the specified FinancialAccount.
@@ -75116,7 +75207,7 @@ var OutboundPaymentResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/Treasury/OutboundTransfers.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Treasury/OutboundTransfers.js
 var OutboundTransferResource = class extends StripeResource {
   /**
    * Updates a test mode created OutboundTransfer with tracking details. The OutboundTransfer must not be cancelable, and cannot be in the canceled or failed states.
@@ -75144,7 +75235,7 @@ var OutboundTransferResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Treasury/OutboundTransfers.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/OutboundTransfers.js
 var OutboundTransferResource2 = class extends StripeResource {
   /**
    * Returns a list of OutboundTransfers sent from the specified FinancialAccount.
@@ -75174,7 +75265,7 @@ var OutboundTransferResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Radar/PaymentEvaluations.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Radar/PaymentEvaluations.js
 var PaymentEvaluationResource = class extends StripeResource {
   /**
    * Request a Radar API fraud risk score from Stripe for a payment before sending it for external processor authorization.
@@ -75184,7 +75275,7 @@ var PaymentEvaluationResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Issuing/PersonalizationDesigns.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/PersonalizationDesigns.js
 var PersonalizationDesignResource = class extends StripeResource {
   /**
    * Returns a list of personalization design objects. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -75214,7 +75305,7 @@ var PersonalizationDesignResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/Issuing/PersonalizationDesigns.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Issuing/PersonalizationDesigns.js
 var PersonalizationDesignResource2 = class extends StripeResource {
   /**
    * Updates the status of the specified testmode personalization design object to active.
@@ -75236,7 +75327,7 @@ var PersonalizationDesignResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Issuing/PhysicalBundles.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/PhysicalBundles.js
 var PhysicalBundleResource = class extends StripeResource {
   /**
    * Returns a list of physical bundle objects. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -75254,7 +75345,7 @@ var PhysicalBundleResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Climate/Products.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Climate/Products.js
 var ProductResource = class extends StripeResource {
   /**
    * Lists all available Climate product objects.
@@ -75289,7 +75380,7 @@ var ProductResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Terminal/Readers.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Terminal/Readers.js
 var ReaderResource = class extends StripeResource {
   /**
    * Deletes a Reader object.
@@ -75373,7 +75464,7 @@ var ReaderResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/Terminal/Readers.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Terminal/Readers.js
 var ReaderResource2 = class extends StripeResource {
   /**
    * Presents a payment method on a simulated reader. Can be used to simulate accepting a payment, saving a card or refunding a transaction.
@@ -75395,7 +75486,7 @@ var ReaderResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/Treasury/ReceivedCredits.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Treasury/ReceivedCredits.js
 var ReceivedCreditResource = class extends StripeResource {
   /**
    * Use this endpoint to simulate a test mode ReceivedCredit initiated by a third party. In live mode, you can't directly create ReceivedCredits initiated by third parties.
@@ -75405,7 +75496,7 @@ var ReceivedCreditResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Treasury/ReceivedCredits.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/ReceivedCredits.js
 var ReceivedCreditResource2 = class extends StripeResource {
   /**
    * Returns a list of ReceivedCredits.
@@ -75423,7 +75514,7 @@ var ReceivedCreditResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/Treasury/ReceivedDebits.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Treasury/ReceivedDebits.js
 var ReceivedDebitResource = class extends StripeResource {
   /**
    * Use this endpoint to simulate a test mode ReceivedDebit initiated by a third party. In live mode, you can't directly create ReceivedDebits initiated by third parties.
@@ -75433,7 +75524,7 @@ var ReceivedDebitResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Treasury/ReceivedDebits.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/ReceivedDebits.js
 var ReceivedDebitResource2 = class extends StripeResource {
   /**
    * Returns a list of ReceivedDebits.
@@ -75451,7 +75542,7 @@ var ReceivedDebitResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/Refunds.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Refunds.js
 var RefundResource = class extends StripeResource {
   /**
    * Expire a refund with a status of requires_action.
@@ -75461,7 +75552,7 @@ var RefundResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Tax/Registrations.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Tax/Registrations.js
 var RegistrationResource = class extends StripeResource {
   /**
    * Returns a list of Tax Registration objects.
@@ -75493,7 +75584,7 @@ var RegistrationResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Reporting/ReportRuns.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Reporting/ReportRuns.js
 var ReportRunResource = class extends StripeResource {
   /**
    * Returns a list of Report Runs, with the most recent appearing first.
@@ -75517,7 +75608,7 @@ var ReportRunResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Reporting/ReportTypes.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Reporting/ReportTypes.js
 var ReportTypeResource = class extends StripeResource {
   /**
    * Returns a full list of Report Types.
@@ -75535,7 +75626,7 @@ var ReportTypeResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Forwarding/Requests.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Forwarding/Requests.js
 var RequestResource = class extends StripeResource {
   /**
    * Lists all ForwardingRequest objects.
@@ -75559,7 +75650,7 @@ var RequestResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Sigma/ScheduledQueryRuns.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Sigma/ScheduledQueryRuns.js
 var ScheduledQueryRunResource = class extends StripeResource {
   /**
    * Returns a list of scheduled query runs.
@@ -75577,7 +75668,7 @@ var ScheduledQueryRunResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Apps/Secrets.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Apps/Secrets.js
 var SecretResource = class extends StripeResource {
   /**
    * List all secrets stored on the given scope.
@@ -75607,7 +75698,7 @@ var SecretResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/BillingPortal/Sessions.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/BillingPortal/Sessions.js
 var SessionResource = class extends StripeResource {
   /**
    * Creates a session of the customer portal.
@@ -75617,7 +75708,7 @@ var SessionResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Checkout/Sessions.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Checkout/Sessions.js
 var SessionResource2 = class extends StripeResource {
   /**
    * Returns a list of Checkout Sessions.
@@ -76185,7 +76276,7 @@ var SessionResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/FinancialConnections/Sessions.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/FinancialConnections/Sessions.js
 var SessionResource3 = class extends StripeResource {
   /**
    * Retrieves the details of a Financial Connections Session
@@ -76201,7 +76292,7 @@ var SessionResource3 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Tax/Settings.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Tax/Settings.js
 var SettingResource = class extends StripeResource {
   /**
    * Retrieves Tax Settings for a merchant.
@@ -76217,7 +76308,7 @@ var SettingResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Climate/Suppliers.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Climate/Suppliers.js
 var SupplierResource = class extends StripeResource {
   /**
    * Lists all available Climate supplier objects.
@@ -76235,7 +76326,7 @@ var SupplierResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/TestClocks.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/TestClocks.js
 var TestClockResource = class extends StripeResource {
   /**
    * Deletes a test clock.
@@ -76271,7 +76362,7 @@ var TestClockResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Issuing/Tokens.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/Tokens.js
 var TokenResource = class extends StripeResource {
   /**
    * Lists all Issuing Token objects for a given card.
@@ -76295,7 +76386,7 @@ var TokenResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Treasury/TransactionEntries.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/TransactionEntries.js
 var TransactionEntryResource = class extends StripeResource {
   /**
    * Retrieves a list of TransactionEntry objects.
@@ -76692,7 +76783,7 @@ var TransactionEntryResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/FinancialConnections/Transactions.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/FinancialConnections/Transactions.js
 var TransactionResource = class extends StripeResource {
   /**
    * Returns a list of Financial Connections Transaction objects.
@@ -76710,7 +76801,7 @@ var TransactionResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Issuing/Transactions.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/Transactions.js
 var TransactionResource2 = class extends StripeResource {
   /**
    * Returns a list of Issuing Transaction objects. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -76990,7 +77081,7 @@ var TransactionResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Tax/Transactions.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Tax/Transactions.js
 var TransactionResource3 = class extends StripeResource {
   /**
    * Retrieves a Tax Transaction object.
@@ -77020,7 +77111,7 @@ var TransactionResource3 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/Issuing/Transactions.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Issuing/Transactions.js
 var TransactionResource4 = class extends StripeResource {
   /**
    * Refund a test-mode Transaction.
@@ -77397,7 +77488,7 @@ var TransactionResource4 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Treasury/Transactions.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/Transactions.js
 var TransactionResource5 = class extends StripeResource {
   /**
    * Retrieves a list of Transaction objects.
@@ -77846,7 +77937,7 @@ var TransactionResource5 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Radar/ValueListItems.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Radar/ValueListItems.js
 var ValueListItemResource = class extends StripeResource {
   /**
    * Deletes a ValueListItem object, removing it from its parent value list.
@@ -77876,7 +77967,7 @@ var ValueListItemResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Radar/ValueLists.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Radar/ValueLists.js
 var ValueListResource = class extends StripeResource {
   /**
    * Deletes a ValueList object, also deleting any items contained within the value list. To be deleted, a value list must not be referenced in any rules.
@@ -77912,7 +78003,7 @@ var ValueListResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Identity/VerificationReports.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Identity/VerificationReports.js
 var VerificationReportResource = class extends StripeResource {
   /**
    * List all verification reports.
@@ -77930,7 +78021,7 @@ var VerificationReportResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Identity/VerificationSessions.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Identity/VerificationSessions.js
 var VerificationSessionResource = class extends StripeResource {
   /**
    * Returns a list of VerificationSessions
@@ -78004,7 +78095,7 @@ var VerificationSessionResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Accounts.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Accounts.js
 var AccountResource3 = class extends StripeResource {
   /**
    * With [Connect](https://docs.stripe.com/connect), you can delete accounts you manage.
@@ -78180,7 +78271,7 @@ var AccountResource3 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/AccountLinks.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/AccountLinks.js
 var AccountLinkResource2 = class extends StripeResource {
   /**
    * Creates an AccountLink object that includes a single-use Stripe URL that the platform can redirect their user to in order to take them through the Connect Onboarding flow.
@@ -78190,7 +78281,7 @@ var AccountLinkResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/AccountSessions.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/AccountSessions.js
 var AccountSessionResource = class extends StripeResource {
   /**
    * Creates a AccountSession object that includes a single-use token that the platform can use on their front-end to grant client-side API access.
@@ -78200,7 +78291,7 @@ var AccountSessionResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/ApplePayDomains.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/ApplePayDomains.js
 var ApplePayDomainResource = class extends StripeResource {
   /**
    * Delete an apple pay domain.
@@ -78230,7 +78321,7 @@ var ApplePayDomainResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/ApplicationFees.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/ApplicationFees.js
 var ApplicationFeeResource = class extends StripeResource {
   /**
    * Returns a list of application fees you've previously collected. The application fees are returned in sorted order, with the most recent fees appearing first.
@@ -78284,7 +78375,7 @@ var ApplicationFeeResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Balance.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Balance.js
 var BalanceResource = class extends StripeResource {
   /**
    * Retrieves the current account balance, based on the authentication that was used to make the request.
@@ -78295,7 +78386,7 @@ var BalanceResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/BalanceSettings.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/BalanceSettings.js
 var BalanceSettingResource = class extends StripeResource {
   /**
    * Retrieves balance settings for a given connected account.
@@ -78313,7 +78404,7 @@ var BalanceSettingResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/BalanceTransactions.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/BalanceTransactions.js
 var BalanceTransactionResource = class extends StripeResource {
   /**
    * Returns a list of transactions that have contributed to the Stripe account balance (e.g., charges, transfers, and so forth). The transactions are returned in sorted order, with the most recent transactions appearing first.
@@ -78335,7 +78426,7 @@ var BalanceTransactionResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Charges.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Charges.js
 var ChargeResource = class extends StripeResource {
   /**
    * Returns a list of charges you've previously created. The charges are returned in sorted order, with the most recent charges appearing first.
@@ -78388,7 +78479,7 @@ var ChargeResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/ConfirmationTokens.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/ConfirmationTokens.js
 var ConfirmationTokenResource2 = class extends StripeResource {
   /**
    * Retrieves an existing ConfirmationToken object
@@ -78398,7 +78489,7 @@ var ConfirmationTokenResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/CountrySpecs.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/CountrySpecs.js
 var CountrySpecResource = class extends StripeResource {
   /**
    * Lists all Country Spec objects available in the API.
@@ -78416,7 +78507,7 @@ var CountrySpecResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Coupons.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Coupons.js
 var CouponResource = class extends StripeResource {
   /**
    * You can delete coupons via the [coupon management](https://dashboard.stripe.com/coupons) page of the Stripe dashboard. However, deleting a coupon does not affect any customers who have already applied the coupon; it means that new customers can't redeem the coupon. You can also delete coupons via the API.
@@ -78454,7 +78545,7 @@ var CouponResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/CreditNotes.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/CreditNotes.js
 var CreditNoteResource = class extends StripeResource {
   /**
    * Returns a list of credit notes.
@@ -78739,7 +78830,7 @@ var CreditNoteResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Customers.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Customers.js
 var CustomerResource2 = class extends StripeResource {
   /**
    * Permanently deletes a customer. It cannot be undone. Also immediately cancels any active subscriptions on the customer.
@@ -79398,7 +79489,7 @@ var CustomerResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/CustomerSessions.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/CustomerSessions.js
 var CustomerSessionResource = class extends StripeResource {
   /**
    * Creates a Customer Session object that includes a single-use client secret that you can use on your front-end to grant client-side API access for certain customer resources.
@@ -79408,7 +79499,7 @@ var CustomerSessionResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Disputes.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Disputes.js
 var DisputeResource2 = class extends StripeResource {
   /**
    * Returns a list of your disputes.
@@ -79442,7 +79533,7 @@ var DisputeResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/EphemeralKeys.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/EphemeralKeys.js
 var EphemeralKeyResource = class extends StripeResource {
   /**
    * Invalidates a short-lived API key for a given resource.
@@ -79461,7 +79552,7 @@ var EphemeralKeyResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Events.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Events.js
 var EventResource2 = class extends StripeResource {
   /**
    * List events, going back up to 30 days. Each event data is rendered according to Stripe API version at its creation time, specified in [event object](https://docs.stripe.com/api/events/object) api_version attribute (not according to your current Stripe API version or Stripe-Version header).
@@ -79479,7 +79570,7 @@ var EventResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/ExchangeRates.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/ExchangeRates.js
 var ExchangeRateResource = class extends StripeResource {
   /**
    * [Deprecated] The ExchangeRate APIs are deprecated. Please use the [FX Quotes API](https://docs.stripe.com/payments/currencies/localize-prices/fx-quotes-api) instead.
@@ -79503,7 +79594,7 @@ var ExchangeRateResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/multipart.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/multipart.js
 var multipartDataGenerator = (method, data, headers) => {
   const segno = (Math.round(Math.random() * 1e16) + Math.round(Math.random() * 1e16)).toString();
   headers["Content-Type"] = `multipart/form-data; boundary=${segno}`;
@@ -79554,7 +79645,7 @@ function multipartRequestDataProcessor(method, data, headers, callback) {
   }).catch((err) => callback(err, null));
 }
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Files.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Files.js
 var FileResource = class extends StripeResource {
   constructor() {
     super(...arguments);
@@ -79589,7 +79680,7 @@ var FileResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/FileLinks.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/FileLinks.js
 var FileLinkResource = class extends StripeResource {
   /**
    * Returns a list of file links.
@@ -79619,7 +79710,7 @@ var FileLinkResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Invoices.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Invoices.js
 var InvoiceResource = class extends StripeResource {
   /**
    * Permanently deletes a one-off invoice draft. This cannot be undone. Attempts to delete invoices that are no longer in a draft state will fail; once an invoice has been finalized or if an invoice is for a subscription, it must be [voided](https://docs.stripe.com/api/invoices/void).
@@ -80482,7 +80573,7 @@ var InvoiceResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/InvoiceItems.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/InvoiceItems.js
 var InvoiceItemResource = class extends StripeResource {
   /**
    * Deletes an invoice item, removing it from an invoice. Deleting invoice items is only possible when they're not attached to invoices, or if it's attached to a draft invoice.
@@ -80623,7 +80714,7 @@ var InvoiceItemResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/InvoicePayments.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/InvoicePayments.js
 var InvoicePaymentResource = class extends StripeResource {
   /**
    * When retrieving an invoice, there is an includable payments property containing the first handful of those items. There is also a URL where you can retrieve the full (paginated) list of payments.
@@ -80641,7 +80732,7 @@ var InvoicePaymentResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/InvoiceRenderingTemplates.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/InvoiceRenderingTemplates.js
 var InvoiceRenderingTemplateResource = class extends StripeResource {
   /**
    * List all templates, ordered by creation date, with the most recently created template appearing first.
@@ -80671,7 +80762,7 @@ var InvoiceRenderingTemplateResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Mandates.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Mandates.js
 var MandateResource = class extends StripeResource {
   /**
    * Retrieves a Mandate object.
@@ -80681,7 +80772,7 @@ var MandateResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/OAuth.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/OAuth.js
 var OAuthResource = class extends StripeResource {
   constructor() {
     super(...arguments);
@@ -80721,7 +80812,7 @@ var OAuthResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/PaymentAttemptRecords.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/PaymentAttemptRecords.js
 var PaymentAttemptRecordResource = class extends StripeResource {
   /**
    * List all the Payment Attempt Records attached to the specified Payment Record.
@@ -80739,7 +80830,7 @@ var PaymentAttemptRecordResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/PaymentIntents.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/PaymentIntents.js
 var PaymentIntentResource = class extends StripeResource {
   /**
    * Returns a list of PaymentIntents.
@@ -80903,7 +80994,7 @@ var PaymentIntentResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/PaymentLinks.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/PaymentLinks.js
 var PaymentLinkResource = class extends StripeResource {
   /**
    * Returns a list of your payment links.
@@ -81334,7 +81425,7 @@ var PaymentLinkResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/PaymentMethods.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/PaymentMethods.js
 var PaymentMethodResource = class extends StripeResource {
   /**
    * Returns a list of all PaymentMethods.
@@ -81390,7 +81481,7 @@ var PaymentMethodResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/PaymentMethodConfigurations.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/PaymentMethodConfigurations.js
 var PaymentMethodConfigurationResource = class extends StripeResource {
   /**
    * List payment method configurations
@@ -81420,7 +81511,7 @@ var PaymentMethodConfigurationResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/PaymentMethodDomains.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/PaymentMethodDomains.js
 var PaymentMethodDomainResource = class extends StripeResource {
   /**
    * Lists the details of existing payment method domains.
@@ -81461,7 +81552,7 @@ var PaymentMethodDomainResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/PaymentRecords.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/PaymentRecords.js
 var PaymentRecordResource = class extends StripeResource {
   /**
    * Retrieves a Payment Record with the given ID
@@ -81520,7 +81611,7 @@ var PaymentRecordResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Payouts.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Payouts.js
 var PayoutResource = class extends StripeResource {
   /**
    * Returns a list of existing payouts sent to third-party bank accounts or payouts that Stripe sent to you. The payouts return in sorted order, with the most recently created payouts appearing first.
@@ -81568,7 +81659,7 @@ var PayoutResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Plans.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Plans.js
 var PlanResource = class extends StripeResource {
   /**
    * Deleting plans means new subscribers can't be added. Existing subscribers aren't affected.
@@ -81722,7 +81813,7 @@ var PlanResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Prices.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Prices.js
 var PriceResource = class extends StripeResource {
   /**
    * Returns a list of your active prices, excluding [inline prices](https://docs.stripe.com/docs/products-prices/pricing-models#inline-pricing). For the list of inactive prices, set active to false.
@@ -82082,7 +82173,7 @@ var PriceResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Products.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Products.js
 var ProductResource2 = class extends StripeResource {
   /**
    * Delete a product. Deleting a product is only possible if it has no prices associated with it. Additionally, deleting a product with type=good is only possible if it has no SKUs associated with it.
@@ -82186,7 +82277,7 @@ var ProductResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/PromotionCodes.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/PromotionCodes.js
 var PromotionCodeResource = class extends StripeResource {
   /**
    * Returns a list of your promotion codes.
@@ -82216,7 +82307,7 @@ var PromotionCodeResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Quotes.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Quotes.js
 var QuoteResource = class extends StripeResource {
   /**
    * Returns a list of your quotes.
@@ -83079,7 +83170,7 @@ var QuoteResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Refunds.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Refunds.js
 var RefundResource2 = class extends StripeResource {
   /**
    * Returns a list of all refunds you created. We return the refunds in sorted order, with the most recent refunds appearing first. The 10 most recent refunds are always available by default on the Charge object.
@@ -83129,7 +83220,7 @@ var RefundResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Reviews.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Reviews.js
 var ReviewResource = class extends StripeResource {
   /**
    * Returns a list of Review objects that have open set to true. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -83153,7 +83244,7 @@ var ReviewResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/SetupAttempts.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/SetupAttempts.js
 var SetupAttemptResource = class extends StripeResource {
   /**
    * Returns a list of SetupAttempts that associate with a provided SetupIntent.
@@ -83165,7 +83256,7 @@ var SetupAttemptResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/SetupIntents.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/SetupIntents.js
 var SetupIntentResource = class extends StripeResource {
   /**
    * Returns a list of SetupIntents.
@@ -83235,7 +83326,7 @@ var SetupIntentResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/ShippingRates.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/ShippingRates.js
 var ShippingRateResource = class extends StripeResource {
   /**
    * Returns a list of your shipping rates.
@@ -83265,7 +83356,7 @@ var ShippingRateResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Sources.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Sources.js
 var SourceResource = class extends StripeResource {
   /**
    * Retrieves an existing source object. Supply the unique source ID from a source creation request and Stripe will return the corresponding up-to-date source object information.
@@ -83303,7 +83394,7 @@ var SourceResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Subscriptions.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Subscriptions.js
 var SubscriptionResource = class extends StripeResource {
   /**
    * Cancels a customer's subscription immediately. The customer won't be charged again for the subscription. After it's canceled, you can no longer update the subscription or its [metadata](https://docs.stripe.com/metadata).
@@ -84246,7 +84337,7 @@ var SubscriptionResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/SubscriptionItems.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/SubscriptionItems.js
 var SubscriptionItemResource = class extends StripeResource {
   /**
    * Deletes an item from the subscription. Removing a subscription item from a subscription will not cancel the subscription.
@@ -84643,7 +84734,7 @@ var SubscriptionItemResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/SubscriptionSchedules.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/SubscriptionSchedules.js
 var SubscriptionScheduleResource = class extends StripeResource {
   /**
    * Retrieves the list of your subscription schedules.
@@ -84769,7 +84860,7 @@ var SubscriptionScheduleResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TaxCodes.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TaxCodes.js
 var TaxCodeResource = class extends StripeResource {
   /**
    * A list of [all tax codes available](https://stripe.com/docs/tax/tax-categories) to add to Products in order to allow specific tax calculations.
@@ -84787,7 +84878,7 @@ var TaxCodeResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TaxIds.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TaxIds.js
 var TaxIdResource = class extends StripeResource {
   /**
    * Deletes an existing account or customer tax_id object.
@@ -84817,7 +84908,7 @@ var TaxIdResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TaxRates.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TaxRates.js
 var TaxRateResource = class extends StripeResource {
   /**
    * Returns a list of your tax rates. Tax rates are returned sorted by creation date, with the most recently created tax rates appearing first.
@@ -84847,7 +84938,7 @@ var TaxRateResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Tokens.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Tokens.js
 var TokenResource2 = class extends StripeResource {
   /**
    * Retrieves the token with the given ID.
@@ -84864,7 +84955,7 @@ var TokenResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Topups.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Topups.js
 var TopupResource = class extends StripeResource {
   /**
    * Returns a list of top-ups.
@@ -84900,7 +84991,7 @@ var TopupResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Transfers.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Transfers.js
 var TransferResource = class extends StripeResource {
   /**
    * Returns a list of existing transfers sent to connected accounts. The transfers are returned in sorted order, with the most recently created transfers appearing first.
@@ -84964,7 +85055,7 @@ var TransferResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/WebhookEndpoints.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/WebhookEndpoints.js
 var WebhookEndpointResource = class extends StripeResource {
   /**
    * You can also delete webhook endpoints via the [webhook endpoint management](https://dashboard.stripe.com/account/webhooks) page of the Stripe dashboard.
@@ -85000,7 +85091,7 @@ var WebhookEndpointResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources.js
 var Apps = resourceNamespace("apps", { Secrets: SecretResource });
 var Billing = resourceNamespace("billing", {
   Alerts: AlertResource,
@@ -85126,7 +85217,7 @@ var V2 = resourceNamespace("v2", {
   })
 });
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Apps/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Apps/index.js
 var Apps2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85134,7 +85225,7 @@ var Apps2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Billing/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Billing/index.js
 var Billing2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85148,7 +85239,7 @@ var Billing2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/BillingPortal/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/BillingPortal/index.js
 var BillingPortal2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85157,7 +85248,7 @@ var BillingPortal2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Checkout/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Checkout/index.js
 var Checkout2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85165,7 +85256,7 @@ var Checkout2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Climate/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Climate/index.js
 var Climate2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85175,7 +85266,7 @@ var Climate2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Entitlements/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Entitlements/index.js
 var Entitlements2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85184,7 +85275,7 @@ var Entitlements2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/FinancialConnections/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/FinancialConnections/index.js
 var FinancialConnections2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85194,7 +85285,7 @@ var FinancialConnections2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Forwarding/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Forwarding/index.js
 var Forwarding2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85202,7 +85293,7 @@ var Forwarding2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Identity/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Identity/index.js
 var Identity2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85211,7 +85302,7 @@ var Identity2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Issuing/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/index.js
 var Issuing2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85226,7 +85317,7 @@ var Issuing2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Radar/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Radar/index.js
 var Radar2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85237,7 +85328,7 @@ var Radar2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Reporting/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Reporting/index.js
 var Reporting2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85246,7 +85337,7 @@ var Reporting2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Sigma/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Sigma/index.js
 var Sigma2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85254,7 +85345,7 @@ var Sigma2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Tax/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Tax/index.js
 var Tax2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85266,7 +85357,7 @@ var Tax2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Terminal/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Terminal/index.js
 var Terminal2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85278,7 +85369,7 @@ var Terminal2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/Issuing/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Issuing/index.js
 var Issuing3 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85289,7 +85380,7 @@ var Issuing3 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/Terminal/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Terminal/index.js
 var Terminal3 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85297,7 +85388,7 @@ var Terminal3 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/Treasury/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Treasury/index.js
 var Treasury2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85309,7 +85400,7 @@ var Treasury2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/TestHelpers/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/index.js
 var TestHelpers2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85323,7 +85414,7 @@ var TestHelpers2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/Treasury/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/index.js
 var Treasury3 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85340,7 +85431,7 @@ var Treasury3 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/V2/Billing/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Billing/index.js
 var Billing3 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85351,7 +85442,7 @@ var Billing3 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/V2/Core/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Core/index.js
 var Core = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85363,7 +85454,7 @@ var Core = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/resources/V2/index.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/index.js
 var V22 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -85372,7 +85463,7 @@ var V22 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.0/node_modules/stripe/esm/stripe.esm.node.js
+// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/stripe.esm.node.js
 var DEFAULT_HOST = "api.stripe.com";
 var DEFAULT_PORT = "443";
 var DEFAULT_BASE_PATH = "/v1/";
@@ -85851,6 +85942,7 @@ Stripe.initialize(new NodePlatformFunctions());
 var stripe_esm_node_default = Stripe;
 
 // src/routes/stripe.ts
+var import_jsonwebtoken2 = __toESM(require_jsonwebtoken(), 1);
 var router12 = (0, import_express12.Router)();
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -85858,17 +85950,31 @@ function getStripe() {
   return new stripe_esm_node_default(key, { apiVersion: "2024-11-20.acacia" });
 }
 var PLAN_PRICE_SEK = 8900;
+function getSecret2() {
+  return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
+}
+async function getAuthenticatedUser(req) {
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) return null;
+  try {
+    const payload = import_jsonwebtoken2.default.verify(header.slice(7), getSecret2());
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, payload.id));
+    return user ?? null;
+  } catch {
+    return null;
+  }
+}
 router12.post("/checkout", async (req, res) => {
   const stripe = getStripe();
   if (!stripe) return res.status(503).json({ error: "Stripe inte konfigurerat." });
-  const { userId, email: email3, name } = req.body ?? {};
-  if (!email3) return res.status(400).json({ error: "email kr\xE4vs" });
+  const user = await getAuthenticatedUser(req);
+  if (!user) return res.status(401).json({ error: "Ej inloggad" });
   const origin = req.headers.origin ?? "https://smakvarlden.se";
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      customer_email: email3,
-      metadata: { user_id: String(userId ?? ""), name: name ?? "" },
+      customer_email: user.email,
+      metadata: { user_id: String(user.id), name: user.name },
       line_items: [
         {
           price_data: {
@@ -85901,11 +86007,11 @@ router12.post("/webhook", async (req, res) => {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   let event;
   try {
-    const raw = req.rawBody ?? Buffer.from(JSON.stringify(req.body));
+    const raw = Buffer.isBuffer(req.body) ? req.body : req.rawBody ?? Buffer.from(JSON.stringify(req.body));
     if (webhookSecret && sig) {
       event = stripe.webhooks.constructEvent(raw, sig, webhookSecret);
     } else {
-      event = req.body;
+      event = Buffer.isBuffer(req.body) ? JSON.parse(req.body.toString("utf8")) : req.body;
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Webhook-fel";
@@ -85932,10 +86038,9 @@ router12.post("/webhook", async (req, res) => {
   return res.json({ received: true });
 });
 router12.get("/status", async (req, res) => {
-  const userId = req.user?.id;
-  if (!userId) return res.status(401).json({ error: "Ej inloggad" });
-  const [user] = await db.select({ plan: usersTable.plan }).from(usersTable).where(eq(usersTable.id, userId));
-  return res.json({ plan: user?.plan ?? "free" });
+  const user = await getAuthenticatedUser(req);
+  if (!user) return res.status(401).json({ error: "Ej inloggad" });
+  return res.json({ plan: user.plan ?? "free" });
 });
 var stripe_default = router12;
 
@@ -85957,7 +86062,7 @@ var routes_default = router13;
 
 // src/lib/logger.ts
 var import_pino = __toESM(require_pino(), 1);
-var isProduction = process.env.NODE_ENV === "production";
+var isProduction = process.env.NODE_ENV === "production" || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
 var logger = (0, import_pino.default)({
   level: process.env.LOG_LEVEL ?? "info",
   redact: [
@@ -85995,11 +86100,17 @@ app.use(
   })
 );
 app.use((0, import_cors.default)());
+app.use("/api/stripe/webhook", import_express14.default.raw({ type: "application/json" }));
 app.use(import_express14.default.json());
 app.use(import_express14.default.urlencoded({ extended: true }));
 app.use("/api", routes_default);
-var __dirname2 = path2.dirname(fileURLToPath(import.meta.url));
-var staticDir = process.env.STATIC_DIR ?? path2.resolve(__dirname2, "..", "..", "smakvarlden", "dist", "public");
+var staticDir = process.env.STATIC_DIR ?? (() => {
+  try {
+    return path2.resolve(path2.dirname(fileURLToPath(import.meta.url)), "..", "..", "smakvarlden", "dist", "public");
+  } catch {
+    return "";
+  }
+})();
 if (fs.existsSync(staticDir)) {
   app.use(import_express14.default.static(staticDir));
   app.get("*", (_req, res) => {
@@ -86008,6 +86119,10 @@ if (fs.existsSync(staticDir)) {
 } else {
   logger.warn({ staticDir }, "Static directory not found \u2014 frontend not served");
 }
+app.use((err, _req, res, _next) => {
+  logger.error({ err }, "Unhandled error");
+  res.status(500).json({ error: "Internal server error" });
+});
 var app_default = app;
 
 // src/index.ts
