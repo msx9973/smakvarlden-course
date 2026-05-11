@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import {
-  Trash2, TrendingDown, AlertTriangle, Leaf, Lightbulb, BarChart2, Calendar, DollarSign, Info,
+  Trash2, TrendingDown, AlertTriangle, Leaf, Lightbulb, BarChart2, Calendar, DollarSign, Info, ArrowRight,
 } from "lucide-react";
 import {
   RadialBarChart, RadialBar, ResponsiveContainer, Cell, BarChart, Bar,
@@ -19,6 +19,17 @@ interface CategorySvinn {
   avgPriceSek: number;
   totalIngredientCostSek: number;
   wasteCostSek: number;
+  estimatedWeeklyWasteSek: number;
+  ingredients: CategoryIngredient[];
+}
+interface CategoryIngredient {
+  id: number;
+  name: string;
+  unit: string;
+  currentPriceSek: number;
+  priceChangePct: number;
+  supplier: string | null;
+  estimatedWasteCostSek: number;
   estimatedWeeklyWasteSek: number;
 }
 interface SvinnSummary {
@@ -99,6 +110,7 @@ const SV_BENCHMARKS = [
 export default function Svinn() {
   const { t, lang } = useI18n();
   const [view, setView] = useState<"table" | "chart">("table");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery<SvinnSummary>({
     queryKey: ["svinn-summary"],
@@ -108,10 +120,11 @@ export default function Svinn() {
 
   const chartData = (data?.categorySvinn ?? [])
     .slice(0, 10)
-    .map((c) => ({ name: t(c.category), svinn: c.svinnRatePct, cost: c.wasteCostSek }));
+    .map((c) => ({ name: t(c.category), category: c.category, svinn: c.svinnRatePct, cost: c.wasteCostSek }));
 
   const tips = lang === "en" ? EN_TIPS : (data?.tips ?? []);
   const benchmarks = lang === "en" ? EN_BENCHMARKS : SV_BENCHMARKS;
+  const selected = data?.categorySvinn.find((cat) => cat.category === selectedCategory) ?? null;
   const dataNote = data
     ? lang === "en"
       ? `Estimated waste analysis. Costs are based on your ingredient categories, standard industry reference rates, and the assumption of ${data.assumptions.avgDailyPortions} portions per day.`
@@ -219,6 +232,9 @@ export default function Svinn() {
             <h2 className="font-serif text-base font-semibold" style={{ color: "hsl(17 47% 13%)" }}>
               {t("Svinn per kategori")}
             </h2>
+            <span className="ml-auto hidden sm:inline-flex items-center gap-1 text-[11px] font-medium" style={{ color: "hsl(20 20% 58%)" }}>
+              <ArrowRight className="w-3 h-3" /> {lang === "en" ? "Click a category for details" : "Klicka på en kategori för detaljer"}
+            </span>
           </div>
 
           {isLoading ? (
@@ -238,8 +254,13 @@ export default function Svinn() {
               </thead>
               <tbody>
                 {(data?.categorySvinn ?? []).map((cat, i) => (
-                  <tr key={cat.category} className="hover:bg-muted/25 transition-colors"
-                    style={{ borderTop: i === 0 ? "none" : "1px solid hsl(33 28% 92%)" }}>
+                  <tr key={cat.category}
+                    className="hover:bg-muted/25 transition-colors cursor-pointer"
+                    onClick={() => setSelectedCategory(cat.category)}
+                    style={{
+                      borderTop: i === 0 ? "none" : "1px solid hsl(33 28% 92%)",
+                      background: selectedCategory === cat.category ? "rgba(201,168,76,.10)" : undefined,
+                    }}>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2.5">
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
@@ -282,9 +303,9 @@ export default function Svinn() {
                     formatter={(val: number) => [`${val}%`, t("Svinnfrekvens")]}
                     cursor={{ fill: "hsl(36 27% 95%)" }}
                   />
-                  <Bar dataKey="svinn" radius={[6, 6, 0, 0]}>
+                  <Bar dataKey="svinn" radius={[6, 6, 0, 0]} onClick={(entry: any) => setSelectedCategory(entry.category)}>
                     {chartData.map((entry, i) => (
-                      <Cell key={i} fill={RATE_COLOR(entry.svinn)} />
+                      <Cell key={i} fill={RATE_COLOR(entry.svinn)} cursor="pointer" />
                     ))}
                   </Bar>
                 </BarChart>
@@ -321,6 +342,104 @@ export default function Svinn() {
           </div>
         </div>
       </div>
+
+      {selected && (
+        <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(44,24,16,.07)" }}>
+          <div className="px-6 py-4 flex items-start gap-3" style={{ borderBottom: "1px solid hsl(33 28% 91%)" }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: RATE_BG(selected.svinnRatePct) }}>
+              <Leaf className="w-4 h-4" style={{ color: RATE_COLOR(selected.svinnRatePct) }} />
+            </div>
+            <div className="flex-1">
+              <h2 className="font-serif text-base font-semibold" style={{ color: "hsl(17 47% 13%)" }}>
+                {t(selected.category)}
+              </h2>
+              <p className="text-[12px]" style={{ color: "hsl(20 20% 55%)" }}>
+                {lang === "en"
+                  ? `${selected.ingredientCount} ingredients · ${selected.svinnRatePct}% modeled waste rate · ${selected.estimatedWeeklyWasteSek.toFixed(0)} SEK/week`
+                  : `${selected.ingredientCount} ingredienser · ${selected.svinnRatePct}% modellerad svinnfrekvens · ${selected.estimatedWeeklyWasteSek.toFixed(0)} kr/vecka`}
+              </p>
+            </div>
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className="px-3 py-1.5 rounded-lg text-[12px] font-semibold"
+              style={{ background: "hsl(36 27% 94%)", color: "hsl(20 20% 45%)" }}>
+              {lang === "en" ? "Close" : "Stäng"}
+            </button>
+          </div>
+          <div className="grid gap-0 lg:grid-cols-3">
+            <div className="lg:col-span-2 overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ borderBottom: "1px solid hsl(33 28% 90%)", background: "hsl(36 27% 97%)" }}>
+                    {[
+                      lang === "en" ? "Ingredient" : "Ingrediens",
+                      lang === "en" ? "Supplier" : "Leverantör",
+                      lang === "en" ? "Price" : "Pris",
+                      lang === "en" ? "Price change" : "Prisändring",
+                      lang === "en" ? "Est. waste/week" : "Est. svinn/vecka",
+                    ].map((h, i) => (
+                      <th key={h}
+                        className={`px-5 py-3 text-[10px] font-bold uppercase tracking-widest${i >= 2 ? " text-right" : " text-left"}`}
+                        style={{ color: "hsl(20 20% 60%)" }}>
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {selected.ingredients.map((ingredient, i) => (
+                    <tr key={ingredient.id}
+                      className="hover:bg-muted/25 transition-colors"
+                      style={{ borderTop: i === 0 ? "none" : "1px solid hsl(33 28% 92%)" }}>
+                      <td className="px-5 py-3.5 text-[13px] font-semibold" style={{ color: "hsl(17 47% 13%)" }}>
+                        {ingredient.name}
+                      </td>
+                      <td className="px-5 py-3.5 text-[13px]" style={{ color: "hsl(20 20% 55%)" }}>
+                        {ingredient.supplier ?? "—"}
+                      </td>
+                      <td className="px-5 py-3.5 text-right text-[13px]" style={{ color: "hsl(17 47% 13%)" }}>
+                        {ingredient.currentPriceSek.toFixed(2)} kr/{ingredient.unit}
+                      </td>
+                      <td className="px-5 py-3.5 text-right text-[13px]" style={{ color: ingredient.priceChangePct > 0 ? "#ef4444" : ingredient.priceChangePct < 0 ? "#10b981" : "hsl(20 20% 55%)" }}>
+                        {ingredient.priceChangePct > 0 ? "+" : ""}{ingredient.priceChangePct.toFixed(1)}%
+                      </td>
+                      <td className="px-5 py-3.5 text-right text-[13px] font-semibold" style={{ color: "#ef4444" }}>
+                        {ingredient.estimatedWeeklyWasteSek.toFixed(2)} kr
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="p-5 flex flex-col gap-3" style={{ borderLeft: "1px solid hsl(33 28% 91%)" }}>
+              <div className="rounded-xl p-4" style={{ background: "hsl(36 27% 97%)", border: "1px solid hsl(33 28% 91%)" }}>
+                <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "hsl(44 54% 46%)" }}>
+                  {lang === "en" ? "Calculation" : "Beräkning"}
+                </p>
+                <p className="text-[12px] leading-relaxed" style={{ color: "hsl(20 20% 55%)" }}>
+                  {lang === "en"
+                    ? `Each ingredient uses the category rate (${selected.svinnRatePct}%). Weekly estimate assumes ${data?.assumptions.avgDailyPortions} portions/day and seven service days.`
+                    : `Varje ingrediens använder kategorins svinnfrekvens (${selected.svinnRatePct}%). Veckoestimatet antar ${data?.assumptions.avgDailyPortions} portioner/dag och sju serveringsdagar.`}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-xl p-3" style={{ background: RATE_BG(selected.svinnRatePct) }}>
+                  <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: RATE_COLOR(selected.svinnRatePct) }}>
+                    {lang === "en" ? "Rate" : "Frekvens"}
+                  </p>
+                  <p className="font-serif text-xl font-bold" style={{ color: "hsl(17 47% 13%)" }}>{selected.svinnRatePct}%</p>
+                </div>
+                <div className="rounded-xl p-3" style={{ background: "hsl(36 27% 97%)" }}>
+                  <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "hsl(20 20% 55%)" }}>
+                    {lang === "en" ? "Raw cost" : "Råvarukostnad"}
+                  </p>
+                  <p className="font-serif text-xl font-bold" style={{ color: "hsl(17 47% 13%)" }}>{selected.totalIngredientCostSek.toFixed(0)} kr</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(44,24,16,.07)" }}>
         <h2 className="font-serif text-base font-semibold mb-5" style={{ color: "hsl(17 47% 13%)" }}>
