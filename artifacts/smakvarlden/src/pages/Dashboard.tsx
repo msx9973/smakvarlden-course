@@ -11,6 +11,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   TrendingUp, BookOpen, Leaf, Users, AlertTriangle, Share2, ChefHat, ArrowRight, Zap, BarChart2, Trash2,
+  LayoutDashboard, Calculator,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { sv, enUS } from "date-fns/locale";
