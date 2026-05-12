@@ -87478,7 +87478,7 @@ app.use((err, _req, res, _next) => {
 var app_default = app;
 
 // src/lambda.ts
-var handler = (0, import_serverless_http.default)(app_default);
+var handler = (0, import_serverless_http.default)(app_default, { basePath: "/.netlify/functions/api" });
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   handler

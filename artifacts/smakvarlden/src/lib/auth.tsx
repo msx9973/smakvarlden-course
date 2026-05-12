@@ -29,7 +29,7 @@ const AuthContext = createContext<AuthState | null>(null);
 
 const TOKEN_KEY = "smakvarlden_token";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-const API_BASE = `${BASE}/.netlify/functions/api`;
+const API_BASE = `${BASE}/.netlify/functions/api/api`;
 
 function encodeJsonPayload(body: BodyInit | null | undefined) {
   if (typeof body !== "string") return null;
