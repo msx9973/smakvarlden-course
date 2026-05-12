@@ -18760,14 +18760,14 @@ var require_etag = __commonJS({
   "../../node_modules/.pnpm/etag@1.8.1/node_modules/etag/index.js"(exports, module) {
     "use strict";
     module.exports = etag;
-    var crypto4 = __require("crypto");
+    var crypto5 = __require("crypto");
     var Stats = __require("fs").Stats;
     var toString = Object.prototype.toString;
     function entitytag(entity) {
       if (entity.length === 0) {
         return '"0-2jmj7l5rSw0yVb/vlWAYkK/YBwk"';
       }
-      var hash2 = crypto4.createHash("sha1").update(entity, "utf8").digest("base64").substring(0, 27);
+      var hash2 = crypto5.createHash("sha1").update(entity, "utf8").digest("base64").substring(0, 27);
       var len = typeof entity === "string" ? Buffer.byteLength(entity, "utf8") : entity.length;
       return '"' + len.toString(16) + "-" + hash2 + '"';
     }
@@ -22242,17 +22242,17 @@ var require_content_disposition = __commonJS({
 // ../../node_modules/.pnpm/cookie-signature@1.2.2/node_modules/cookie-signature/index.js
 var require_cookie_signature = __commonJS({
   "../../node_modules/.pnpm/cookie-signature@1.2.2/node_modules/cookie-signature/index.js"(exports) {
-    var crypto4 = __require("crypto");
+    var crypto5 = __require("crypto");
     exports.sign = function(val, secret) {
       if ("string" != typeof val) throw new TypeError("Cookie value must be provided as a string.");
       if (null == secret) throw new TypeError("Secret key must be provided.");
-      return val + "." + crypto4.createHmac("sha256", secret).update(val).digest("base64").replace(/\=+$/, "");
+      return val + "." + crypto5.createHmac("sha256", secret).update(val).digest("base64").replace(/\=+$/, "");
     };
     exports.unsign = function(input, secret) {
       if ("string" != typeof input) throw new TypeError("Signed cookie string must be provided.");
       if (null == secret) throw new TypeError("Secret key must be provided.");
       var tentativeValue = input.slice(0, input.lastIndexOf(".")), expectedInput = exports.sign(tentativeValue, secret), expectedBuffer = Buffer.from(expectedInput), inputBuffer = Buffer.from(input);
-      return expectedBuffer.length === inputBuffer.length && crypto4.timingSafeEqual(expectedBuffer, inputBuffer) ? tentativeValue : false;
+      return expectedBuffer.length === inputBuffer.length && crypto5.timingSafeEqual(expectedBuffer, inputBuffer) ? tentativeValue : false;
     };
   }
 });
@@ -29819,7 +29819,7 @@ var require_cert_signatures = __commonJS({
 var require_sasl = __commonJS({
   "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/sasl.js"(exports, module) {
     "use strict";
-    var crypto4 = require_utils5();
+    var crypto5 = require_utils5();
     var { signatureAlgorithmHashFromCertificate } = require_cert_signatures();
     function startSession(mechanisms, stream) {
       const candidates = ["SCRAM-SHA-256"];
@@ -29831,7 +29831,7 @@ var require_sasl = __commonJS({
       if (mechanism === "SCRAM-SHA-256-PLUS" && typeof stream.getPeerCertificate !== "function") {
         throw new Error("SASL: Mechanism SCRAM-SHA-256-PLUS requires a certificate");
       }
-      const clientNonce = crypto4.randomBytes(18).toString("base64");
+      const clientNonce = crypto5.randomBytes(18).toString("base64");
       const gs2Header = mechanism === "SCRAM-SHA-256-PLUS" ? "p=tls-server-end-point" : stream ? "y" : "n";
       return {
         mechanism,
@@ -29866,20 +29866,20 @@ var require_sasl = __commonJS({
         const peerCert = stream.getPeerCertificate().raw;
         let hashName = signatureAlgorithmHashFromCertificate(peerCert);
         if (hashName === "MD5" || hashName === "SHA-1") hashName = "SHA-256";
-        const certHash = await crypto4.hashByName(hashName, peerCert);
+        const certHash = await crypto5.hashByName(hashName, peerCert);
         const bindingData = Buffer.concat([Buffer.from("p=tls-server-end-point,,"), Buffer.from(certHash)]);
         channelBinding = bindingData.toString("base64");
       }
       const clientFinalMessageWithoutProof = "c=" + channelBinding + ",r=" + sv.nonce;
       const authMessage = clientFirstMessageBare + "," + serverFirstMessage + "," + clientFinalMessageWithoutProof;
       const saltBytes = Buffer.from(sv.salt, "base64");
-      const saltedPassword = await crypto4.deriveKey(password, saltBytes, sv.iteration);
-      const clientKey = await crypto4.hmacSha256(saltedPassword, "Client Key");
-      const storedKey = await crypto4.sha256(clientKey);
-      const clientSignature = await crypto4.hmacSha256(storedKey, authMessage);
+      const saltedPassword = await crypto5.deriveKey(password, saltBytes, sv.iteration);
+      const clientKey = await crypto5.hmacSha256(saltedPassword, "Client Key");
+      const storedKey = await crypto5.sha256(clientKey);
+      const clientSignature = await crypto5.hmacSha256(storedKey, authMessage);
       const clientProof = xorBuffers(Buffer.from(clientKey), Buffer.from(clientSignature)).toString("base64");
-      const serverKey = await crypto4.hmacSha256(saltedPassword, "Server Key");
-      const serverSignatureBytes = await crypto4.hmacSha256(serverKey, authMessage);
+      const serverKey = await crypto5.hmacSha256(saltedPassword, "Server Key");
+      const serverSignatureBytes = await crypto5.hmacSha256(serverKey, authMessage);
       session.message = "SASLResponse";
       session.serverSignature = Buffer.from(serverSignatureBytes).toString("base64");
       session.response = clientFinalMessageWithoutProof + ",p=" + clientProof;
@@ -32047,7 +32047,7 @@ var require_client = __commonJS({
     var Query2 = require_query();
     var defaults2 = require_defaults();
     var Connection2 = require_connection();
-    var crypto4 = require_utils5();
+    var crypto5 = require_utils5();
     var activeQueryDeprecationNotice = nodeUtils.deprecate(
       () => {
       },
@@ -32282,7 +32282,7 @@ var require_client = __commonJS({
       _handleAuthMD5Password(msg) {
         this._getPassword(async () => {
           try {
-            const hashedPassword = await crypto4.postgresMd5PasswordHash(this.user, this.password, msg.salt);
+            const hashedPassword = await crypto5.postgresMd5PasswordHash(this.user, this.password, msg.salt);
             this.connection.password(hashedPassword);
           } catch (e) {
             this.emit("error", e);
@@ -33855,14 +33855,14 @@ var require_buffer_equal_constant_time = __commonJS({
 var require_jwa = __commonJS({
   "../../node_modules/.pnpm/jwa@2.0.1/node_modules/jwa/index.js"(exports, module) {
     var Buffer2 = require_safe_buffer().Buffer;
-    var crypto4 = __require("crypto");
+    var crypto5 = __require("crypto");
     var formatEcdsa = require_ecdsa_sig_formatter();
     var util2 = __require("util");
     var MSG_INVALID_ALGORITHM = '"%s" is not a valid algorithm.\n  Supported algorithms are:\n  "HS256", "HS384", "HS512", "RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "ES512" and "none".';
     var MSG_INVALID_SECRET = "secret must be a string or buffer";
     var MSG_INVALID_VERIFIER_KEY = "key must be a string or a buffer";
     var MSG_INVALID_SIGNER_KEY = "key must be a string, a buffer or an object";
-    var supportsKeyObjects = typeof crypto4.createPublicKey === "function";
+    var supportsKeyObjects = typeof crypto5.createPublicKey === "function";
     if (supportsKeyObjects) {
       MSG_INVALID_VERIFIER_KEY += " or a KeyObject";
       MSG_INVALID_SECRET += "or a KeyObject";
@@ -33952,17 +33952,17 @@ var require_jwa = __commonJS({
       return function sign(thing, secret) {
         checkIsSecretKey(secret);
         thing = normalizeInput(thing);
-        var hmac = crypto4.createHmac("sha" + bits, secret);
+        var hmac = crypto5.createHmac("sha" + bits, secret);
         var sig = (hmac.update(thing), hmac.digest("base64"));
         return fromBase64(sig);
       };
     }
     var bufferEqual;
-    var timingSafeEqual2 = "timingSafeEqual" in crypto4 ? function timingSafeEqual3(a, b) {
+    var timingSafeEqual2 = "timingSafeEqual" in crypto5 ? function timingSafeEqual3(a, b) {
       if (a.byteLength !== b.byteLength) {
         return false;
       }
-      return crypto4.timingSafeEqual(a, b);
+      return crypto5.timingSafeEqual(a, b);
     } : function timingSafeEqual3(a, b) {
       if (!bufferEqual) {
         bufferEqual = require_buffer_equal_constant_time();
@@ -33979,7 +33979,7 @@ var require_jwa = __commonJS({
       return function sign(thing, privateKey) {
         checkIsPrivateKey(privateKey);
         thing = normalizeInput(thing);
-        var signer = crypto4.createSign("RSA-SHA" + bits);
+        var signer = crypto5.createSign("RSA-SHA" + bits);
         var sig = (signer.update(thing), signer.sign(privateKey, "base64"));
         return fromBase64(sig);
       };
@@ -33989,7 +33989,7 @@ var require_jwa = __commonJS({
         checkIsPublicKey(publicKey);
         thing = normalizeInput(thing);
         signature = toBase64(signature);
-        var verifier = crypto4.createVerify("RSA-SHA" + bits);
+        var verifier = crypto5.createVerify("RSA-SHA" + bits);
         verifier.update(thing);
         return verifier.verify(publicKey, signature, "base64");
       };
@@ -33998,11 +33998,11 @@ var require_jwa = __commonJS({
       return function sign(thing, privateKey) {
         checkIsPrivateKey(privateKey);
         thing = normalizeInput(thing);
-        var signer = crypto4.createSign("RSA-SHA" + bits);
+        var signer = crypto5.createSign("RSA-SHA" + bits);
         var sig = (signer.update(thing), signer.sign({
           key: privateKey,
-          padding: crypto4.constants.RSA_PKCS1_PSS_PADDING,
-          saltLength: crypto4.constants.RSA_PSS_SALTLEN_DIGEST
+          padding: crypto5.constants.RSA_PKCS1_PSS_PADDING,
+          saltLength: crypto5.constants.RSA_PSS_SALTLEN_DIGEST
         }, "base64"));
         return fromBase64(sig);
       };
@@ -34012,12 +34012,12 @@ var require_jwa = __commonJS({
         checkIsPublicKey(publicKey);
         thing = normalizeInput(thing);
         signature = toBase64(signature);
-        var verifier = crypto4.createVerify("RSA-SHA" + bits);
+        var verifier = crypto5.createVerify("RSA-SHA" + bits);
         verifier.update(thing);
         return verifier.verify({
           key: publicKey,
-          padding: crypto4.constants.RSA_PKCS1_PSS_PADDING,
-          saltLength: crypto4.constants.RSA_PSS_SALTLEN_DIGEST
+          padding: crypto5.constants.RSA_PKCS1_PSS_PADDING,
+          saltLength: crypto5.constants.RSA_PSS_SALTLEN_DIGEST
         }, signature, "base64");
       };
     }
@@ -62112,9 +62112,13 @@ var bcryptjs_default = {
 
 // src/routes/auth.ts
 var import_jsonwebtoken = __toESM(require_jsonwebtoken(), 1);
+import crypto2 from "node:crypto";
 var router6 = (0, import_express6.Router)();
 var PHONE_EMAIL_DOMAIN = "phone.smakvarlden.local";
 var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+var GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+var GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+var GOOGLE_USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
 function getSecret() {
   return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
 }
@@ -62166,6 +62170,119 @@ function verifyToken(token) {
     audience: "smakvarlden-app"
   });
 }
+function getOrigin(req) {
+  const configured = process.env.PUBLIC_APP_URL ?? process.env.URL;
+  if (configured) return configured.replace(/\/$/, "");
+  const proto = req.headers["x-forwarded-proto"]?.split(",")[0] ?? req.protocol ?? "https";
+  const host = req.headers["x-forwarded-host"]?.split(",")[0] ?? req.headers.host;
+  return `${proto}://${host}`;
+}
+function getGoogleRedirectUri(req) {
+  return process.env.GOOGLE_OAUTH_REDIRECT_URI ?? `${getOrigin(req)}/api/auth/google/callback`;
+}
+function getGoogleCredentials() {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  if (!clientId || !clientSecret) return null;
+  return { clientId, clientSecret };
+}
+function signState(returnTo) {
+  const payload = Buffer.from(JSON.stringify({
+    returnTo: returnTo.startsWith("/") ? returnTo : "/",
+    nonce: crypto2.randomBytes(16).toString("hex"),
+    ts: Date.now()
+  })).toString("base64url");
+  const sig = crypto2.createHmac("sha256", getSecret()).update(payload).digest("base64url");
+  return `${payload}.${sig}`;
+}
+function readState(value) {
+  if (typeof value !== "string") return null;
+  const [payload, sig] = value.split(".");
+  if (!payload || !sig) return null;
+  const expected = crypto2.createHmac("sha256", getSecret()).update(payload).digest("base64url");
+  const actualBuffer = Buffer.from(sig);
+  const expectedBuffer = Buffer.from(expected);
+  if (actualBuffer.length !== expectedBuffer.length || !crypto2.timingSafeEqual(actualBuffer, expectedBuffer)) return null;
+  try {
+    const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    if (!parsed.ts || Date.now() - parsed.ts > 10 * 60 * 1e3) return null;
+    return parsed.returnTo?.startsWith("/") ? parsed.returnTo : "/";
+  } catch {
+    return null;
+  }
+}
+function oauthResultHtml(token, returnTo) {
+  return `<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Loggar in...</title></head>
+<body>
+<script>
+localStorage.setItem("smakvarlden_token", ${JSON.stringify(token)});
+window.location.replace(${JSON.stringify(returnTo)});
+</script>
+</body>
+</html>`;
+}
+async function findOrCreateGoogleUser(profile) {
+  const email3 = normalizeEmail(profile.email);
+  if (!email3 || profile.email_verified === false) throw new Error("Google-kontot m\xE5ste ha en verifierad e-postadress.");
+  const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, email3));
+  if (existing) return existing;
+  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
+  const passwordHash = await bcryptjs_default.hash(crypto2.randomBytes(32).toString("base64url"), 12);
+  const [user] = await db.insert(usersTable).values({
+    name: (profile.name ?? profile.given_name ?? email3.split("@")[0]).trim().slice(0, 80),
+    email: email3,
+    passwordHash,
+    role: isFirstUser ? "admin" : "user"
+  }).returning();
+  return user;
+}
+router6.get("/auth/google/start", (req, res) => {
+  const credentials = getGoogleCredentials();
+  if (!credentials) return res.status(503).send("Google OAuth \xE4r inte konfigurerat.");
+  const returnTo = typeof req.query.returnTo === "string" ? req.query.returnTo : "/";
+  const url2 = new URL(GOOGLE_AUTH_URL);
+  url2.searchParams.set("client_id", credentials.clientId);
+  url2.searchParams.set("redirect_uri", getGoogleRedirectUri(req));
+  url2.searchParams.set("response_type", "code");
+  url2.searchParams.set("scope", "openid email profile");
+  url2.searchParams.set("state", signState(returnTo));
+  url2.searchParams.set("prompt", "select_account");
+  return res.redirect(url2.toString());
+});
+router6.get("/auth/google/callback", async (req, res) => {
+  const credentials = getGoogleCredentials();
+  const code = typeof req.query.code === "string" ? req.query.code : "";
+  const returnTo = readState(req.query.state) ?? "/";
+  if (!credentials || !code) return res.redirect(`/login?oauth=failed`);
+  try {
+    const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: credentials.clientId,
+        client_secret: credentials.clientSecret,
+        code,
+        grant_type: "authorization_code",
+        redirect_uri: getGoogleRedirectUri(req)
+      })
+    });
+    if (!tokenResponse.ok) throw new Error("Google token exchange failed");
+    const tokenData = await tokenResponse.json();
+    if (!tokenData.access_token) throw new Error("Google token saknas.");
+    const profileResponse = await fetch(GOOGLE_USERINFO_URL, {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    });
+    if (!profileResponse.ok) throw new Error("Google profil kunde inte h\xE4mtas.");
+    const profile = await profileResponse.json();
+    const user = await findOrCreateGoogleUser(profile);
+    const appToken = signToken(user);
+    return res.type("html").send(oauthResultHtml(appToken, returnTo));
+  } catch {
+    return res.redirect(`/login?oauth=failed`);
+  }
+});
 router6.post("/auth/register", async (req, res) => {
   const { name, email: email3, contact, identifier, phone, password } = req.body ?? {};
   const storageEmail = contactToStorageEmail(email3 ?? contact ?? identifier ?? phone);
@@ -62233,13 +62350,13 @@ function __classPrivateFieldGet(receiver, state, kind, f) {
 
 // ../../node_modules/.pnpm/@anthropic-ai+sdk@0.92.0_zod@3.25.76/node_modules/@anthropic-ai/sdk/internal/utils/uuid.mjs
 var uuid42 = function() {
-  const { crypto: crypto4 } = globalThis;
-  if (crypto4?.randomUUID) {
-    uuid42 = crypto4.randomUUID.bind(crypto4);
-    return crypto4.randomUUID();
+  const { crypto: crypto5 } = globalThis;
+  if (crypto5?.randomUUID) {
+    uuid42 = crypto5.randomUUID.bind(crypto5);
+    return crypto5.randomUUID();
   }
   const u8 = new Uint8Array(1);
-  const randomByte = crypto4 ? () => crypto4.getRandomValues(u8)[0] : () => Math.random() * 255 & 255;
+  const randomByte = crypto5 ? () => crypto5.getRandomValues(u8)[0] : () => Math.random() * 255 & 255;
   return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) => (+c ^ randomByte() & 15 >> +c / 4).toString(16));
 };
 
@@ -71060,11 +71177,11 @@ var StripeContext = class _StripeContext {
 };
 
 // ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/platform/NodePlatformFunctions.js
-import * as crypto3 from "crypto";
+import * as crypto4 from "crypto";
 import { EventEmitter } from "events";
 
 // ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/crypto/NodeCryptoProvider.js
-import * as crypto2 from "crypto";
+import * as crypto3 from "crypto";
 
 // ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/crypto/CryptoProvider.js
 var CryptoProvider = class {
@@ -71107,7 +71224,7 @@ var CryptoProviderOnlySupportsAsyncError = class extends Error {
 var NodeCryptoProvider = class extends CryptoProvider {
   /** @override */
   computeHMACSignature(payload, secret) {
-    return crypto2.createHmac("sha256", secret).update(payload, "utf8").digest("hex");
+    return crypto3.createHmac("sha256", secret).update(payload, "utf8").digest("hex");
   }
   /** @override */
   async computeHMACSignatureAsync(payload, secret) {
@@ -71116,7 +71233,7 @@ var NodeCryptoProvider = class extends CryptoProvider {
   }
   /** @override */
   async computeSHA256Async(data) {
-    return new Uint8Array(await crypto2.createHash("sha256").update(data).digest());
+    return new Uint8Array(await crypto3.createHash("sha256").update(data).digest());
   }
 };
 
@@ -71455,8 +71572,8 @@ var StreamProcessingError = class extends StripeError {
 var NodePlatformFunctions = class extends PlatformFunctions {
   /** @override */
   uuid4() {
-    if (crypto3.randomUUID) {
-      return crypto3.randomUUID();
+    if (crypto4.randomUUID) {
+      return crypto4.randomUUID();
     }
     return super.uuid4();
   }
@@ -71475,11 +71592,11 @@ var NodePlatformFunctions = class extends PlatformFunctions {
     if (a.length !== b.length) {
       return false;
     }
-    if (crypto3.timingSafeEqual) {
+    if (crypto4.timingSafeEqual) {
       const textEncoder = new TextEncoder();
       const aEncoded = textEncoder.encode(a);
       const bEncoded = textEncoder.encode(b);
-      return crypto3.timingSafeEqual(aEncoded, bEncoded);
+      return crypto4.timingSafeEqual(aEncoded, bEncoded);
     }
     return super.secureCompare(a, b);
   }

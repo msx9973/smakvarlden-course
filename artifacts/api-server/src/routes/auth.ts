@@ -1,5 +1,6 @@
-import { Router } from "express";
+import { Router, type Request } from "express";
 import bcrypt from "bcryptjs";
+import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import { db, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
@@ -7,6 +8,17 @@ import { eq } from "drizzle-orm";
 const router = Router();
 const PHONE_EMAIL_DOMAIN = "phone.smakvarlden.local";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+const GOOGLE_USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
+
+type GoogleProfile = {
+  sub: string;
+  email: string;
+  email_verified?: boolean;
+  name?: string;
+  given_name?: string;
+};
 
 function getSecret(): string {
   return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
@@ -71,6 +83,137 @@ function verifyToken(token: string) {
     audience: "smakvarlden-app",
   }) as { id: number };
 }
+
+function getOrigin(req: Request) {
+  const configured = process.env.PUBLIC_APP_URL ?? process.env.URL;
+  if (configured) return configured.replace(/\/$/, "");
+
+  const proto = (req.headers["x-forwarded-proto"] as string | undefined)?.split(",")[0] ?? req.protocol ?? "https";
+  const host = (req.headers["x-forwarded-host"] as string | undefined)?.split(",")[0] ?? req.headers.host;
+  return `${proto}://${host}`;
+}
+
+function getGoogleRedirectUri(req: Request) {
+  return process.env.GOOGLE_OAUTH_REDIRECT_URI ?? `${getOrigin(req)}/api/auth/google/callback`;
+}
+
+function getGoogleCredentials() {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  if (!clientId || !clientSecret) return null;
+  return { clientId, clientSecret };
+}
+
+function signState(returnTo: string) {
+  const payload = Buffer.from(JSON.stringify({
+    returnTo: returnTo.startsWith("/") ? returnTo : "/",
+    nonce: crypto.randomBytes(16).toString("hex"),
+    ts: Date.now(),
+  })).toString("base64url");
+  const sig = crypto.createHmac("sha256", getSecret()).update(payload).digest("base64url");
+  return `${payload}.${sig}`;
+}
+
+function readState(value: unknown) {
+  if (typeof value !== "string") return null;
+  const [payload, sig] = value.split(".");
+  if (!payload || !sig) return null;
+
+  const expected = crypto.createHmac("sha256", getSecret()).update(payload).digest("base64url");
+  const actualBuffer = Buffer.from(sig);
+  const expectedBuffer = Buffer.from(expected);
+  if (actualBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(actualBuffer, expectedBuffer)) return null;
+
+  try {
+    const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as { returnTo?: string; ts?: number };
+    if (!parsed.ts || Date.now() - parsed.ts > 10 * 60 * 1000) return null;
+    return parsed.returnTo?.startsWith("/") ? parsed.returnTo : "/";
+  } catch {
+    return null;
+  }
+}
+
+function oauthResultHtml(token: string, returnTo: string) {
+  return `<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Loggar in...</title></head>
+<body>
+<script>
+localStorage.setItem("smakvarlden_token", ${JSON.stringify(token)});
+window.location.replace(${JSON.stringify(returnTo)});
+</script>
+</body>
+</html>`;
+}
+
+async function findOrCreateGoogleUser(profile: GoogleProfile) {
+  const email = normalizeEmail(profile.email);
+  if (!email || profile.email_verified === false) throw new Error("Google-kontot måste ha en verifierad e-postadress.");
+
+  const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, email));
+  if (existing) return existing;
+
+  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
+  const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString("base64url"), 12);
+  const [user] = await db.insert(usersTable).values({
+    name: (profile.name ?? profile.given_name ?? email.split("@")[0]).trim().slice(0, 80),
+    email,
+    passwordHash,
+    role: isFirstUser ? "admin" : "user",
+  }).returning();
+  return user;
+}
+
+router.get("/auth/google/start", (req, res) => {
+  const credentials = getGoogleCredentials();
+  if (!credentials) return res.status(503).send("Google OAuth är inte konfigurerat.");
+
+  const returnTo = typeof req.query.returnTo === "string" ? req.query.returnTo : "/";
+  const url = new URL(GOOGLE_AUTH_URL);
+  url.searchParams.set("client_id", credentials.clientId);
+  url.searchParams.set("redirect_uri", getGoogleRedirectUri(req));
+  url.searchParams.set("response_type", "code");
+  url.searchParams.set("scope", "openid email profile");
+  url.searchParams.set("state", signState(returnTo));
+  url.searchParams.set("prompt", "select_account");
+  return res.redirect(url.toString());
+});
+
+router.get("/auth/google/callback", async (req, res) => {
+  const credentials = getGoogleCredentials();
+  const code = typeof req.query.code === "string" ? req.query.code : "";
+  const returnTo = readState(req.query.state) ?? "/";
+  if (!credentials || !code) return res.redirect(`/login?oauth=failed`);
+
+  try {
+    const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: credentials.clientId,
+        client_secret: credentials.clientSecret,
+        code,
+        grant_type: "authorization_code",
+        redirect_uri: getGoogleRedirectUri(req),
+      }),
+    });
+    if (!tokenResponse.ok) throw new Error("Google token exchange failed");
+    const tokenData = await tokenResponse.json() as { access_token?: string };
+    if (!tokenData.access_token) throw new Error("Google token saknas.");
+
+    const profileResponse = await fetch(GOOGLE_USERINFO_URL, {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` },
+    });
+    if (!profileResponse.ok) throw new Error("Google profil kunde inte hämtas.");
+
+    const profile = await profileResponse.json() as GoogleProfile;
+    const user = await findOrCreateGoogleUser(profile);
+    const appToken = signToken(user);
+    return res.type("html").send(oauthResultHtml(appToken, returnTo));
+  } catch {
+    return res.redirect(`/login?oauth=failed`);
+  }
+});
 
 router.post("/auth/register", async (req, res) => {
   const { name, email, contact, identifier, phone, password } = req.body ?? {};

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Mail, Phone, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
@@ -12,6 +12,14 @@ export default function Login({ onSuccess }: { onSuccess?: () => void }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("oauth") === "failed") {
+      setError("Google-inloggningen kunde inte slutföras. Försök igen.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +37,11 @@ export default function Login({ onSuccess }: { onSuccess?: () => void }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const startGoogleLogin = () => {
+    const returnTo = encodeURIComponent("/");
+    window.location.href = `/api/auth/google/start?returnTo=${returnTo}`;
   };
 
   return (
@@ -54,6 +67,22 @@ export default function Login({ onSuccess }: { onSuccess?: () => void }) {
           style={{ boxShadow: "0 6px 24px rgba(44,24,16,.09)", border: "1px solid hsl(33 28% 89%)" }}
         >
           <div className="absolute left-0 right-0 top-0 h-0.5" style={{ background: "linear-gradient(90deg, transparent, hsl(44 54% 54%), transparent)" }} />
+
+          <button
+            type="button"
+            onClick={startGoogleLogin}
+            className="mb-4 flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all hover:bg-stone-50"
+            style={{ borderColor: "hsl(33 28% 89%)", color: "hsl(17 47% 13%)" }}
+          >
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[15px] font-bold" style={{ color: "#4285f4" }}>G</span>
+            Fortsätt med Google
+          </button>
+
+          <div className="mb-4 flex items-center gap-3">
+            <div className="h-px flex-1" style={{ background: "hsl(33 28% 89%)" }} />
+            <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: "hsl(20 20% 53%)" }}>eller</span>
+            <div className="h-px flex-1" style={{ background: "hsl(33 28% 89%)" }} />
+          </div>
 
           <div className="mb-6 flex gap-1 rounded-xl p-1" style={{ background: "hsl(36 27% 94%)" }}>
             {(["login", "register"] as const).map((m) => (
