@@ -62186,6 +62186,12 @@ function getGoogleCredentials() {
   if (!clientId || !clientSecret) return null;
   return { clientId, clientSecret };
 }
+function getSupabaseCredentials() {
+  const url2 = (process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL)?.replace(/\/$/, "");
+  const anonKey = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
+  if (!url2 || !anonKey) return null;
+  return { url: url2, anonKey };
+}
 function signState(returnTo) {
   const payload = Buffer.from(JSON.stringify({
     returnTo: returnTo.startsWith("/") ? returnTo : "/",
@@ -62238,6 +62244,44 @@ async function findOrCreateGoogleUser(profile) {
   }).returning();
   return user;
 }
+async function findOrCreateSupabaseUser(profile) {
+  const email3 = profile.email ? normalizeEmail(profile.email) : null;
+  const storageEmail = email3 ?? contactToStorageEmail(profile.phone) ?? `supabase.${profile.id}@${PHONE_EMAIL_DOMAIN}`;
+  const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
+  if (existing) return existing;
+  const fallbackName = email3?.split("@")[0] ?? profile.phone ?? "Smakv\xE4rlden anv\xE4ndare";
+  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
+  const passwordHash = await bcryptjs_default.hash(crypto2.randomBytes(32).toString("base64url"), 12);
+  const [user] = await db.insert(usersTable).values({
+    name: (profile.user_metadata?.full_name ?? profile.user_metadata?.name ?? fallbackName).trim().slice(0, 80),
+    email: storageEmail,
+    passwordHash,
+    role: isFirstUser ? "admin" : "user"
+  }).returning();
+  return user;
+}
+router6.post("/auth/supabase", async (req, res) => {
+  const credentials = getSupabaseCredentials();
+  const { accessToken } = req.body ?? {};
+  if (!credentials) return res.status(503).json({ error: "Supabase Auth \xE4r inte konfigurerat." });
+  if (typeof accessToken !== "string" || accessToken.length < 20) {
+    return res.status(400).json({ error: "Supabase-session saknas." });
+  }
+  try {
+    const userResponse = await fetch(`${credentials.url}/auth/v1/user`, {
+      headers: {
+        apikey: credentials.anonKey,
+        Authorization: `Bearer ${accessToken}`
+      }
+    });
+    if (!userResponse.ok) return res.status(401).json({ error: "Ogiltig Supabase-session." });
+    const profile = await userResponse.json();
+    const user = await findOrCreateSupabaseUser(profile);
+    return res.json({ token: signToken(user), user: formatUser(user) });
+  } catch {
+    return res.status(500).json({ error: "Kunde inte verifiera Supabase-session." });
+  }
+});
 router6.get("/auth/google/start", (req, res) => {
   const credentials = getGoogleCredentials();
   if (!credentials) return res.status(503).send("Google OAuth \xE4r inte konfigurerat.");

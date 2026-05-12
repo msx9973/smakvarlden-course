@@ -1,4 +1,10 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  hasSupabaseAuth,
+  readSupabaseAccessTokenFromUrl,
+  signInWithPassword,
+  signUpWithPassword,
+} from "@/lib/supabaseAuth";
 
 export interface AuthUser {
   id: number;
@@ -15,6 +21,7 @@ interface AuthState {
   loading: boolean;
   login: (identifier: string, password: string) => Promise<void>;
   register: (name: string, contact: string, password: string) => Promise<void>;
+  loginWithSupabaseToken: (accessToken: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -42,6 +49,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const supabaseAccessToken = readSupabaseAccessTokenFromUrl();
+    if (supabaseAccessToken) {
+      apiFetch("/auth/supabase", {
+        method: "POST",
+        body: JSON.stringify({ accessToken: supabaseAccessToken }),
+      })
+        .then((data) => {
+          localStorage.setItem(TOKEN_KEY, data.token);
+          setToken(data.token);
+          setUser(data.user);
+        })
+        .catch(() => {
+          localStorage.removeItem(TOKEN_KEY);
+          setToken(null);
+        })
+        .finally(() => setLoading(false));
+      return;
+    }
+
     if (!token) { setLoading(false); return; }
     apiFetch("/auth/me")
       .then((u) => setUser(u))
@@ -50,6 +76,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [token]);
 
   const login = async (identifier: string, password: string) => {
+    if (hasSupabaseAuth && identifier.includes("@")) {
+      const accessToken = await signInWithPassword(identifier, password);
+      await loginWithSupabaseToken(accessToken);
+      return;
+    }
+
     const data = await apiFetch("/auth/login", {
       method: "POST",
       body: JSON.stringify({ identifier, password }),
@@ -60,9 +92,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (name: string, contact: string, password: string) => {
+    if (hasSupabaseAuth && contact.includes("@")) {
+      const accessToken = await signUpWithPassword(name, contact, password);
+      await loginWithSupabaseToken(accessToken);
+      return;
+    }
+
     const data = await apiFetch("/auth/register", {
       method: "POST",
       body: JSON.stringify({ name, contact, password }),
+    });
+    localStorage.setItem(TOKEN_KEY, data.token);
+    setToken(data.token);
+    setUser(data.user);
+  };
+
+  const loginWithSupabaseToken = async (accessToken: string) => {
+    const data = await apiFetch("/auth/supabase", {
+      method: "POST",
+      body: JSON.stringify({ accessToken }),
     });
     localStorage.setItem(TOKEN_KEY, data.token);
     setToken(data.token);
@@ -76,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, loginWithSupabaseToken, logout }}>
       {children}
     </AuthContext.Provider>
   );

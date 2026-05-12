@@ -20,6 +20,16 @@ type GoogleProfile = {
   given_name?: string;
 };
 
+type SupabaseUser = {
+  id: string;
+  email?: string;
+  phone?: string;
+  user_metadata?: {
+    name?: string;
+    full_name?: string;
+  };
+};
+
 function getSecret(): string {
   return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
 }
@@ -104,6 +114,13 @@ function getGoogleCredentials() {
   return { clientId, clientSecret };
 }
 
+function getSupabaseCredentials() {
+  const url = (process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL)?.replace(/\/$/, "");
+  const anonKey = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) return null;
+  return { url, anonKey };
+}
+
 function signState(returnTo: string) {
   const payload = Buffer.from(JSON.stringify({
     returnTo: returnTo.startsWith("/") ? returnTo : "/",
@@ -163,6 +180,50 @@ async function findOrCreateGoogleUser(profile: GoogleProfile) {
   }).returning();
   return user;
 }
+
+async function findOrCreateSupabaseUser(profile: SupabaseUser) {
+  const email = profile.email ? normalizeEmail(profile.email) : null;
+  const storageEmail = email ?? contactToStorageEmail(profile.phone) ?? `supabase.${profile.id}@${PHONE_EMAIL_DOMAIN}`;
+
+  const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
+  if (existing) return existing;
+
+  const fallbackName = email?.split("@")[0] ?? profile.phone ?? "Smakvärlden användare";
+  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
+  const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString("base64url"), 12);
+  const [user] = await db.insert(usersTable).values({
+    name: (profile.user_metadata?.full_name ?? profile.user_metadata?.name ?? fallbackName).trim().slice(0, 80),
+    email: storageEmail,
+    passwordHash,
+    role: isFirstUser ? "admin" : "user",
+  }).returning();
+  return user;
+}
+
+router.post("/auth/supabase", async (req, res) => {
+  const credentials = getSupabaseCredentials();
+  const { accessToken } = req.body ?? {};
+  if (!credentials) return res.status(503).json({ error: "Supabase Auth är inte konfigurerat." });
+  if (typeof accessToken !== "string" || accessToken.length < 20) {
+    return res.status(400).json({ error: "Supabase-session saknas." });
+  }
+
+  try {
+    const userResponse = await fetch(`${credentials.url}/auth/v1/user`, {
+      headers: {
+        apikey: credentials.anonKey,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    if (!userResponse.ok) return res.status(401).json({ error: "Ogiltig Supabase-session." });
+
+    const profile = await userResponse.json() as SupabaseUser;
+    const user = await findOrCreateSupabaseUser(profile);
+    return res.json({ token: signToken(user), user: formatUser(user) });
+  } catch {
+    return res.status(500).json({ error: "Kunde inte verifiera Supabase-session." });
+  }
+});
 
 router.get("/auth/google/start", (req, res) => {
   const credentials = getGoogleCredentials();

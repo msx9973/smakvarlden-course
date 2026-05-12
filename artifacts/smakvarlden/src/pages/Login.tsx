@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Mail, Phone, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { hasSupabaseAuth, sendPasswordReset, startSupabaseGoogleLogin } from "@/lib/supabaseAuth";
 
 export default function Login({ onSuccess }: { onSuccess?: () => void }) {
   const { login, register } = useAuth();
@@ -40,8 +41,35 @@ export default function Login({ onSuccess }: { onSuccess?: () => void }) {
   };
 
   const startGoogleLogin = () => {
+    if (hasSupabaseAuth) {
+      try {
+        startSupabaseGoogleLogin();
+        return;
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Google-inloggningen kunde inte startas.");
+      }
+    }
+
     const returnTo = encodeURIComponent("/");
     window.location.href = `/api/auth/google/start?returnTo=${returnTo}`;
+  };
+
+  const resetPassword = async () => {
+    setError("");
+    if (!contact.includes("@")) {
+      setError("Skriv din e-postadress först, så skickar vi återställningslänken.");
+      return;
+    }
+    try {
+      if (!hasSupabaseAuth) {
+        setError("Lösenordsåterställning kräver Supabase Auth.");
+        return;
+      }
+      await sendPasswordReset(contact);
+      setError("Om e-postadressen finns skickas en återställningslänk.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Kunde inte skicka återställningslänk.");
+    }
   };
 
   return (
@@ -176,6 +204,16 @@ export default function Login({ onSuccess }: { onSuccess?: () => void }) {
                 onBlur={(e) => e.target.style.borderColor = "hsl(33 28% 89%)"}
                 required
               />
+              {mode === "login" && (
+                <button
+                  type="button"
+                  onClick={resetPassword}
+                  className="mt-2 text-xs font-semibold transition-colors hover:underline"
+                  style={{ color: "hsl(43 46% 45%)" }}
+                >
+                  Glömt lösenord?
+                </button>
+              )}
             </div>
 
             {mode === "register" && (
