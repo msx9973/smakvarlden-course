@@ -13,6 +13,11 @@ function getStripe() {
 }
 
 const PLAN_PRICE_SEK = 5900; // 59.00 SEK in ore
+const PHONE_EMAIL_DOMAIN = "phone.smakvarlden.local";
+
+function isDeliverableEmail(email: string) {
+  return !email.endsWith(`@${PHONE_EMAIL_DOMAIN}`) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
 
 function getSecret(): string {
   return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
@@ -43,8 +48,9 @@ router.post("/checkout", async (req, res) => {
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      customer_email: user.email,
+      ...(isDeliverableEmail(user.email) ? { customer_email: user.email } : {}),
       metadata: { user_id: String(user.id), name: user.name },
+      phone_number_collection: { enabled: true },
       line_items: [
         {
           price_data: {

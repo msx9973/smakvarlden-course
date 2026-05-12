@@ -62113,45 +62113,94 @@ var bcryptjs_default = {
 // src/routes/auth.ts
 var import_jsonwebtoken = __toESM(require_jsonwebtoken(), 1);
 var router6 = (0, import_express6.Router)();
+var PHONE_EMAIL_DOMAIN = "phone.smakvarlden.local";
+var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function getSecret() {
   return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
 }
 function signToken(user) {
-  return import_jsonwebtoken.default.sign({ id: user.id, email: user.email, role: user.role }, getSecret(), { expiresIn: "30d" });
+  return import_jsonwebtoken.default.sign({ id: user.id, email: user.email, role: user.role }, getSecret(), {
+    expiresIn: "14d",
+    issuer: "smakvarlden",
+    audience: "smakvarlden-app"
+  });
+}
+function publicContact(email3) {
+  if (!email3.endsWith(`@${PHONE_EMAIL_DOMAIN}`)) return email3;
+  const digits = email3.slice("phone.".length, -`@${PHONE_EMAIL_DOMAIN}`.length);
+  return `+${digits}`;
 }
 function formatUser(u) {
-  return { id: u.id, name: u.name, email: u.email, role: u.role, plan: u.plan, createdAt: u.createdAt.toISOString() };
+  return { id: u.id, name: u.name, email: publicContact(u.email), role: u.role, plan: u.plan, createdAt: u.createdAt.toISOString() };
+}
+function normalizeEmail(value) {
+  const email3 = value.trim().toLowerCase();
+  return EMAIL_RE.test(email3) ? email3 : null;
+}
+function normalizePhone(value) {
+  const compact = value.trim().replace(/[()\s-]/g, "");
+  const withPlus = compact.startsWith("00") ? `+${compact.slice(2)}` : compact.startsWith("0") ? `+46${compact.slice(1)}` : compact;
+  return /^\+[1-9]\d{7,14}$/.test(withPlus) ? withPlus : null;
+}
+function contactToStorageEmail(value) {
+  if (typeof value !== "string") return null;
+  const email3 = normalizeEmail(value);
+  if (email3) return email3;
+  const phone = normalizePhone(value);
+  if (phone) return `phone.${phone.slice(1)}@${PHONE_EMAIL_DOMAIN}`;
+  return null;
+}
+function validatePassword(password) {
+  if (typeof password !== "string") return "Fyll i l\xF6senord.";
+  if (password.length < 8) return "L\xF6senordet m\xE5ste vara minst 8 tecken.";
+  if (!/[A-Za-zÅÄÖåäö]/.test(password) || !/\d/.test(password)) {
+    return "L\xF6senordet m\xE5ste inneh\xE5lla b\xE5de bokst\xE4ver och siffror.";
+  }
+  return null;
+}
+function verifyToken(token) {
+  const decoded = import_jsonwebtoken.default.decode(token);
+  if (!decoded?.iss && !decoded?.aud) return import_jsonwebtoken.default.verify(token, getSecret());
+  return import_jsonwebtoken.default.verify(token, getSecret(), {
+    issuer: "smakvarlden",
+    audience: "smakvarlden-app"
+  });
 }
 router6.post("/auth/register", async (req, res) => {
-  const { name, email: email3, password } = req.body ?? {};
-  if (!name || !email3 || !password) return res.status(400).json({ error: "Fyll i namn, e-post och l\xF6senord." });
-  if (password.length < 6) return res.status(400).json({ error: "L\xF6senordet m\xE5ste vara minst 6 tecken." });
-  const existing = await db.select().from(usersTable).where(eq(usersTable.email, email3.toLowerCase().trim()));
-  if (existing.length > 0) return res.status(400).json({ error: "E-postadressen anv\xE4nds redan." });
+  const { name, email: email3, contact, identifier, phone, password } = req.body ?? {};
+  const storageEmail = contactToStorageEmail(email3 ?? contact ?? identifier ?? phone);
+  if (typeof name !== "string" || name.trim().length < 2 || !storageEmail || !password) {
+    return res.status(400).json({ error: "Fyll i namn, e-post eller telefonnummer och l\xF6senord." });
+  }
+  const passwordError = validatePassword(password);
+  if (passwordError) return res.status(400).json({ error: passwordError });
+  const existing = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
+  if (existing.length > 0) return res.status(400).json({ error: "Kontot finns redan. Logga in ist\xE4llet." });
   const passwordHash = await bcryptjs_default.hash(password, 12);
   const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
   const [user] = await db.insert(usersTable).values({
-    name: name.trim(),
-    email: email3.toLowerCase().trim(),
+    name: name.trim().slice(0, 80),
+    email: storageEmail,
     passwordHash,
     role: isFirstUser ? "admin" : "user"
   }).returning();
   return res.status(201).json({ token: signToken(user), user: formatUser(user) });
 });
 router6.post("/auth/login", async (req, res) => {
-  const { email: email3, password } = req.body ?? {};
-  if (!email3 || !password) return res.status(400).json({ error: "Fyll i e-post och l\xF6senord." });
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email3.toLowerCase().trim()));
-  if (!user) return res.status(401).json({ error: "Felaktig e-post eller l\xF6senord." });
+  const { email: email3, identifier, phone, password } = req.body ?? {};
+  const storageEmail = contactToStorageEmail(identifier ?? email3 ?? phone);
+  if (!storageEmail || !password) return res.status(400).json({ error: "Fyll i e-post/telefon och l\xF6senord." });
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
+  if (!user) return res.status(401).json({ error: "Felaktiga inloggningsuppgifter." });
   const ok = await bcryptjs_default.compare(password, user.passwordHash);
-  if (!ok) return res.status(401).json({ error: "Felaktig e-post eller l\xF6senord." });
+  if (!ok) return res.status(401).json({ error: "Felaktiga inloggningsuppgifter." });
   return res.json({ token: signToken(user), user: formatUser(user) });
 });
 router6.get("/auth/me", async (req, res) => {
   const header = req.headers.authorization;
   if (!header?.startsWith("Bearer ")) return res.status(401).json({ error: "Ej inloggad." });
   try {
-    const payload = import_jsonwebtoken.default.verify(header.slice(7), getSecret());
+    const payload = verifyToken(header.slice(7));
     const [user] = await db.select().from(usersTable).where(eq(usersTable.id, payload.id));
     if (!user) return res.status(401).json({ error: "Anv\xE4ndare hittades inte." });
     return res.json(formatUser(user));
@@ -86108,6 +86157,10 @@ function getStripe() {
   return new stripe_esm_node_default(key, { apiVersion: "2024-11-20.acacia" });
 }
 var PLAN_PRICE_SEK = 5900;
+var PHONE_EMAIL_DOMAIN2 = "phone.smakvarlden.local";
+function isDeliverableEmail(email3) {
+  return !email3.endsWith(`@${PHONE_EMAIL_DOMAIN2}`) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email3);
+}
 function getSecret2() {
   return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
 }
@@ -86131,8 +86184,9 @@ router12.post("/checkout", async (req, res) => {
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      customer_email: user.email,
+      ...isDeliverableEmail(user.email) ? { customer_email: user.email } : {},
       metadata: { user_id: String(user.id), name: user.name },
+      phone_number_collection: { enabled: true },
       line_items: [
         {
           price_data: {

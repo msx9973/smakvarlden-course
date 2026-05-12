@@ -13,8 +13,8 @@ interface AuthState {
   user: AuthUser | null;
   token: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
+  register: (name: string, contact: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -49,20 +49,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false));
   }, [token]);
 
-  const login = async (email: string, password: string) => {
+  const login = async (identifier: string, password: string) => {
     const data = await apiFetch("/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ identifier, password }),
     });
     localStorage.setItem(TOKEN_KEY, data.token);
     setToken(data.token);
     setUser(data.user);
   };
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (name: string, contact: string, password: string) => {
     const data = await apiFetch("/auth/register", {
       method: "POST",
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, contact, password }),
     });
     localStorage.setItem(TOKEN_KEY, data.token);
     setToken(data.token);
