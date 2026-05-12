@@ -14,7 +14,21 @@ import { useI18n } from "@/lib/i18n";
 interface Overview {
   dataNote:      string;
   priceIndex:    { month: string; livsmedel: number; restaurang: number; kott: number; fisk: number }[];
-  categoryStats: { category: string; avgPrice: number; minPrice: number; maxPrice: number; count: number }[];
+  categoryStats: {
+    category: string;
+    avgPrice: number;
+    minPrice: number;
+    maxPrice: number;
+    count: number;
+    ingredients?: {
+      id: number;
+      name: string;
+      unit: string;
+      currentPriceSek: number;
+      priceChangePct: number;
+      supplier?: string;
+    }[];
+  }[];
   benchmarks:    { label: string; yours: number; industry: number; unit: string; desc: string; goodIfLower: boolean }[];
   seasonalGuide: { season: string; emoji: string; cheap: string[]; expensive: string[]; tip: string }[];
   insights:      { tag: string; color: string; title: string; desc: string }[];
@@ -506,6 +520,39 @@ export default function MarketInsights() {
                 <p className="font-serif text-xl font-bold mt-1" style={{ color: item.color }}>{item.value}</p>
               </div>
             ))}
+          </div>
+          <div className="rounded-xl overflow-hidden mt-4" style={{ border: "1px solid var(--sv-border)" }}>
+            <div className="px-4 py-3 flex items-center justify-between" style={{ background: "var(--sv-muted)", borderBottom: "1px solid var(--sv-border)" }}>
+              <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "var(--sv-text-2)" }}>
+                {lang === "en" ? "Ingredients in category" : "Ingredienser i kategorin"}
+              </p>
+              <span className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>
+                {(selectedCategory.ingredients ?? []).length} {t("st")}
+              </span>
+            </div>
+            <div className="divide-y" style={{ borderColor: "var(--sv-border)" }}>
+              {(selectedCategory.ingredients ?? []).map((ingredient) => (
+                <div key={ingredient.id} className="px-4 py-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_120px_90px] sm:items-center">
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-semibold truncate" style={{ color: "var(--sv-text)" }}>{ingredient.name}</p>
+                    <p className="text-[11px] truncate" style={{ color: "var(--sv-text-2)" }}>
+                      {ingredient.supplier || (lang === "en" ? "No supplier" : "Ingen leverantör")}
+                    </p>
+                  </div>
+                  <p className="text-[13px] font-bold sm:text-right" style={{ color: "var(--sv-text)" }}>
+                    {ingredient.currentPriceSek.toFixed(2)} kr/{ingredient.unit}
+                  </p>
+                  <p className="text-[12px] font-semibold sm:text-right" style={{ color: ingredient.priceChangePct > 0 ? "#dc2626" : ingredient.priceChangePct < 0 ? "#16a34a" : "var(--sv-text-2)" }}>
+                    {ingredient.priceChangePct > 0 ? "+" : ""}{ingredient.priceChangePct.toFixed(1)}%
+                  </p>
+                </div>
+              ))}
+              {(selectedCategory.ingredients ?? []).length === 0 && (
+                <p className="px-4 py-3 text-[12px]" style={{ color: "var(--sv-text-2)" }}>
+                  {lang === "en" ? "No ingredients found for this category." : "Inga ingredienser hittades i kategorin."}
+                </p>
+              )}
+            </div>
           </div>
           <div className="rounded-xl p-4 mt-3" style={{ background: "rgba(59,130,246,.08)", border: "1px solid rgba(59,130,246,.18)" }}>
             <p className="text-[12px] leading-relaxed" style={{ color: "var(--sv-text-2)" }}>

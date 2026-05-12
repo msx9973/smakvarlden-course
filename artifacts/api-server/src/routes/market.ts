@@ -104,6 +104,19 @@ async function fetchScbMarketData(): Promise<ScbMarketData | null> {
 }
 
 router.get("/overview", async (_req, res) => {
+  const ingredientRows = await db
+    .select({
+      id: ingredientsTable.id,
+      name: ingredientsTable.name,
+      category: ingredientsTable.category,
+      unit: ingredientsTable.unit,
+      currentPriceSek: ingredientsTable.currentPriceSek,
+      priceChangePct: ingredientsTable.priceChangePct,
+      supplier: ingredientsTable.supplier,
+    })
+    .from(ingredientsTable)
+    .orderBy(ingredientsTable.category, ingredientsTable.name);
+
   const categoryStats = await db
     .select({
       category: ingredientsTable.category,
@@ -115,6 +128,21 @@ router.get("/overview", async (_req, res) => {
     .from(ingredientsTable)
     .groupBy(ingredientsTable.category)
     .orderBy(sql`avg(${ingredientsTable.currentPriceSek}) desc`);
+
+  const categoryStatsWithIngredients = categoryStats.map((cat) => ({
+    ...cat,
+    ingredients: ingredientRows
+      .filter((ingredient) => ingredient.category === cat.category)
+      .map((ingredient) => ({
+        id: ingredient.id,
+        name: ingredient.name,
+        unit: ingredient.unit,
+        currentPriceSek: Number(ingredient.currentPriceSek),
+        priceChangePct: Number(ingredient.priceChangePct),
+        supplier: ingredient.supplier,
+      }))
+      .sort((a, b) => b.currentPriceSek - a.currentPriceSek),
+  }));
 
   const [recipeEcon] = await db
     .select({
@@ -201,7 +229,7 @@ router.get("/overview", async (_req, res) => {
         {
           tag: "DB",
           color: "#10b981",
-          title: `${econ.recipeCount ?? 0} recept · ${categoryStats.length} råvarukategorier`,
+          title: `${econ.recipeCount ?? 0} recept · ${categoryStatsWithIngredients.length} råvarukategorier`,
           desc: "Dina recept, ingredienser, snittpriser och marginaler kommer från databasen.",
         },
       ]
@@ -209,7 +237,7 @@ router.get("/overview", async (_req, res) => {
         {
           tag: "DB",
           color: "#10b981",
-          title: `${econ.recipeCount ?? 0} recept · ${categoryStats.length} råvarukategorier`,
+          title: `${econ.recipeCount ?? 0} recept · ${categoryStatsWithIngredients.length} råvarukategorier`,
           desc: "SCB kunde inte hämtas just nu. Sidan visar dina databasvärden och döljer live-index.",
         },
       ];
@@ -219,7 +247,7 @@ router.get("/overview", async (_req, res) => {
       ? `Recept, råvarukostnader och prisregister hämtas från databasen. Prisindex och årsförändringar hämtas från ${scb.source}. Branschmål är referensvärden och ska jämföras med dina egna leverantörspriser.`
       : "Recept, råvarukostnader och prisregister hämtas från databasen. SCB-index kunde inte hämtas vid detta anrop.",
     priceIndex: scb?.priceIndex ?? [],
-    categoryStats,
+    categoryStats: categoryStatsWithIngredients,
     benchmarks,
     seasonalGuide,
     insights,

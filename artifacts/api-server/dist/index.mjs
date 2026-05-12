@@ -68748,6 +68748,15 @@ async function fetchScbMarketData() {
   };
 }
 router10.get("/overview", async (_req, res) => {
+  const ingredientRows = await db.select({
+    id: ingredientsTable.id,
+    name: ingredientsTable.name,
+    category: ingredientsTable.category,
+    unit: ingredientsTable.unit,
+    currentPriceSek: ingredientsTable.currentPriceSek,
+    priceChangePct: ingredientsTable.priceChangePct,
+    supplier: ingredientsTable.supplier
+  }).from(ingredientsTable).orderBy(ingredientsTable.category, ingredientsTable.name);
   const categoryStats = await db.select({
     category: ingredientsTable.category,
     avgPrice: sql`round(avg(${ingredientsTable.currentPriceSek})::numeric, 2)`,
@@ -68755,6 +68764,17 @@ router10.get("/overview", async (_req, res) => {
     maxPrice: sql`round(max(${ingredientsTable.currentPriceSek})::numeric, 2)`,
     count: sql`count(*)::int`
   }).from(ingredientsTable).groupBy(ingredientsTable.category).orderBy(sql`avg(${ingredientsTable.currentPriceSek}) desc`);
+  const categoryStatsWithIngredients = categoryStats.map((cat) => ({
+    ...cat,
+    ingredients: ingredientRows.filter((ingredient) => ingredient.category === cat.category).map((ingredient) => ({
+      id: ingredient.id,
+      name: ingredient.name,
+      unit: ingredient.unit,
+      currentPriceSek: Number(ingredient.currentPriceSek),
+      priceChangePct: Number(ingredient.priceChangePct),
+      supplier: ingredient.supplier
+    })).sort((a, b) => b.currentPriceSek - a.currentPriceSek)
+  }));
   const [recipeEcon] = await db.select({
     avgCost: sql`round(avg(${recipesTable.totalCostSek})::numeric, 2)`,
     avgMargin: sql`round(avg(${recipesTable.profitMarginPct})::numeric, 1)`,
@@ -68824,21 +68844,21 @@ router10.get("/overview", async (_req, res) => {
     {
       tag: "DB",
       color: "#10b981",
-      title: `${econ.recipeCount ?? 0} recept \xB7 ${categoryStats.length} r\xE5varukategorier`,
+      title: `${econ.recipeCount ?? 0} recept \xB7 ${categoryStatsWithIngredients.length} r\xE5varukategorier`,
       desc: "Dina recept, ingredienser, snittpriser och marginaler kommer fr\xE5n databasen."
     }
   ] : [
     {
       tag: "DB",
       color: "#10b981",
-      title: `${econ.recipeCount ?? 0} recept \xB7 ${categoryStats.length} r\xE5varukategorier`,
+      title: `${econ.recipeCount ?? 0} recept \xB7 ${categoryStatsWithIngredients.length} r\xE5varukategorier`,
       desc: "SCB kunde inte h\xE4mtas just nu. Sidan visar dina databasv\xE4rden och d\xF6ljer live-index."
     }
   ];
   return res.json({
     dataNote: scb ? `Recept, r\xE5varukostnader och prisregister h\xE4mtas fr\xE5n databasen. Prisindex och \xE5rsf\xF6r\xE4ndringar h\xE4mtas fr\xE5n ${scb.source}. Branschm\xE5l \xE4r referensv\xE4rden och ska j\xE4mf\xF6ras med dina egna leverant\xF6rspriser.` : "Recept, r\xE5varukostnader och prisregister h\xE4mtas fr\xE5n databasen. SCB-index kunde inte h\xE4mtas vid detta anrop.",
     priceIndex: scb?.priceIndex ?? [],
-    categoryStats,
+    categoryStats: categoryStatsWithIngredients,
     benchmarks,
     seasonalGuide,
     insights,
