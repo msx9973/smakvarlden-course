@@ -79,17 +79,17 @@
   --opaque-button-border-intensity: -8;
 
   /* ── Semantic shorthand tokens (used in inline styles via var()) ── */
-  --sv-bg:      hsl(36 25% 90%);      /* warm cream page background        */
-  --sv-surface: hsl(0 0% 100%);       /* white cards / panels               */
-  --sv-sidebar: hsl(0 0% 100%);       /* sidebar background                 */
+  --sv-bg:      hsl(38 30% 94%);      /* warm cream page background        */
+  --sv-surface: hsl(36 33% 98%);       /* white cards / panels               */
+  --sv-sidebar: hsl(36 33% 98%);       /* sidebar background                 */
   --sv-text:    hsl(20 38% 16%);      /* primary text – dark warm brown     */
-  --sv-text-2:  hsl(20 15% 44%);      /* secondary/muted text               */
-  --sv-border:  hsl(33 20% 82%);      /* borders, dividers                  */
-  --sv-muted:   hsl(36 22% 86%);      /* muted fills, table stripes         */
-  --sv-accent:  hsl(36 30% 89%);      /* accent fills, hover states         */
-  --sv-gold:    hsl(44 50% 46%);      /* primary gold accent                */
+  --sv-text-2:  hsl(24 13% 43%);      /* secondary/muted text               */
+  --sv-border:  hsl(34 23% 84%);      /* borders, dividers                  */
+  --sv-muted:   hsl(38 28% 90%);      /* muted fills, table stripes         */
+  --sv-accent:  hsl(40 34% 91%);      /* accent fills, hover states         */
+  --sv-gold:    hsl(43 46% 45%);      /* primary gold accent                */
   --sv-brown:   hsl(17 47% 13%);      /* dark brown (buttons, hero, badges) */
-  --sv-shadow:  rgba(44,24,16,.09);   /* card shadow color                  */
+  --sv-shadow:  rgba(44,24,16,.075);   /* card shadow color                  */
 
   /* Nav active state */
   --sv-nav-active-bg: linear-gradient(135deg, hsl(17 47% 13%), hsl(17 37% 19%));
@@ -99,41 +99,41 @@
   --sv-nav-text:        hsl(20 15% 48%);
 
   /* Tailwind / shadcn tokens */
-  --background:        36 25% 90%;
+  --background:        38 30% 94%;
   --foreground:        20 38% 16%;
 
-  --border:  33 20% 82%;
-  --input:   33 20% 82%;
-  --ring:    44 50% 46%;
+  --border:  34 23% 84%;
+  --input:   34 23% 84%;
+  --ring:    43 46% 45%;
 
-  --card:            0 0% 100%;
+  --card:            36 33% 98%;
   --card-foreground: 20 38% 16%;
-  --card-border:     33 20% 82%;
+  --card-border:     34 23% 84%;
 
-  --sidebar:            0 0% 100%;
+  --sidebar:            36 33% 98%;
   --sidebar-foreground: 20 38% 16%;
-  --sidebar-border:     33 20% 82%;
-  --sidebar-primary:    44 50% 46%;
+  --sidebar-border:     34 23% 84%;
+  --sidebar-primary:    43 46% 45%;
   --sidebar-primary-foreground: 17 47% 13%;
   --sidebar-accent:     36 28% 89%;
   --sidebar-accent-foreground: 20 38% 16%;
   --sidebar-ring:       44 50% 46%;
 
-  --popover:            0 0% 100%;
+  --popover:            36 33% 98%;
   --popover-foreground: 20 38% 16%;
-  --popover-border:     33 20% 82%;
+  --popover-border:     34 23% 84%;
 
-  --primary:            44 50% 46%;
+  --primary:            43 46% 45%;
   --primary-foreground: 17 47% 10%;
 
-  --secondary:            36 22% 86%;
+  --secondary:            38 28% 90%;
   --secondary-foreground: 20 38% 16%;
 
-  --muted:            36 22% 86%;
-  --muted-foreground: 20 15% 44%;
+  --muted:            38 28% 90%;
+  --muted-foreground: 24 13% 43%;
 
-  --accent:            36 30% 89%;
-  --accent-foreground: 44 50% 38%;
+  --accent:            40 34% 91%;
+  --accent-foreground: 43 46% 38%;
 
   --destructive:            350 58% 36%;
   --destructive-foreground: 0 0% 100%;
@@ -262,6 +262,35 @@
   }
 
   /* Standard card shadow — adapts via --sv-shadow */
+
+  .sv-page-shell {
+    max-width: 1400px;
+  }
+
+  .sv-comfort-panel {
+    background: var(--sv-surface);
+    border: 1px solid var(--sv-border);
+    box-shadow: 0 2px 10px var(--sv-shadow);
+  }
+
+  .sv-soft-panel {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--sv-surface) 88%, white), color-mix(in srgb, var(--sv-accent) 78%, white));
+    border: 1px solid var(--sv-border);
+    box-shadow: 0 8px 28px var(--sv-shadow);
+  }
+
+  .sv-action-tile {
+    background: color-mix(in srgb, var(--sv-surface) 82%, var(--sv-accent));
+    border: 1px solid var(--sv-border);
+    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  }
+
+  .sv-action-tile:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--sv-gold) 38%, var(--sv-border));
+    box-shadow: 0 8px 22px var(--sv-shadow);
+  }
+
   .card-shadow    { box-shadow: 0 2px 10px var(--sv-shadow), 0 1px 2px var(--sv-shadow); }
   .card-shadow-md { box-shadow: 0 6px 24px var(--sv-shadow), 0 2px 8px var(--sv-shadow); }
   .card-shadow-lg { box-shadow: 0 16px 48px var(--sv-shadow); }
