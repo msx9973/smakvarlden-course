@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Calculator, Users, BookOpen, Leaf, Moon, Sun,
   Shield, LogOut, LogIn, ChefHat, HelpCircle, Trash2, Globe, Crown, Lock,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { AiChat } from "./AiChat";
@@ -62,6 +62,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { lang, setLang, t } = useI18n();
   const [location] = useLocation();
   const { main: NAV_MAIN, support: NAV_SUPPORT } = useNavItems();
+  const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const isDark = document.documentElement.classList.contains("dark");
@@ -72,6 +73,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
     const next = theme === "light" ? "dark" : "light";
     setTheme(next);
     document.documentElement.classList.toggle("dark", next === "dark");
+  };
+
+  const scrollToDashboardTop = () => {
+    mainRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -89,7 +94,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         }}
       >
         {/* Logo */}
-        <div className="h-[60px] flex items-center px-4 gap-3 shrink-0"
+        <Link href="/" onClick={scrollToDashboardTop} className="h-[60px] flex items-center px-4 gap-3 shrink-0 transition-opacity hover:opacity-85"
           style={{ borderBottom: "1px solid var(--sv-border)" }}>
           <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
             style={{ background: "var(--sv-brown)" }}>
@@ -101,7 +106,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </span>
             <div className="text-[10px] leading-none mt-0.5" style={{ color: "var(--sv-text-2)" }}>{t("Kockens verktyg")}</div>
           </div>
-        </div>
+        </Link>
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
@@ -166,12 +171,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <header className="h-[60px] sticky top-0 z-20 flex items-center justify-between px-6"
           style={{ background: "var(--sv-sidebar)", borderBottom: "1px solid var(--sv-border)" }}>
           {/* Mobile logo */}
-          <div className="flex md:hidden items-center gap-2">
+          <Link href="/" onClick={scrollToDashboardTop} className="flex md:hidden items-center gap-2 transition-opacity hover:opacity-85">
             <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "var(--sv-brown)" }}>
               <ChefHat className="w-3.5 h-3.5" style={{ color: "var(--sv-gold)" }} />
             </div>
             <span className="font-serif font-bold text-sm" style={{ color: "var(--sv-text)" }}>Smakvärlden</span>
-          </div>
+          </Link>
           <div className="hidden md:block" />
 
           <div className="flex items-center gap-2">
@@ -204,7 +209,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page */}
-        <main className="flex-1 overflow-auto p-6 pb-24 md:pb-8" style={{ background: "var(--sv-bg)" }}>
+        <main ref={mainRef} className="flex-1 overflow-auto p-6 pb-24 md:pb-8 scroll-smooth" style={{ background: "var(--sv-bg)" }}>
           {!user && (
             <div className="mb-6 flex items-center gap-3 px-5 py-3.5 rounded-2xl"
               style={{ background: "var(--sv-surface)", border: "1.5px solid var(--sv-border)", boxShadow: "0 2px 8px var(--sv-shadow)" }}>

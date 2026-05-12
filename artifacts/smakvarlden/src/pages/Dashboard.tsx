@@ -194,43 +194,76 @@ export default function Dashboard() {
   return (
     <div className="flex gap-7 max-w-[1400px]">
       <div className="flex-1 min-w-0 flex flex-col gap-7">
-        <div className="relative rounded-2xl overflow-hidden px-7 py-8"
+        <div className="relative rounded-2xl overflow-hidden px-7 py-7"
           style={{
             background: "linear-gradient(135deg, hsl(17 47% 13%) 0%, hsl(17 37% 20%) 100%)",
             boxShadow: "0 8px 32px rgba(44,24,16,.22)",
           }}>
-          <div className="absolute -right-12 -top-12 w-56 h-56 rounded-full opacity-[.07]"
-            style={{ border: "40px solid hsl(44 54% 54%)" }} />
-          <div className="absolute -right-4 top-8 w-28 h-28 rounded-full opacity-[.05]"
-            style={{ border: "20px solid hsl(44 54% 54%)" }} />
-          <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: "hsl(44 60% 60%)" }}>{greeting}</p>
-              <h1 className="font-serif text-2xl font-bold text-white">
-                {user ? user.name : t("Välkommen till Smakvärlden")}
-              </h1>
-              <p className="text-[13px] mt-1" style={{ color: "rgba(250,248,244,.55)" }}>
-                {user ? t("Här är din köksöversikt för idag") : t("Logga in för att komma igång")}
-              </p>
+          <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+            <div className="flex flex-col gap-5">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: "hsl(44 60% 60%)" }}>{greeting}</p>
+                <h1 className="font-serif text-3xl font-bold text-white">
+                  {t("Välkommen till Smakvärlden")}
+                </h1>
+                <p className="text-[14px] mt-2 max-w-2xl leading-6" style={{ color: "rgba(250,248,244,.68)" }}>
+                  {t("Smakvärlden samlar recept, råvarupriser, kalkyler och svinnanalys i ett arbetsflöde för svenska restauranger.")}
+                </p>
+                {user && (
+                  <p className="text-[12px] mt-2" style={{ color: "rgba(250,248,244,.52)" }}>
+                    {t("Inloggad som")} <span className="font-semibold text-white">{user.name}</span>
+                  </p>
+                )}
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                {[
+                  { label: t("Bygg recept"), icon: BookOpen, href: "/recipes", color: "#93c5fd" },
+                  { label: t("Följ priser"), icon: Leaf, href: "/ingredients", color: "#6ee7b7" },
+                  { label: t("Räkna marginal"), icon: Calculator, href: "/calculator", color: "hsl(44 74% 62%)" },
+                  { label: t("Minska svinn"), icon: Trash2, href: "/svinn", color: "#fca5a5" },
+                ].map(({ label, icon: Icon, href, color }) => (
+                  <Link key={label} href={href}
+                    className="flex items-center gap-2 rounded-xl px-3 py-2.5 transition-all hover:bg-white/[.12]"
+                    style={{ background: "rgba(255,255,255,.075)", border: "1px solid rgba(255,255,255,.12)" }}>
+                    <Icon className="w-4 h-4 shrink-0" style={{ color }} />
+                    <span className="text-[12px] font-semibold text-white truncate">{label}</span>
+                  </Link>
+                ))}
+              </div>
             </div>
-            <div className="flex gap-2 shrink-0 flex-wrap">
-              <Link href="/recipes" className="px-4 py-2 rounded-full text-[13px] font-semibold transition-all"
-                style={{ background: "hsl(44 54% 54%)", color: "hsl(17 47% 10%)" }}>
-                {t("Öppna recept")}
-              </Link>
-              <Link href="/calculator" className="px-4 py-2 rounded-full text-[13px] font-medium transition-all border"
-                style={{ borderColor: "rgba(255,255,255,.2)", color: "rgba(255,255,255,.8)" }}>
-                {t("Kalkylator")}
-              </Link>
-              <Link href="/svinn" className="px-4 py-2 rounded-full text-[13px] font-medium transition-all"
-                style={{ background: "rgba(239,68,68,.18)", color: "#fca5a5" }}>
-                {t("Svinnanalys")}
-              </Link>
+
+            <div className="rounded-2xl p-4"
+              style={{ background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.13)" }}>
+              <p className="text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: "hsl(44 60% 60%)" }}>{t("Snabbnavigering")}</p>
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+                {[
+                  { label: t("Översikt"), href: "#dashboard-overview", icon: LayoutDashboard },
+                  { label: t("Aktivitet"), href: "#dashboard-activity", icon: Zap },
+                  { label: t("Topprecept"), href: "#dashboard-top-recipes", icon: TrendingUp },
+                  { label: t("Ny kalkyl"), href: "/calculator", icon: Calculator },
+                ].map(({ label, href, icon: Icon }) => (
+                  href.startsWith("#") ? (
+                    <a key={label} href={href}
+                      className="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 transition-all hover:bg-white/[.1]"
+                      style={{ color: "rgba(255,255,255,.86)" }}>
+                      <span className="flex items-center gap-2 text-[12px] font-semibold"><Icon className="w-4 h-4" /> {label}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </a>
+                  ) : (
+                    <Link key={label} href={href}
+                      className="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 transition-all hover:bg-white/[.1]"
+                      style={{ color: "rgba(255,255,255,.86)" }}>
+                      <span className="flex items-center gap-2 text-[12px] font-semibold"><Icon className="w-4 h-4" /> {label}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  )
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div id="dashboard-overview" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 scroll-mt-6">
           {summary.isLoading
             ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)
             : summary.data ? (
@@ -251,7 +284,7 @@ export default function Dashboard() {
         </div>
 
         <div className="grid gap-5 lg:grid-cols-5">
-          <div className="lg:col-span-3 rounded-2xl overflow-hidden"
+          <div id="dashboard-activity" className="lg:col-span-3 rounded-2xl overflow-hidden scroll-mt-6"
             style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
             <div className="px-6 py-4 flex items-center justify-between"
               style={{ borderBottom: "1px solid var(--sv-border)" }}>
@@ -287,7 +320,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="lg:col-span-2 rounded-2xl overflow-hidden"
+          <div id="dashboard-top-recipes" className="lg:col-span-2 rounded-2xl overflow-hidden scroll-mt-6"
             style={{ background: "var(--sv-surface)", boxShadow: "0 2px 10px var(--sv-shadow)" }}>
             <div className="px-5 py-4 flex items-center justify-between"
               style={{ borderBottom: "1px solid var(--sv-border)" }}>
