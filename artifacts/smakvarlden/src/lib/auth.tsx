@@ -77,9 +77,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (identifier: string, password: string) => {
     if (hasSupabaseAuth && identifier.includes("@")) {
-      const accessToken = await signInWithPassword(identifier, password);
-      await loginWithSupabaseToken(accessToken);
-      return;
+      try {
+        const accessToken = await signInWithPassword(identifier, password);
+        await loginWithSupabaseToken(accessToken);
+        return;
+      } catch {
+        // Keep existing Smakvarlden accounts working while Supabase Auth is being rolled out.
+      }
     }
 
     const data = await apiFetch("/auth/login", {
@@ -93,9 +97,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (name: string, contact: string, password: string) => {
     if (hasSupabaseAuth && contact.includes("@")) {
-      const accessToken = await signUpWithPassword(name, contact, password);
-      await loginWithSupabaseToken(accessToken);
-      return;
+      try {
+        const accessToken = await signUpWithPassword(name, contact, password);
+        await loginWithSupabaseToken(accessToken);
+        return;
+      } catch {
+        // Fall back to the app account system if Supabase needs email confirmation or is incomplete.
+      }
     }
 
     const data = await apiFetch("/auth/register", {
