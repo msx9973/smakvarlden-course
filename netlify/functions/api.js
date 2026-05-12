@@ -87431,6 +87431,18 @@ app.use((0, import_cors.default)());
 app.use("/api/stripe/webhook", import_express15.default.raw({ type: "application/json" }));
 app.use(import_express15.default.json());
 app.use(import_express15.default.urlencoded({ extended: true }));
+app.use((req, _res, next) => {
+  if (req.body && Object.keys(req.body).length > 0) return next();
+  const encodedPayload = req.headers["x-smakvarlden-payload"];
+  if (typeof encodedPayload === "string" && encodedPayload.length > 0) {
+    try {
+      req.body = JSON.parse(Buffer.from(encodedPayload, "base64").toString("utf8"));
+    } catch {
+      req.body = {};
+    }
+  }
+  next();
+});
 app.use("/api", routes_default);
 var staticDir = process.env.STATIC_DIR ?? (() => {
   try {

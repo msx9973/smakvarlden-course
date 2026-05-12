@@ -30,11 +30,22 @@ const AuthContext = createContext<AuthState | null>(null);
 const TOKEN_KEY = "smakvarlden_token";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
+function encodeJsonPayload(body: BodyInit | null | undefined) {
+  if (typeof body !== "string") return null;
+  try {
+    return btoa(unescape(encodeURIComponent(body)));
+  } catch {
+    return null;
+  }
+}
+
 async function apiFetch(path: string, opts?: RequestInit) {
   const token = localStorage.getItem(TOKEN_KEY);
+  const encodedPayload = encodeJsonPayload(opts?.body);
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(encodedPayload ? { "X-Smakvarlden-Payload": encodedPayload } : {}),
     ...((opts?.headers as Record<string, string>) ?? {}),
   };
   const res = await fetch(`${BASE}/api${path}`, { ...opts, headers });
