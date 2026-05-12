@@ -29,6 +29,7 @@ const AuthContext = createContext<AuthState | null>(null);
 
 const TOKEN_KEY = "smakvarlden_token";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+const API_BASE = `${BASE}/.netlify/functions/api`;
 
 function encodeJsonPayload(body: BodyInit | null | undefined) {
   if (typeof body !== "string") return null;
@@ -48,7 +49,7 @@ async function apiFetch(path: string, opts?: RequestInit) {
     ...(encodedPayload ? { "X-Smakvarlden-Payload": encodedPayload } : {}),
     ...((opts?.headers as Record<string, string>) ?? {}),
   };
-  const res = await fetch(`${BASE}/api${path}`, { ...opts, headers });
+  const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error ?? "Något gick fel.");
   return data;
