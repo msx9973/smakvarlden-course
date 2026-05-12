@@ -62192,6 +62192,9 @@ function getSupabaseCredentials() {
   if (!url2 || !anonKey) return null;
   return { url: url2, anonKey };
 }
+function getSupabaseUrl() {
+  return (process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL)?.replace(/\/$/, "") ?? null;
+}
 function signState(returnTo) {
   const payload = Buffer.from(JSON.stringify({
     returnTo: returnTo.startsWith("/") ? returnTo : "/",
@@ -62284,7 +62287,16 @@ router6.post("/auth/supabase", async (req, res) => {
 });
 router6.get("/auth/google/start", (req, res) => {
   const credentials = getGoogleCredentials();
-  if (!credentials) return res.status(503).send("Google OAuth \xE4r inte konfigurerat.");
+  if (!credentials) {
+    const supabaseUrl = getSupabaseUrl();
+    if (supabaseUrl) {
+      const url3 = new URL(`${supabaseUrl}/auth/v1/authorize`);
+      url3.searchParams.set("provider", "google");
+      url3.searchParams.set("redirect_to", `${getOrigin(req)}/login`);
+      return res.redirect(url3.toString());
+    }
+    return res.status(503).send("Google OAuth \xE4r inte konfigurerat.");
+  }
   const returnTo = typeof req.query.returnTo === "string" ? req.query.returnTo : "/";
   const url2 = new URL(GOOGLE_AUTH_URL);
   url2.searchParams.set("client_id", credentials.clientId);
