@@ -87040,6 +87040,7 @@ function getStripe() {
   return new stripe_esm_node_default(key, { apiVersion: "2024-11-20.acacia" });
 }
 var PLAN_PRICE_SEK = 5900;
+var PLAN_TRIAL_DAYS = 7;
 var PHONE_EMAIL_DOMAIN2 = "phone.smakvarlden.local";
 function isDeliverableEmail(email3) {
   return !email3.endsWith(`@${PHONE_EMAIL_DOMAIN2}`) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email3);
@@ -87076,7 +87077,7 @@ router12.post("/checkout", async (req, res) => {
             currency: "sek",
             product_data: {
               name: "Smakv\xE4rlden Pro Early Access",
-              description: "Founder price: obegr\xE4nsade recept, AI-verktyg och analytics. Avsluta n\xE4r som helst."
+              description: "7 dagar gratis, sedan founder price: obegr\xE4nsade recept, AI-verktyg och analytics."
             },
             unit_amount: PLAN_PRICE_SEK,
             recurring: { interval: "month" }
@@ -87084,6 +87085,9 @@ router12.post("/checkout", async (req, res) => {
           quantity: 1
         }
       ],
+      subscription_data: {
+        trial_period_days: PLAN_TRIAL_DAYS
+      },
       success_url: `${origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/upgrade?payment=cancelled`,
       locale: "sv",

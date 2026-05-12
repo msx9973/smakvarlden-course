@@ -15,7 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 
 const PRO_FEATURES = [
-  { icon: Sparkles, label: "Obegränsade recept och kalkyler", desc: "Bygg fler rätter, testa priser och spara arbetet utan stopp." },
+  { icon: Sparkles, label: "7 dagar gratis", desc: "Testa Pro i en hel vecka innan månadspriset startar." },
+  { icon: CheckCircle2, label: "Obegränsade recept och kalkyler", desc: "Bygg fler rätter, testa priser och spara arbetet utan stopp." },
   { icon: BarChart3, label: "Marginal, svinn och marknadsdata", desc: "Se råvarukostnad, branschjämförelser och lönsamhet på samma plats." },
   { icon: Globe, label: "Svensk restaurangbevakning", desc: "Community, nyheter och marknadsläge för svenska kök." },
   { icon: Zap, label: "AI-verktyg under Early Access", desc: "Tidiga Pro-kunder får nya AI-funktioner när de släpps." },
@@ -84,7 +85,7 @@ export default function Upgrade() {
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
               {[
                 ["Free", "0 SEK", "Prova i lugn takt"],
-                ["Pro Early Access", "59 SEK/mån", "Founder price"],
+                ["Pro Early Access", "7 dagar gratis", "Sedan 59 SEK/mån"],
                 ["Team", "Kommer senare", "För restauranger med flera användare"],
               ].map(([label, value, desc]) => (
                 <div key={label} className="rounded-2xl p-4" style={{ background: "var(--sv-bg)", border: "1px solid var(--sv-border)" }}>
@@ -112,7 +113,8 @@ export default function Upgrade() {
               <span className="mb-2 text-[15px] font-semibold">SEK / månad</span>
             </div>
             <p className="mt-2 text-[13px]" style={{ color: "rgba(255,255,255,.72)" }}>
-              Behåll founder-priset så länge du är aktiv kund. Avsluta när som helst, ingen bindningstid.
+              Prova allt gratis i 7 dagar. Därefter behåller du founder-priset så länge du är aktiv kund.
+              Avsluta när som helst, ingen bindningstid.
             </p>
 
             <div className="my-5 h-px" style={{ background: "rgba(255,255,255,.16)" }} />
@@ -145,7 +147,7 @@ export default function Upgrade() {
                 {loading ? (
                   <><Loader2 className="h-4 w-4 animate-spin" /> Hanterar...</>
                 ) : (
-                  <><Crown className="h-4 w-4" /> Uppgradera för 59 SEK/mån</>
+                  <><Crown className="h-4 w-4" /> Starta 7 dagar gratis</>
                 )}
               </button>
             )}
@@ -175,9 +177,9 @@ export default function Upgrade() {
         </div>
 
         <div className="rounded-[20px] p-5" style={{ background: "var(--sv-surface)", border: "1px solid var(--sv-border)" }}>
-          <p className="text-[13px] font-bold uppercase tracking-widest" style={{ color: "var(--sv-gold)" }}>Varför 59 SEK nu?</p>
+          <p className="text-[13px] font-bold uppercase tracking-widest" style={{ color: "var(--sv-gold)" }}>Varför 7 dagar gratis?</p>
           <p className="mt-3 text-[14px] leading-7" style={{ color: "var(--sv-text-2)" }}>
-            I början är förtroende viktigare än högsta pris. Små kaféer, food trucks, studenter och nya kockar
+            Restauranger ska kunna testa flödet i skarpt läge innan de betalar. I början är förtroende viktigare än högsta pris. Små kaféer, food trucks, studenter och nya kockar
             kan testa Smakvärlden utan stor risk, samtidigt som tidiga kunder hjälper plattformen bli starkare.
             När fler AI-verktyg, export, leverantörsstöd och teamkonton är redo kan nya kunder gå in på normalpris.
           </p>

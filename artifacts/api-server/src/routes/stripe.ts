@@ -13,6 +13,7 @@ function getStripe() {
 }
 
 const PLAN_PRICE_SEK = 5900; // 59.00 SEK in ore
+const PLAN_TRIAL_DAYS = 7;
 const PHONE_EMAIL_DOMAIN = "phone.smakvarlden.local";
 
 function isDeliverableEmail(email: string) {
@@ -57,7 +58,7 @@ router.post("/checkout", async (req, res) => {
             currency: "sek",
             product_data: {
               name: "Smakvärlden Pro Early Access",
-              description: "Founder price: obegränsade recept, AI-verktyg och analytics. Avsluta när som helst.",
+              description: "7 dagar gratis, sedan founder price: obegränsade recept, AI-verktyg och analytics.",
             },
             unit_amount: PLAN_PRICE_SEK,
             recurring: { interval: "month" },
@@ -65,6 +66,9 @@ router.post("/checkout", async (req, res) => {
           quantity: 1,
         },
       ],
+      subscription_data: {
+        trial_period_days: PLAN_TRIAL_DAYS,
+      },
       success_url: `${origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/upgrade?payment=cancelled`,
       locale: "sv",
