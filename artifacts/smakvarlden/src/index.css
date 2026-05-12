@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -79,73 +79,65 @@
   --opaque-button-border-intensity: -8;
 
   /* ── Semantic shorthand tokens (used in inline styles via var()) ── */
-  --sv-bg:      hsl(38 30% 94%);      /* warm cream page background        */
-  --sv-surface: hsl(36 33% 98%);       /* white cards / panels               */
-  --sv-sidebar: hsl(36 33% 98%);       /* sidebar background                 */
-  --sv-text:    hsl(20 38% 16%);      /* primary text – dark warm brown     */
-  --sv-text-2:  hsl(24 13% 43%);      /* secondary/muted text               */
-  --sv-border:  hsl(34 23% 84%);      /* borders, dividers                  */
-  --sv-muted:   hsl(38 28% 90%);      /* muted fills, table stripes         */
-  --sv-accent:  hsl(40 34% 91%);      /* accent fills, hover states         */
-  --sv-gold:    hsl(43 46% 45%);      /* primary gold accent                */
-  --sv-brown:   hsl(17 47% 13%);      /* dark brown (buttons, hero, badges) */
-  --sv-shadow:  rgba(44,24,16,.075);   /* card shadow color                  */
+  --sv-bg:      hsl(40 28% 95%);
+  --sv-surface: hsl(0 0% 100%);
+  --sv-sidebar: hsl(0 0% 100%);
+  --sv-text:    hsl(147 15% 17%);
+  --sv-text-2:  hsl(140 5% 36%);
+  --sv-border:  hsl(93 15% 87%);
+  --sv-muted:   hsl(60 18% 93%);
+  --sv-accent:  hsl(40 44% 84%);
+  --sv-gold:    hsl(112 22% 39%);
+  --sv-brown:   hsl(148 25% 21%);
+  --sv-warning: hsl(30 50% 48%);
+  --sv-shadow:  rgba(36,49,43,.08);
 
   /* Nav active state */
-  --sv-nav-active-bg: linear-gradient(135deg, hsl(17 47% 13%), hsl(17 37% 19%));
+  --sv-nav-active-bg: linear-gradient(135deg, hsl(148 25% 21%), hsl(148 22% 26%));
   --sv-nav-active-text: #fff;
-  --sv-nav-active-icon: hsl(44 65% 72%);
-  --sv-nav-active-dot:  hsl(44 60% 65%);
-  --sv-nav-text:        hsl(20 15% 48%);
+  --sv-nav-active-icon: hsl(112 24% 72%);
+  --sv-nav-active-dot:  hsl(112 22% 61%);
+  --sv-nav-text:        hsl(140 5% 36%);
 
   /* Tailwind / shadcn tokens */
-  --background:        38 30% 94%;
-  --foreground:        20 38% 16%;
+  --background:        40 28% 95%;
+  --foreground:        147 15% 17%;
+  --border:  93 15% 87%;
+  --input:   93 15% 87%;
+  --ring:    112 22% 39%;
+  --card:            0 0% 100%;
+  --card-foreground: 147 15% 17%;
+  --card-border:     93 15% 87%;
 
-  --border:  34 23% 84%;
-  --input:   34 23% 84%;
-  --ring:    43 46% 45%;
-
-  --card:            36 33% 98%;
-  --card-foreground: 20 38% 16%;
-  --card-border:     34 23% 84%;
-
-  --sidebar:            36 33% 98%;
-  --sidebar-foreground: 20 38% 16%;
-  --sidebar-border:     34 23% 84%;
-  --sidebar-primary:    43 46% 45%;
-  --sidebar-primary-foreground: 17 47% 13%;
-  --sidebar-accent:     36 28% 89%;
-  --sidebar-accent-foreground: 20 38% 16%;
-  --sidebar-ring:       44 50% 46%;
-
-  --popover:            36 33% 98%;
-  --popover-foreground: 20 38% 16%;
-  --popover-border:     34 23% 84%;
-
-  --primary:            43 46% 45%;
-  --primary-foreground: 17 47% 10%;
-
-  --secondary:            38 28% 90%;
-  --secondary-foreground: 20 38% 16%;
-
-  --muted:            38 28% 90%;
-  --muted-foreground: 24 13% 43%;
-
-  --accent:            40 34% 91%;
-  --accent-foreground: 43 46% 38%;
+  --sidebar:            0 0% 100%;
+  --sidebar-foreground: 147 15% 17%;
+  --sidebar-border:     93 15% 87%;
+  --sidebar-primary:    148 25% 21%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent:     60 18% 93%;
+  --sidebar-accent-foreground: 147 15% 17%;
+  --sidebar-ring:       112 22% 39%;
+  --popover:            0 0% 100%;
+  --popover-foreground: 147 15% 17%;
+  --popover-border:     93 15% 87%;
+  --primary:            148 25% 21%;
+  --primary-foreground: 0 0% 100%;
+  --secondary:            60 18% 93%;
+  --secondary-foreground: 147 15% 17%;
+  --muted:            60 18% 93%;
+  --muted-foreground: 140 5% 36%;
+  --accent:            40 44% 84%;
+  --accent-foreground: 148 25% 21%;
 
   --destructive:            350 58% 36%;
   --destructive-foreground: 0 0% 100%;
-
-  --chart-1: 44 50% 46%;
-  --chart-2: 137 28% 33%;
-  --chart-3: 17 47% 30%;
-  --chart-4: 25 60% 52%;
-  --chart-5: 200 60% 45%;
-
-  --app-font-sans:  'DM Sans', sans-serif;
-  --app-font-serif: 'Playfair Display', Georgia, serif;
+  --chart-1: 148 25% 21%;
+  --chart-2: 112 22% 39%;
+  --chart-3: 30 50% 48%;
+  --chart-4: 40 44% 55%;
+  --chart-5: 190 34% 42%;
+  --app-font-sans:  'DM Sans', Arial, sans-serif;
+  --app-font-serif: 'DM Sans', Arial, sans-serif;
   --app-font-mono:  Menlo, monospace;
   --radius: 0.75rem;
 
@@ -170,69 +162,70 @@
   --opaque-button-border-intensity: 9;
 
   /* ── Semantic shorthand tokens ── */
-  --sv-bg:      hsl(20 22% 11%);
-  --sv-surface: hsl(20 18% 17%);
-  --sv-sidebar: hsl(20 25% 9%);
-  --sv-text:    hsl(36 26% 87%);
-  --sv-text-2:  hsl(36 12% 56%);
-  --sv-border:  hsl(20 15% 24%);
-  --sv-muted:   hsl(20 16% 22%);
-  --sv-accent:  hsl(20 18% 20%);
-  --sv-gold:    hsl(44 56% 60%);
-  --sv-brown:   hsl(20 22% 11%);
+  --sv-bg:      hsl(150 15% 9%);
+  --sv-surface: hsl(150 12% 15%);
+  --sv-sidebar: hsl(150 16% 8%);
+  --sv-text:    hsl(45 24% 90%);
+  --sv-text-2:  hsl(60 10% 70%);
+  --sv-border:  hsl(145 10% 25%);
+  --sv-muted:   hsl(150 10% 20%);
+  --sv-accent:  hsl(40 22% 24%);
+  --sv-gold:    hsl(112 24% 68%);
+  --sv-brown:   hsl(148 25% 21%);
+  --sv-warning: hsl(30 60% 62%);
   --sv-shadow:  rgba(0,0,0,.30);
 
-  --sv-nav-active-bg:   linear-gradient(135deg, hsl(20 18% 24%), hsl(20 16% 28%));
-  --sv-nav-active-text: hsl(36 26% 87%);
-  --sv-nav-active-icon: hsl(44 56% 65%);
-  --sv-nav-active-dot:  hsl(44 56% 58%);
-  --sv-nav-text:        hsl(36 10% 52%);
+  --sv-nav-active-bg:   linear-gradient(135deg, hsl(148 20% 24%), hsl(148 18% 30%));
+  --sv-nav-active-text: hsl(45 24% 90%);
+  --sv-nav-active-icon: hsl(112 24% 72%);
+  --sv-nav-active-dot:  hsl(112 24% 68%);
+  --sv-nav-text:        hsl(60 10% 70%);
 
   /* Tailwind / shadcn tokens */
-  --background: 20 22% 11%;
-  --foreground: 36 26% 87%;
+  --background: 150 15% 9%;
+  --foreground: 45 24% 90%;
 
-  --border: 20 15% 24%;
-  --input:  20 15% 24%;
-  --ring:   44 56% 60%;
+  --border: 145 10% 25%;
+  --input:  145 10% 25%;
+  --ring:   112 24% 68%;
 
-  --card:            20 18% 17%;
-  --card-foreground: 36 26% 87%;
-  --card-border:     20 15% 24%;
+  --card:            150 12% 15%;
+  --card-foreground: 45 24% 90%;
+  --card-border:     145 10% 25%;
 
-  --sidebar:            20 25% 9%;
-  --sidebar-foreground: 36 10% 56%;
-  --sidebar-border:     20 20% 14%;
-  --sidebar-primary:    44 56% 60%;
-  --sidebar-primary-foreground: 20 22% 8%;
-  --sidebar-accent:     20 18% 20%;
-  --sidebar-accent-foreground: 36 26% 87%;
-  --sidebar-ring: 44 56% 60%;
+  --sidebar:            150 16% 8%;
+  --sidebar-foreground: 60 10% 70%;
+  --sidebar-border:     150 14% 16%;
+  --sidebar-primary:    112 24% 68%;
+  --sidebar-primary-foreground: 150 20% 8%;
+  --sidebar-accent:     150 10% 20%;
+  --sidebar-accent-foreground: 45 24% 90%;
+  --sidebar-ring: 112 24% 68%;
 
-  --popover:            20 18% 17%;
-  --popover-foreground: 36 26% 87%;
-  --popover-border:     20 15% 24%;
+  --popover:            150 12% 15%;
+  --popover-foreground: 45 24% 90%;
+  --popover-border:     145 10% 25%;
 
-  --primary:            44 56% 60%;
-  --primary-foreground: 20 30% 8%;
+  --primary:            112 24% 68%;
+  --primary-foreground: 150 20% 8%;
 
-  --secondary:            20 16% 22%;
-  --secondary-foreground: 36 26% 87%;
+  --secondary:            150 10% 20%;
+  --secondary-foreground: 45 24% 90%;
 
-  --muted:            20 16% 22%;
-  --muted-foreground: 36 12% 56%;
+  --muted:            150 10% 20%;
+  --muted-foreground: 60 10% 70%;
 
-  --accent:            20 18% 20%;
-  --accent-foreground: 44 56% 65%;
+  --accent:            40 22% 24%;
+  --accent-foreground: 112 24% 72%;
 
   --destructive:            350 55% 52%;
   --destructive-foreground: 0 0% 100%;
 
-  --chart-1: 44 56% 60%;
-  --chart-2: 137 35% 48%;
-  --chart-3: 17 47% 55%;
-  --chart-4: 25 60% 58%;
-  --chart-5: 200 60% 58%;
+  --chart-1: 112 24% 68%;
+  --chart-2: 148 28% 52%;
+  --chart-3: 30 60% 62%;
+  --chart-4: 40 44% 66%;
+  --chart-5: 190 38% 62%;
 }
 
 @layer base {
@@ -245,7 +238,7 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  h1, h2, h3, h4, h5, h6 { @apply font-serif; }
+  h1, h2, h3, h4, h5, h6 { @apply font-sans; }
 
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -294,6 +287,47 @@
   .card-shadow    { box-shadow: 0 2px 10px var(--sv-shadow), 0 1px 2px var(--sv-shadow); }
   .card-shadow-md { box-shadow: 0 6px 24px var(--sv-shadow), 0 2px 8px var(--sv-shadow); }
   .card-shadow-lg { box-shadow: 0 16px 48px var(--sv-shadow); }
+
+  .text-muted-foreground { color: hsl(var(--muted-foreground)) !important; }
+  .font-serif { font-family: var(--app-font-sans) !important; }
+  .tabular-nums, [class*="text-3xl"], [class*="text-2xl"] { font-variant-numeric: tabular-nums; }
+
+  [style*="color: hsl(17 47% 13%)"],
+  [style*="color:hsl(17 47% 13%)"] {
+    color: var(--sv-text) !important;
+  }
+
+  [style*="color: hsl(20 20%"],
+  [style*="color: hsl(24 13%"] {
+    color: var(--sv-text-2) !important;
+  }
+
+  [style*="color: hsl(43 46%"],
+  [style*="color: hsl(44 54%"],
+  [style*="color: hsl(44 50%"] {
+    color: var(--sv-gold) !important;
+  }
+
+  [style*="background: hsl(17 47% 13%)"],
+  [style*="background:hsl(17 47% 13%)"] {
+    background: var(--sv-brown) !important;
+  }
+
+  [style*="background: hsl(36 38% 98%)"],
+  [style*="background: hsl(36 33% 98%)"] {
+    background: var(--sv-bg) !important;
+  }
+
+  [style*="background: hsl(36 27% 94%)"],
+  [style*="background: hsl(36 27% 97%)"] {
+    background: var(--sv-muted) !important;
+  }
+
+  [style*="border: 1px solid hsl(33 28%"],
+  [style*="border: 1.5px solid hsl(33 28%"],
+  [style*="border-color: hsl(33 28%"] {
+    border-color: var(--sv-border) !important;
+  }
 
   .dark .bg-white,
   .dark [style*="background: #fff"],
