@@ -61047,11 +61047,31 @@ var dashboard_default = router4;
 // src/routes/community.ts
 var import_express5 = __toESM(require_express2(), 1);
 var router5 = (0, import_express5.Router)();
+var NEWS_FEEDS = [
+  {
+    source: "Food Supply",
+    url: "https://www.food-supply.se/xml/rss2/articles?description=true"
+  }
+];
+var newsCache = null;
 router5.get("/posts", async (req, res) => {
   const parsed = ListCommunityPostsQueryParams.safeParse(req.query);
   const search = parsed.success ? parsed.data.search : void 0;
   const rows = await db.select().from(communityPostsTable).where(search ? ilike(communityPostsTable.recipeName, `%${search}%`) : void 0).orderBy(desc(communityPostsTable.createdAt));
   return res.json(rows.map(formatPost));
+});
+router5.get("/news", async (_req, res) => {
+  try {
+    if (newsCache && newsCache.expiresAt > Date.now()) {
+      return res.json(newsCache.items);
+    }
+    const feedResults = await Promise.allSettled(NEWS_FEEDS.map(fetchFeed));
+    const items = feedResults.flatMap((result) => result.status === "fulfilled" ? result.value : []).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 8);
+    newsCache = { expiresAt: Date.now() + 15 * 60 * 1e3, items };
+    return res.json(items);
+  } catch {
+    return res.json(newsCache?.items ?? []);
+  }
 });
 router5.post("/posts", async (req, res) => {
   const parsed = CreateCommunityPostBody.safeParse(req.body);
@@ -61088,6 +61108,45 @@ function formatPost(p) {
     likes: p.likes,
     createdAt: p.createdAt.toISOString()
   };
+}
+async function fetchFeed(feed) {
+  const response = await fetch(feed.url, {
+    headers: {
+      "Accept": "application/rss+xml, application/xml, text/xml",
+      "User-Agent": "Smakvarlden/1.0 (+https://github.com/msx9973/smakvarlden-course)"
+    }
+  });
+  if (!response.ok) return [];
+  const xml = await response.text();
+  return parseRss(xml, feed.source);
+}
+function parseRss(xml, source) {
+  return [...xml.matchAll(/<item\b[\s\S]*?<\/item>/gi)].map((match) => {
+    const item = match[0];
+    const title = decodeXml(readTag(item, "title"));
+    const url2 = decodeXml(readTag(item, "link"));
+    const summary = stripHtml(decodeXml(readTag(item, "description"))).slice(0, 220);
+    const pubDate = readTag(item, "pubDate");
+    const publishedAt = pubDate ? new Date(pubDate).toISOString() : (/* @__PURE__ */ new Date()).toISOString();
+    return {
+      id: `${source}:${url2 || title}`,
+      title,
+      summary,
+      source,
+      url: url2,
+      publishedAt
+    };
+  }).filter((item) => item.title && item.url);
+}
+function readTag(xml, tag) {
+  const match = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i"));
+  return match ? match[1].replace(/^<!\[CDATA\[/, "").replace(/\]\]>$/, "").trim() : "";
+}
+function decodeXml(value) {
+  return value.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+}
+function stripHtml(value) {
+  return value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 var community_default = router5;
 

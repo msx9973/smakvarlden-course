@@ -135,6 +135,15 @@ export type CommunityPost = {
   createdAt: string;
 };
 
+export type CommunityNewsItem = {
+  id: string;
+  title: string;
+  summary: string;
+  source: string;
+  url: string;
+  publishedAt: string;
+};
+
 type ListParams = { category?: string; search?: string };
 
 /* ── Query keys ───────────────────────────────────────── */
@@ -163,6 +172,9 @@ export const getGetDashboardRecentActivityQueryKey = (params?: { limit?: number 
 
 export const getListCommunityPostsQueryKey = (params?: { search?: string }) =>
   ["listCommunityPosts", params ?? {}] as const;
+
+export const getListCommunityNewsQueryKey = () =>
+  ["listCommunityNews"] as const;
 
 /* ── Recipe hooks ─────────────────────────────────────── */
 
@@ -322,6 +334,15 @@ export function useListCommunityPosts(
   return useQuery({
     queryKey: options?.query?.queryKey ?? getListCommunityPostsQueryKey(params),
     queryFn: () => apiFetch<CommunityPost[]>(`/community/posts${q ? `?${q}` : ""}`),
+    ...options?.query,
+  });
+}
+
+export function useListCommunityNews(options?: QueryOptions<CommunityNewsItem[]>) {
+  return useQuery({
+    queryKey: options?.query?.queryKey ?? getListCommunityNewsQueryKey(),
+    queryFn: () => apiFetch<CommunityNewsItem[]>("/community/news"),
+    staleTime: 15 * 60 * 1000,
     ...options?.query,
   });
 }

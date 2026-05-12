@@ -1,13 +1,15 @@
 import { useState } from "react";
 import {
   useListCommunityPosts,
+  useListCommunityNews,
   useLikeCommunityPost,
   useCreateCommunityPost,
   getListCommunityPostsQueryKey,
+  getListCommunityNewsQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Heart, Plus, Users, Lock, ExternalLink } from "lucide-react";
+import { Search, Heart, Plus, Users, Lock, ExternalLink, Newspaper } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { sv, enUS } from "date-fns/locale";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -138,6 +140,7 @@ export default function Community() {
 
   const params = search ? { search } : {};
   const posts = useListCommunityPosts(params, { query: { queryKey: getListCommunityPostsQueryKey(params) } });
+  const news = useListCommunityNews({ query: { queryKey: getListCommunityNewsQueryKey() } });
   const likePost = useLikeCommunityPost({
     mutation: {
       onSuccess: () => queryClient.invalidateQueries({ queryKey: getListCommunityPostsQueryKey() }),
@@ -166,6 +169,47 @@ export default function Community() {
           >
             <Lock className="w-4 h-4" /> {t("Logga in för att dela")}
           </Link>
+        )}
+      </div>
+
+      <div className="rounded-2xl p-5" style={{ background: "var(--sv-surface)", boxShadow: "0 2px 12px rgba(44,24,16,.07)" }}>
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(59,130,246,.12)" }}>
+              <Newspaper className="w-5 h-5" style={{ color: "#3b82f6" }} />
+            </div>
+            <div>
+              <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>{t("Svenska matnyheter")}</h2>
+              <p className="text-[12px]" style={{ color: "var(--sv-text-2)" }}>{t("Uppdateras automatiskt från svenska branschkällor")}</p>
+            </div>
+          </div>
+          <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: "var(--sv-muted)", color: "var(--sv-text-2)" }}>
+            {t("Live")}
+          </span>
+        </div>
+        {news.isLoading ? (
+          <div className="grid gap-3 md:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
+          </div>
+        ) : news.data?.length ? (
+          <div className="grid gap-3 md:grid-cols-2">
+            {news.data.map((item) => (
+              <a key={item.id} href={item.url} target="_blank" rel="noreferrer"
+                className="rounded-xl p-4 transition-all hover:-translate-y-0.5"
+                style={{ background: "var(--sv-muted)", border: "1px solid var(--sv-border)" }}>
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "var(--sv-gold)" }}>{item.source}</span>
+                  <span className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>
+                    {formatDistanceToNow(new Date(item.publishedAt), { addSuffix: true, locale: dateLocale })}
+                  </span>
+                </div>
+                <h3 className="text-[13px] font-semibold leading-snug" style={{ color: "var(--sv-text)" }}>{item.title}</h3>
+                {item.summary && <p className="text-[12px] leading-relaxed mt-2 line-clamp-2" style={{ color: "var(--sv-text-2)" }}>{item.summary}</p>}
+              </a>
+            ))}
+          </div>
+        ) : (
+          <p className="text-[13px]" style={{ color: "var(--sv-text-2)" }}>{t("Nyhetsflödet kunde inte hämtas just nu.")}</p>
         )}
       </div>
 
