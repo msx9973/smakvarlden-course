@@ -12,7 +12,7 @@ function getStripe() {
   return new Stripe(key, { apiVersion: "2024-11-20.acacia" as never });
 }
 
-const PLAN_PRICE_SEK = 8900; // 89.00 SEK in öre
+const PLAN_PRICE_SEK = 5900; // 59.00 SEK in ore
 
 function getSecret(): string {
   return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
@@ -50,8 +50,8 @@ router.post("/checkout", async (req, res) => {
           price_data: {
             currency: "sek",
             product_data: {
-              name: "Smakvärlden Pro Chef",
-              description: "Obegränsade recept, AI-verktyg & analytics · Avsluta när som helst",
+              name: "Smakvärlden Pro Early Access",
+              description: "Founder price: obegränsade recept, AI-verktyg och analytics. Avsluta när som helst.",
             },
             unit_amount: PLAN_PRICE_SEK,
             recurring: { interval: "month" },

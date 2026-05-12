@@ -86873,7 +86873,7 @@ function getStripe() {
   if (!key) return null;
   return new stripe_esm_node_default(key, { apiVersion: "2024-11-20.acacia" });
 }
-var PLAN_PRICE_SEK = 8900;
+var PLAN_PRICE_SEK = 5900;
 function getSecret2() {
   return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
 }
@@ -86904,8 +86904,8 @@ router12.post("/checkout", async (req, res) => {
           price_data: {
             currency: "sek",
             product_data: {
-              name: "Smakv\xE4rlden Pro Chef",
-              description: "Obegr\xE4nsade recept, AI-verktyg & analytics \xB7 Avsluta n\xE4r som helst"
+              name: "Smakv\xE4rlden Pro Early Access",
+              description: "Founder price: obegr\xE4nsade recept, AI-verktyg och analytics. Avsluta n\xE4r som helst."
             },
             unit_amount: PLAN_PRICE_SEK,
             recurring: { interval: "month" }

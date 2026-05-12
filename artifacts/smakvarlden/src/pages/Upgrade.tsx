@@ -1,9 +1,32 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { CheckCircle2, Crown, Zap, Globe, BarChart3, Loader2 } from "lucide-react";
+import {
+  BarChart3,
+  CheckCircle2,
+  Crown,
+  Globe,
+  Loader2,
+  LockKeyhole,
+  Sparkles,
+  Zap,
+} from "lucide-react";
 import { useAuth, apiFetch } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
+
+const PRO_FEATURES = [
+  { icon: Sparkles, label: "Obegränsade recept och kalkyler", desc: "Bygg fler rätter, testa priser och spara arbetet utan stopp." },
+  { icon: BarChart3, label: "Marginal, svinn och marknadsdata", desc: "Se råvarukostnad, branschjämförelser och lönsamhet på samma plats." },
+  { icon: Globe, label: "Svensk restaurangbevakning", desc: "Community, nyheter och marknadsläge för svenska kök." },
+  { icon: Zap, label: "AI-verktyg under Early Access", desc: "Tidiga Pro-kunder får nya AI-funktioner när de släpps." },
+];
+
+const FREE_FEATURES = [
+  "3 recept",
+  "Grundläggande kalkylator",
+  "Begränsad ingredienshantering",
+  "Läs community och marknadsöversikt",
+];
 
 export default function Upgrade() {
   const { user } = useAuth();
@@ -12,19 +35,12 @@ export default function Upgrade() {
   const [, navigate] = useLocation();
   const [loading, setLoading] = useState(false);
 
-  const FEATURES = [
-    { icon: Globe,        label: t("Receptsök från hela världen"),  desc: t("Sök bland miljoner recept via Spoonacular") },
-    { icon: Zap,          label: t("Obegränsade AI-förslag"),        desc: t("Generera recept och analyser utan begränsning") },
-    { icon: BarChart3,    label: t("Avancerad analytics"),           desc: t("Djupgående marginalrapporter och trender") },
-    { icon: CheckCircle2, label: t("Prioriterad support"),           desc: t("Snabbare svar från teamet") },
-  ];
-
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("payment") === "cancelled") {
-      toast({ title: t("Betalning avbruten"), description: t("Du kan försöka igen när du är redo.") });
+      toast({ title: t("Betalning avbruten"), description: "Du kan försöka igen när du är redo." });
     }
-  }, []);
+  }, [toast, t]);
 
   async function startCheckout() {
     if (!user) { navigate("/login"); return; }
@@ -44,89 +60,129 @@ export default function Upgrade() {
   const isPro = user?.plan === "pro";
 
   return (
-    <div className="max-w-2xl mx-auto flex flex-col gap-8 py-4">
-
-      {/* Header */}
-      <div className="text-center">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-          style={{ background: "var(--sv-brown)" }}>
-          <Crown className="w-7 h-7" style={{ color: "var(--sv-gold)" }} />
-        </div>
-        <h1 className="font-serif text-3xl font-bold tracking-tight" style={{ color: "var(--sv-text)" }}>
-          Smakvärlden <span style={{ color: "var(--sv-gold)", fontStyle: "italic" }}>Pro Chef</span>
-        </h1>
-        <p className="mt-2 text-[14px]" style={{ color: "var(--sv-text-2)" }}>
-          {t("Lås upp alla verktyg och ta ditt kök till nästa nivå")}
-        </p>
-      </div>
-
-      {/* Plan card */}
-      <div className="rounded-2xl p-6 relative overflow-hidden"
-        style={{ background: "var(--sv-surface)", boxShadow: "0 4px 20px var(--sv-shadow)", border: "1.5px solid var(--sv-border)" }}>
-
-        {isPro && (
-          <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-bold"
-            style={{ background: "rgba(201,168,76,.15)", color: "var(--sv-gold)" }}>
-            <CheckCircle2 className="w-3.5 h-3.5" /> {t("Aktiv plan")}
-          </div>
-        )}
-
-        <div className="flex items-end gap-1 mb-1">
-          <span className="font-serif text-4xl font-bold" style={{ color: "var(--sv-text)" }}>89</span>
-          <span className="text-[14px] font-semibold mb-1.5" style={{ color: "var(--sv-text-2)" }}>{t("kr / månad")}</span>
-        </div>
-        <p className="text-[12px] mb-6" style={{ color: "var(--sv-text-2)" }}>{t("Avsluta när som helst · Inga bindningstider")}</p>
-
-        <div className="space-y-3 mb-6">
-          {FEATURES.map(({ icon: Icon, label, desc }) => (
-            <div key={label} className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-                style={{ background: "rgba(201,168,76,.12)" }}>
-                <Icon className="w-4 h-4" style={{ color: "var(--sv-gold)" }} />
-              </div>
-              <div>
-                <p className="text-[13px] font-semibold" style={{ color: "var(--sv-text)" }}>{label}</p>
-                <p className="text-[12px]" style={{ color: "var(--sv-text-2)" }}>{desc}</p>
-              </div>
+    <div className="mx-auto flex max-w-5xl flex-col gap-6 py-4">
+      <section
+        className="overflow-hidden rounded-[24px] px-6 py-7 sm:px-8"
+        style={{ background: "var(--sv-surface)", border: "1px solid var(--sv-border)", boxShadow: "0 10px 32px var(--sv-shadow)" }}
+      >
+        <div className="grid gap-7 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
+          <div>
+            <div
+              className="mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[12px] font-bold uppercase tracking-widest"
+              style={{ background: "rgba(201,168,76,.14)", color: "var(--sv-gold)" }}
+            >
+              <Crown className="h-3.5 w-3.5" />
+              Early Access
             </div>
-          ))}
+            <h1 className="font-serif text-3xl font-bold tracking-tight sm:text-4xl" style={{ color: "var(--sv-text)" }}>
+              Starta billigt, väx med Smakvärlden
+            </h1>
+            <p className="mt-3 max-w-2xl text-[15px] leading-7" style={{ color: "var(--sv-text-2)" }}>
+              Första kunderna får ett lägre lanseringspris medan plattformen byggs vidare med mer AI,
+              exports, analytics, lagerstöd och teamfunktioner.
+            </p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              {[
+                ["Free", "0 SEK", "Prova i lugn takt"],
+                ["Pro Early Access", "59 SEK/mån", "Founder price"],
+                ["Framtida pris", "149-199 SEK/mån", "För nya kunder senare"],
+              ].map(([label, value, desc]) => (
+                <div key={label} className="rounded-2xl p-4" style={{ background: "var(--sv-bg)", border: "1px solid var(--sv-border)" }}>
+                  <p className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: "var(--sv-text-2)" }}>{label}</p>
+                  <p className="mt-1 text-[20px] font-bold" style={{ color: "var(--sv-text)" }}>{value}</p>
+                  <p className="mt-1 text-[12px]" style={{ color: "var(--sv-text-2)" }}>{desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div
+            className="relative rounded-[22px] p-5"
+            style={{ background: "linear-gradient(145deg, rgba(86,62,44,.96), rgba(47,38,31,.98))", color: "var(--sv-surface)" }}
+          >
+            {isPro && (
+              <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold"
+                style={{ background: "rgba(255,255,255,.12)", color: "var(--sv-gold)" }}>
+                <CheckCircle2 className="h-3.5 w-3.5" /> Aktiv plan
+              </div>
+            )}
+            <p className="text-[13px] font-semibold uppercase tracking-widest" style={{ color: "var(--sv-gold)" }}>Pro Early Access</p>
+            <div className="mt-3 flex items-end gap-2">
+              <span className="font-serif text-5xl font-bold">59</span>
+              <span className="mb-2 text-[15px] font-semibold">SEK / månad</span>
+            </div>
+            <p className="mt-2 text-[13px]" style={{ color: "rgba(255,255,255,.72)" }}>
+              Behåll founder-priset så länge du är aktiv kund. Avsluta när som helst, ingen bindningstid.
+            </p>
+
+            <div className="my-5 h-px" style={{ background: "rgba(255,255,255,.16)" }} />
+
+            <div className="space-y-3">
+              {PRO_FEATURES.map(({ icon: Icon, label, desc }) => (
+                <div key={label} className="flex items-start gap-3">
+                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl" style={{ background: "rgba(255,255,255,.11)" }}>
+                    <Icon className="h-4 w-4" style={{ color: "var(--sv-gold)" }} />
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-bold">{label}</p>
+                    <p className="text-[12px]" style={{ color: "rgba(255,255,255,.68)" }}>{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {isPro ? (
+              <div className="mt-6 w-full rounded-xl py-3 text-center text-[14px] font-semibold"
+                style={{ background: "rgba(22,163,74,.18)", color: "#86efac" }}>
+                Du är redan Pro-kock!
+              </div>
+            ) : (
+              <button
+                onClick={startCheckout}
+                disabled={loading}
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-[14px] font-bold transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+                style={{ background: "var(--sv-gold)", color: "#2f261f", boxShadow: "0 8px 22px rgba(0,0,0,.22)" }}>
+                {loading ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Hanterar...</>
+                ) : (
+                  <><Crown className="h-4 w-4" /> Uppgradera för 59 SEK/mån</>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-[.9fr_1.1fr]">
+        <div className="rounded-[20px] p-5" style={{ background: "var(--sv-surface)", border: "1px solid var(--sv-border)" }}>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl" style={{ background: "rgba(107,114,128,.10)" }}>
+              <LockKeyhole className="h-5 w-5" style={{ color: "var(--sv-text-2)" }} />
+            </div>
+            <div>
+              <p className="text-[13px] font-bold uppercase tracking-widest" style={{ color: "var(--sv-text-2)" }}>Free Forever</p>
+              <p className="text-[22px] font-bold" style={{ color: "var(--sv-text)" }}>0 SEK / månad</p>
+            </div>
+          </div>
+          <ul className="mt-4 space-y-2">
+            {FREE_FEATURES.map((feature) => (
+              <li key={feature} className="flex items-center gap-2 text-[13px]" style={{ color: "var(--sv-text-2)" }}>
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                {feature}
+              </li>
+            ))}
+          </ul>
         </div>
 
-        {isPro ? (
-          <div className="w-full py-3 rounded-xl text-center text-[14px] font-semibold"
-            style={{ background: "rgba(22,163,74,.1)", color: "#16a34a" }}>
-            {t("Du är redan Pro-kock!")}
-          </div>
-        ) : (
-          <button
-            onClick={startCheckout}
-            disabled={loading}
-            className="w-full py-3 rounded-xl text-[14px] font-bold transition-all hover:opacity-90 flex items-center justify-center gap-2"
-            style={{ background: "var(--sv-brown)", color: "var(--sv-surface)", boxShadow: "0 4px 14px var(--sv-shadow)" }}>
-            {loading ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> {t("Hanterar...")}</>
-            ) : (
-              <><Crown className="w-4 h-4" /> {t("Uppgradera till Pro")}</>
-            )}
-          </button>
-        )}
-      </div>
-
-      {/* Free plan comparison */}
-      <div className="rounded-2xl p-5"
-        style={{ background: "var(--sv-surface)", border: "1px solid var(--sv-border)" }}>
-        <p className="text-[12px] font-bold uppercase tracking-widest mb-3" style={{ color: "var(--sv-gold)" }}>
-          {t("Gratis plan inkluderar")}
-        </p>
-        <ul className="space-y-2">
-          {[t("Upp till 10 recept"), t("Grundläggande kalkylator"), t("Ingredienshantering"), t("Community-åtkomst")].map((f) => (
-            <li key={f} className="flex items-center gap-2 text-[13px]" style={{ color: "var(--sv-text-2)" }}>
-              <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: "var(--sv-text-2)" }} />
-              {f}
-            </li>
-          ))}
-        </ul>
-      </div>
+        <div className="rounded-[20px] p-5" style={{ background: "var(--sv-surface)", border: "1px solid var(--sv-border)" }}>
+          <p className="text-[13px] font-bold uppercase tracking-widest" style={{ color: "var(--sv-gold)" }}>Varför 59 SEK nu?</p>
+          <p className="mt-3 text-[14px] leading-7" style={{ color: "var(--sv-text-2)" }}>
+            I början är förtroende viktigare än högsta pris. Små kaféer, food trucks, studenter och nya kockar
+            kan testa Smakvärlden utan stor risk, samtidigt som tidiga kunder hjälper plattformen bli starkare.
+            När fler AI-verktyg, export, leverantörsstöd och teamkonton är redo kan nya kunder gå in på normalpris.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }
