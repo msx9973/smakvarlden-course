@@ -85,7 +85,7 @@ export default function Upgrade() {
               {[
                 ["Free", "0 SEK", "Prova i lugn takt"],
                 ["Pro Early Access", "59 SEK/mån", "Founder price"],
-                ["Framtida pris", "149-199 SEK/mån", "För nya kunder senare"],
+                ["Team", "Kommer senare", "För restauranger med flera användare"],
               ].map(([label, value, desc]) => (
                 <div key={label} className="rounded-2xl p-4" style={{ background: "var(--sv-bg)", border: "1px solid var(--sv-border)" }}>
                   <p className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: "var(--sv-text-2)" }}>{label}</p>
