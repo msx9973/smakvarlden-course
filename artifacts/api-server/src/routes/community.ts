@@ -49,10 +49,10 @@ router.get("/posts", async (req, res) => {
 router.get("/news", async (req, res) => {
   const lang = req.query.lang === "en" ? "en" : "sv";
   const cacheKey = `news:${lang}`;
-  res.set("Cache-Control", "public, max-age=0, s-maxage=604800, stale-while-revalidate=86400");
 
   try {
     if (newsCache[cacheKey] && newsCache[cacheKey].expiresAt > Date.now()) {
+      res.set("Cache-Control", "public, max-age=0, s-maxage=604800, stale-while-revalidate=86400");
       return res.json(newsCache[cacheKey].items);
     }
 
@@ -64,9 +64,14 @@ router.get("/news", async (req, res) => {
 
     newsCache["news:sv"] = { expiresAt: Date.now() + WEEK_MS, items: swedishItems };
     const items = lang === "en" ? await translateNewsToEnglish(swedishItems) : swedishItems;
-    newsCache[cacheKey] = { expiresAt: Date.now() + WEEK_MS, items };
+    const translated = lang === "sv" || items.every((item) => item.language === "en");
+    newsCache[cacheKey] = { expiresAt: Date.now() + (translated ? WEEK_MS : 10 * 60 * 1000), items };
+    res.set("Cache-Control", translated
+      ? "public, max-age=0, s-maxage=604800, stale-while-revalidate=86400"
+      : "no-store");
     return res.json(items);
   } catch {
+    res.set("Cache-Control", "no-store");
     return res.json(newsCache[cacheKey]?.items ?? newsCache["news:sv"]?.items ?? []);
   }
 });
@@ -79,8 +84,8 @@ async function translateNewsToEnglish(items: NewsItem[]) {
   try {
     const response = await client.messages.create({
       model: "claude-haiku-4-5",
-      max_tokens: 1800,
-      system: "Translate Swedish restaurant industry news into natural, concise English. Return only valid JSON.",
+      max_tokens: 4000,
+      system: "Translate Swedish restaurant industry news into natural, concise English. Return only raw JSON with no markdown, no prose, and no code fences.",
       messages: [{
         role: "user",
         content: JSON.stringify({
@@ -89,8 +94,10 @@ async function translateNewsToEnglish(items: NewsItem[]) {
         }),
       }],
     });
-    const text = response.content[0]?.type === "text" ? response.content[0].text : "[]";
-    const parsed = JSON.parse(text) as Array<Partial<NewsItem>>;
+    const raw = response.content[0]?.type === "text" ? response.content[0].text : "[]";
+    const jsonText = raw.trim().replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+    const match = jsonText.match(/\[[\s\S]*\]/);
+    const parsed = JSON.parse(match?.[0] ?? jsonText) as Array<Partial<NewsItem>>;
     const byId = new Map(parsed.map((item) => [item.id, item]));
     return items.map((item) => {
       const translated = byId.get(item.id);

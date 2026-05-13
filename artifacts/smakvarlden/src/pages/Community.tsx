@@ -156,7 +156,7 @@ export default function Community() {
 
   const params = search ? { search } : {};
   const posts = useListCommunityPosts(params, { query: { queryKey: getListCommunityPostsQueryKey(params) } });
-  const newsParams = { lang };
+  const newsParams = { lang, v: "weekly-news-v2" };
   const news = useListCommunityNews(newsParams, { query: { queryKey: getListCommunityNewsQueryKey(newsParams) } });
   const likePost = useLikeCommunityPost({
     mutation: {
