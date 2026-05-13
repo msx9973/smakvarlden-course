@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { hasSupabaseAuth, sendPasswordReset, startSupabaseGoogleLogin } from "@/lib/supabaseAuth";
 
 export default function Login({ onSuccess }: { onSuccess?: () => void }) {
-  const { login, register } = useAuth();
+  const { login, register, user } = useAuth();
   const { t } = useI18n();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
@@ -21,6 +21,10 @@ export default function Login({ onSuccess }: { onSuccess?: () => void }) {
       window.history.replaceState({}, "", window.location.pathname);
     }
   }, []);
+
+  useEffect(() => {
+    if (user) onSuccess?.();
+  }, [onSuccess, user]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
