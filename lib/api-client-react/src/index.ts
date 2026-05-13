@@ -173,8 +173,8 @@ export const getGetDashboardRecentActivityQueryKey = (params?: { limit?: number 
 export const getListCommunityPostsQueryKey = (params?: { search?: string }) =>
   ["listCommunityPosts", params ?? {}] as const;
 
-export const getListCommunityNewsQueryKey = () =>
-  ["listCommunityNews"] as const;
+export const getListCommunityNewsQueryKey = (params?: { lang?: string }) =>
+  ["listCommunityNews", params ?? {}] as const;
 
 /* ── Recipe hooks ─────────────────────────────────────── */
 
@@ -338,11 +338,17 @@ export function useListCommunityPosts(
   });
 }
 
-export function useListCommunityNews(options?: QueryOptions<CommunityNewsItem[]>) {
+export function useListCommunityNews(
+  params?: { lang?: string },
+  options?: QueryOptions<CommunityNewsItem[]>,
+) {
+  const qs = new URLSearchParams();
+  if (params?.lang) qs.set("lang", params.lang);
+  const q = qs.toString();
   return useQuery({
-    queryKey: options?.query?.queryKey ?? getListCommunityNewsQueryKey(),
-    queryFn: () => apiFetch<CommunityNewsItem[]>("/community/news"),
-    staleTime: 15 * 60 * 1000,
+    queryKey: options?.query?.queryKey ?? getListCommunityNewsQueryKey(params),
+    queryFn: () => apiFetch<CommunityNewsItem[]>(`/community/news${q ? `?${q}` : ""}`),
+    staleTime: 7 * 24 * 60 * 60 * 1000,
     ...options?.query,
   });
 }

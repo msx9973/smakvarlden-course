@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db, communityPostsTable, activityLogTable } from "@workspace/db";
 import { eq, ilike, desc, sql } from "drizzle-orm";
+import Anthropic from "@anthropic-ai/sdk";
 import {
   CreateCommunityPostBody,
   ListCommunityPostsQueryParams,
@@ -16,6 +17,8 @@ type NewsItem = {
   source: string;
   url: string;
   publishedAt: string;
+  language?: "sv" | "en";
+  translatedFrom?: "sv";
 };
 
 const NEWS_FEEDS = [
@@ -25,7 +28,14 @@ const NEWS_FEEDS = [
   },
 ];
 
-let newsCache: { expiresAt: number; items: NewsItem[] } | null = null;
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+let newsCache: Record<string, { expiresAt: number; items: NewsItem[] }> = {};
+
+function getAiClient() {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) return null;
+  return new Anthropic({ apiKey: key });
+}
 
 router.get("/posts", async (req, res) => {
   const parsed = ListCommunityPostsQueryParams.safeParse(req.query);
@@ -36,24 +46,66 @@ router.get("/posts", async (req, res) => {
   return res.json(rows.map(formatPost));
 });
 
-router.get("/news", async (_req, res) => {
+router.get("/news", async (req, res) => {
+  const lang = req.query.lang === "en" ? "en" : "sv";
+  const cacheKey = `news:${lang}`;
+  res.set("Cache-Control", "public, max-age=0, s-maxage=604800, stale-while-revalidate=86400");
+
   try {
-    if (newsCache && newsCache.expiresAt > Date.now()) {
-      return res.json(newsCache.items);
+    if (newsCache[cacheKey] && newsCache[cacheKey].expiresAt > Date.now()) {
+      return res.json(newsCache[cacheKey].items);
     }
 
     const feedResults = await Promise.allSettled(NEWS_FEEDS.map(fetchFeed));
-    const items = feedResults
+    const swedishItems = feedResults
       .flatMap((result) => result.status === "fulfilled" ? result.value : [])
       .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
       .slice(0, 8);
 
-    newsCache = { expiresAt: Date.now() + 15 * 60 * 1000, items };
+    newsCache["news:sv"] = { expiresAt: Date.now() + WEEK_MS, items: swedishItems };
+    const items = lang === "en" ? await translateNewsToEnglish(swedishItems) : swedishItems;
+    newsCache[cacheKey] = { expiresAt: Date.now() + WEEK_MS, items };
     return res.json(items);
   } catch {
-    return res.json(newsCache?.items ?? []);
+    return res.json(newsCache[cacheKey]?.items ?? newsCache["news:sv"]?.items ?? []);
   }
 });
+
+async function translateNewsToEnglish(items: NewsItem[]) {
+  if (!items.length) return items;
+  const client = getAiClient();
+  if (!client) return items.map((item) => ({ ...item, language: "sv" as const }));
+
+  try {
+    const response = await client.messages.create({
+      model: "claude-haiku-4-5",
+      max_tokens: 1800,
+      system: "Translate Swedish restaurant industry news into natural, concise English. Return only valid JSON.",
+      messages: [{
+        role: "user",
+        content: JSON.stringify({
+          instruction: "Translate each title and summary to English. Preserve id, source, url, and publishedAt exactly. Return a JSON array.",
+          items: items.map(({ id, title, summary, source, url, publishedAt }) => ({ id, title, summary, source, url, publishedAt })),
+        }),
+      }],
+    });
+    const text = response.content[0]?.type === "text" ? response.content[0].text : "[]";
+    const parsed = JSON.parse(text) as Array<Partial<NewsItem>>;
+    const byId = new Map(parsed.map((item) => [item.id, item]));
+    return items.map((item) => {
+      const translated = byId.get(item.id);
+      return {
+        ...item,
+        title: typeof translated?.title === "string" && translated.title.trim() ? translated.title : item.title,
+        summary: typeof translated?.summary === "string" && translated.summary.trim() ? translated.summary : item.summary,
+        language: "en" as const,
+        translatedFrom: "sv" as const,
+      };
+    });
+  } catch {
+    return items.map((item) => ({ ...item, language: "sv" as const }));
+  }
+}
 
 router.post("/posts", async (req, res) => {
   const parsed = CreateCommunityPostBody.safeParse(req.body);
@@ -124,6 +176,7 @@ function parseRss(xml: string, source: string): NewsItem[] {
       source,
       url,
       publishedAt,
+      language: "sv",
     };
   }).filter((item) => item.title && item.url);
 }

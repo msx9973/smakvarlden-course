@@ -156,7 +156,8 @@ export default function Community() {
 
   const params = search ? { search } : {};
   const posts = useListCommunityPosts(params, { query: { queryKey: getListCommunityPostsQueryKey(params) } });
-  const news = useListCommunityNews({ query: { queryKey: getListCommunityNewsQueryKey() } });
+  const newsParams = { lang };
+  const news = useListCommunityNews(newsParams, { query: { queryKey: getListCommunityNewsQueryKey(newsParams) } });
   const likePost = useLikeCommunityPost({
     mutation: {
       onSuccess: () => queryClient.invalidateQueries({ queryKey: getListCommunityPostsQueryKey() }),

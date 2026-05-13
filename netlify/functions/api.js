@@ -62771,386 +62771,6 @@ var dashboard_default = router4;
 
 // src/routes/community.ts
 var import_express5 = __toESM(require_express2(), 1);
-var router5 = (0, import_express5.Router)();
-var NEWS_FEEDS = [
-  {
-    source: "Food Supply",
-    url: "https://www.food-supply.se/xml/rss2/articles?description=true"
-  }
-];
-var newsCache = null;
-router5.get("/posts", async (req, res) => {
-  const parsed = ListCommunityPostsQueryParams.safeParse(req.query);
-  const search = parsed.success ? parsed.data.search : void 0;
-  const rows = await db.select().from(communityPostsTable).where(search ? ilike(communityPostsTable.recipeName, `%${search}%`) : void 0).orderBy(desc(communityPostsTable.createdAt));
-  return res.json(rows.map(formatPost));
-});
-router5.get("/news", async (_req, res) => {
-  try {
-    if (newsCache && newsCache.expiresAt > Date.now()) {
-      return res.json(newsCache.items);
-    }
-    const feedResults = await Promise.allSettled(NEWS_FEEDS.map(fetchFeed));
-    const items = feedResults.flatMap((result) => result.status === "fulfilled" ? result.value : []).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 8);
-    newsCache = { expiresAt: Date.now() + 15 * 60 * 1e3, items };
-    return res.json(items);
-  } catch {
-    return res.json(newsCache?.items ?? []);
-  }
-});
-router5.post("/posts", async (req, res) => {
-  const parsed = CreateCommunityPostBody.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: "Invalid body" });
-  const [post] = await db.insert(communityPostsTable).values({
-    recipeName: parsed.data.recipeName,
-    chefName: parsed.data.chefName,
-    description: parsed.data.description,
-    category: parsed.data.category,
-    costSek: String(parsed.data.costSek)
-  }).returning();
-  await db.insert(activityLogTable).values({
-    type: "recipe_shared",
-    title: `Recept delat: ${post.recipeName}`,
-    subtitle: `av ${post.chefName} \xB7 ${post.category}`
-  });
-  return res.status(201).json(formatPost(post));
-});
-router5.post("/posts/:id/like", async (req, res) => {
-  const parsed = LikeCommunityPostParams.safeParse({ id: Number(req.params.id) });
-  if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
-  const [post] = await db.update(communityPostsTable).set({ likes: sql`likes + 1` }).where(eq(communityPostsTable.id, parsed.data.id)).returning();
-  if (!post) return res.status(404).json({ error: "Not found" });
-  return res.json(formatPost(post));
-});
-function formatPost(p) {
-  return {
-    id: p.id,
-    recipeName: p.recipeName,
-    chefName: p.chefName,
-    description: p.description,
-    category: p.category,
-    costSek: parseFloat(String(p.costSek)),
-    likes: p.likes,
-    createdAt: p.createdAt.toISOString()
-  };
-}
-async function fetchFeed(feed) {
-  const response = await fetch(feed.url, {
-    headers: {
-      "Accept": "application/rss+xml, application/xml, text/xml",
-      "User-Agent": "Smakvarlden/1.0 (+https://github.com/msx9973/smakvarlden-course)"
-    }
-  });
-  if (!response.ok) return [];
-  const xml = await response.text();
-  return parseRss(xml, feed.source);
-}
-function parseRss(xml, source) {
-  return [...xml.matchAll(/<item\b[\s\S]*?<\/item>/gi)].map((match) => {
-    const item = match[0];
-    const title = decodeXml(readTag(item, "title"));
-    const url2 = decodeXml(readTag(item, "link"));
-    const summary = stripHtml(decodeXml(readTag(item, "description"))).slice(0, 220);
-    const pubDate = readTag(item, "pubDate");
-    const publishedAt = pubDate ? new Date(pubDate).toISOString() : (/* @__PURE__ */ new Date()).toISOString();
-    return {
-      id: `${source}:${url2 || title}`,
-      title,
-      summary,
-      source,
-      url: url2,
-      publishedAt
-    };
-  }).filter((item) => item.title && item.url);
-}
-function readTag(xml, tag) {
-  const match = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i"));
-  return match ? match[1].replace(/^<!\[CDATA\[/, "").replace(/\]\]>$/, "").trim() : "";
-}
-function decodeXml(value) {
-  return value.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
-}
-function stripHtml(value) {
-  return value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-}
-var community_default = router5;
-
-// src/routes/auth.ts
-var import_express6 = __toESM(require_express2(), 1);
-var import_node_crypto = __toESM(require("node:crypto"), 1);
-var import_jsonwebtoken = __toESM(require_jsonwebtoken(), 1);
-var router6 = (0, import_express6.Router)();
-var PHONE_EMAIL_DOMAIN = "phone.smakvarlden.local";
-var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-var GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
-var GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
-var GOOGLE_USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
-function getSecret() {
-  return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
-}
-function signToken(user) {
-  return import_jsonwebtoken.default.sign({ id: user.id, email: user.email, role: user.role }, getSecret(), {
-    expiresIn: "14d",
-    issuer: "smakvarlden",
-    audience: "smakvarlden-app"
-  });
-}
-function publicContact(email3) {
-  if (!email3.endsWith(`@${PHONE_EMAIL_DOMAIN}`)) return email3;
-  const digits = email3.slice("phone.".length, -`@${PHONE_EMAIL_DOMAIN}`.length);
-  return `+${digits}`;
-}
-function formatUser(u) {
-  return { id: u.id, name: u.name, email: publicContact(u.email), role: u.role, plan: u.plan, createdAt: u.createdAt.toISOString() };
-}
-function normalizeEmail(value) {
-  const email3 = value.trim().toLowerCase();
-  return EMAIL_RE.test(email3) ? email3 : null;
-}
-function normalizePhone(value) {
-  const compact = value.trim().replace(/[()\s-]/g, "");
-  const withPlus = compact.startsWith("00") ? `+${compact.slice(2)}` : compact.startsWith("0") ? `+46${compact.slice(1)}` : compact;
-  return /^\+[1-9]\d{7,14}$/.test(withPlus) ? withPlus : null;
-}
-function contactToStorageEmail(value) {
-  if (typeof value !== "string") return null;
-  const email3 = normalizeEmail(value);
-  if (email3) return email3;
-  const phone = normalizePhone(value);
-  if (phone) return `phone.${phone.slice(1)}@${PHONE_EMAIL_DOMAIN}`;
-  return null;
-}
-function validatePassword(password) {
-  if (typeof password !== "string") return "Fyll i l\xF6senord.";
-  if (password.length < 8) return "L\xF6senordet m\xE5ste vara minst 8 tecken.";
-  if (!/[A-Za-zÅÄÖåäö]/.test(password) || !/\d/.test(password)) {
-    return "L\xF6senordet m\xE5ste inneh\xE5lla b\xE5de bokst\xE4ver och siffror.";
-  }
-  return null;
-}
-function verifyToken(token) {
-  const decoded = import_jsonwebtoken.default.decode(token);
-  if (!decoded?.iss && !decoded?.aud) return import_jsonwebtoken.default.verify(token, getSecret());
-  return import_jsonwebtoken.default.verify(token, getSecret(), {
-    issuer: "smakvarlden",
-    audience: "smakvarlden-app"
-  });
-}
-function getOrigin(req) {
-  const configured = process.env.PUBLIC_APP_URL ?? process.env.URL;
-  if (configured) return configured.replace(/\/$/, "");
-  const proto = req.headers["x-forwarded-proto"]?.split(",")[0] ?? req.protocol ?? "https";
-  const host = req.headers["x-forwarded-host"]?.split(",")[0] ?? req.headers.host;
-  return `${proto}://${host}`;
-}
-function getGoogleRedirectUri(req) {
-  return process.env.GOOGLE_OAUTH_REDIRECT_URI ?? `${getOrigin(req)}/api/auth/google/callback`;
-}
-function getGoogleCredentials() {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  if (!clientId || !clientSecret) return null;
-  return { clientId, clientSecret };
-}
-function getSupabaseCredentials() {
-  const url2 = (process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL)?.replace(/\/$/, "");
-  const anonKey = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
-  if (!url2 || !anonKey) return null;
-  return { url: url2, anonKey };
-}
-function getSupabaseUrl() {
-  return (process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL)?.replace(/\/$/, "") ?? null;
-}
-function signState(returnTo) {
-  const payload = Buffer.from(JSON.stringify({
-    returnTo: returnTo.startsWith("/") ? returnTo : "/",
-    nonce: import_node_crypto.default.randomBytes(16).toString("hex"),
-    ts: Date.now()
-  })).toString("base64url");
-  const sig = import_node_crypto.default.createHmac("sha256", getSecret()).update(payload).digest("base64url");
-  return `${payload}.${sig}`;
-}
-function readState(value) {
-  if (typeof value !== "string") return null;
-  const [payload, sig] = value.split(".");
-  if (!payload || !sig) return null;
-  const expected = import_node_crypto.default.createHmac("sha256", getSecret()).update(payload).digest("base64url");
-  const actualBuffer = Buffer.from(sig);
-  const expectedBuffer = Buffer.from(expected);
-  if (actualBuffer.length !== expectedBuffer.length || !import_node_crypto.default.timingSafeEqual(actualBuffer, expectedBuffer)) return null;
-  try {
-    const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
-    if (!parsed.ts || Date.now() - parsed.ts > 10 * 60 * 1e3) return null;
-    return parsed.returnTo?.startsWith("/") ? parsed.returnTo : "/";
-  } catch {
-    return null;
-  }
-}
-function oauthResultHtml(token, returnTo) {
-  return `<!doctype html>
-<html lang="sv">
-<head><meta charset="utf-8"><title>Loggar in...</title></head>
-<body>
-<script>
-localStorage.setItem("smakvarlden_token", ${JSON.stringify(token)});
-window.location.replace(${JSON.stringify(returnTo)});
-</script>
-</body>
-</html>`;
-}
-async function findOrCreateGoogleUser(profile) {
-  const email3 = normalizeEmail(profile.email);
-  if (!email3 || profile.email_verified === false) throw new Error("Google-kontot m\xE5ste ha en verifierad e-postadress.");
-  const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, email3));
-  if (existing) return existing;
-  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
-  const passwordHash = await bcryptjs_default.hash(import_node_crypto.default.randomBytes(32).toString("base64url"), 12);
-  const [user] = await db.insert(usersTable).values({
-    name: (profile.name ?? profile.given_name ?? email3.split("@")[0]).trim().slice(0, 80),
-    email: email3,
-    passwordHash,
-    role: isFirstUser ? "admin" : "user"
-  }).returning();
-  return user;
-}
-async function findOrCreateSupabaseUser(profile) {
-  const email3 = profile.email ? normalizeEmail(profile.email) : null;
-  const storageEmail = email3 ?? contactToStorageEmail(profile.phone) ?? `supabase.${profile.id}@${PHONE_EMAIL_DOMAIN}`;
-  const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
-  if (existing) return existing;
-  const fallbackName = email3?.split("@")[0] ?? profile.phone ?? "Smakv\xE4rlden anv\xE4ndare";
-  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
-  const passwordHash = await bcryptjs_default.hash(import_node_crypto.default.randomBytes(32).toString("base64url"), 12);
-  const [user] = await db.insert(usersTable).values({
-    name: (profile.user_metadata?.full_name ?? profile.user_metadata?.name ?? fallbackName).trim().slice(0, 80),
-    email: storageEmail,
-    passwordHash,
-    role: isFirstUser ? "admin" : "user"
-  }).returning();
-  return user;
-}
-router6.post("/auth/supabase", async (req, res) => {
-  const credentials = getSupabaseCredentials();
-  const { accessToken } = req.body ?? {};
-  if (!credentials) return res.status(503).json({ error: "Supabase Auth \xE4r inte konfigurerat." });
-  if (typeof accessToken !== "string" || accessToken.length < 20) {
-    return res.status(400).json({ error: "Supabase-session saknas." });
-  }
-  try {
-    const userResponse = await fetch(`${credentials.url}/auth/v1/user`, {
-      headers: {
-        apikey: credentials.anonKey,
-        Authorization: `Bearer ${accessToken}`
-      }
-    });
-    if (!userResponse.ok) return res.status(401).json({ error: "Ogiltig Supabase-session." });
-    const profile = await userResponse.json();
-    const user = await findOrCreateSupabaseUser(profile);
-    return res.json({ token: signToken(user), user: formatUser(user) });
-  } catch {
-    return res.status(500).json({ error: "Kunde inte verifiera Supabase-session." });
-  }
-});
-router6.get("/auth/google/start", (req, res) => {
-  const credentials = getGoogleCredentials();
-  if (!credentials) {
-    const supabaseUrl = getSupabaseUrl();
-    if (supabaseUrl) {
-      const url3 = new URL(`${supabaseUrl}/auth/v1/authorize`);
-      url3.searchParams.set("provider", "google");
-      url3.searchParams.set("redirect_to", `${getOrigin(req)}/login`);
-      return res.redirect(url3.toString());
-    }
-    return res.status(503).send("Google OAuth \xE4r inte konfigurerat.");
-  }
-  const returnTo = typeof req.query.returnTo === "string" ? req.query.returnTo : "/";
-  const url2 = new URL(GOOGLE_AUTH_URL);
-  url2.searchParams.set("client_id", credentials.clientId);
-  url2.searchParams.set("redirect_uri", getGoogleRedirectUri(req));
-  url2.searchParams.set("response_type", "code");
-  url2.searchParams.set("scope", "openid email profile");
-  url2.searchParams.set("state", signState(returnTo));
-  url2.searchParams.set("prompt", "select_account");
-  return res.redirect(url2.toString());
-});
-router6.get("/auth/google/callback", async (req, res) => {
-  const credentials = getGoogleCredentials();
-  const code = typeof req.query.code === "string" ? req.query.code : "";
-  const returnTo = readState(req.query.state) ?? "/";
-  if (!credentials || !code) return res.redirect(`/login?oauth=failed`);
-  try {
-    const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id: credentials.clientId,
-        client_secret: credentials.clientSecret,
-        code,
-        grant_type: "authorization_code",
-        redirect_uri: getGoogleRedirectUri(req)
-      })
-    });
-    if (!tokenResponse.ok) throw new Error("Google token exchange failed");
-    const tokenData = await tokenResponse.json();
-    if (!tokenData.access_token) throw new Error("Google token saknas.");
-    const profileResponse = await fetch(GOOGLE_USERINFO_URL, {
-      headers: { Authorization: `Bearer ${tokenData.access_token}` }
-    });
-    if (!profileResponse.ok) throw new Error("Google profil kunde inte h\xE4mtas.");
-    const profile = await profileResponse.json();
-    const user = await findOrCreateGoogleUser(profile);
-    const appToken = signToken(user);
-    return res.type("html").send(oauthResultHtml(appToken, returnTo));
-  } catch {
-    return res.redirect(`/login?oauth=failed`);
-  }
-});
-router6.post("/auth/register", async (req, res) => {
-  const { name, email: email3, contact, identifier, phone, password } = req.body ?? {};
-  const storageEmail = contactToStorageEmail(email3 ?? contact ?? identifier ?? phone);
-  if (typeof name !== "string" || name.trim().length < 2 || !storageEmail || !password) {
-    return res.status(400).json({ error: "Fyll i namn, e-post eller telefonnummer och l\xF6senord." });
-  }
-  const passwordError = validatePassword(password);
-  if (passwordError) return res.status(400).json({ error: passwordError });
-  const existing = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
-  if (existing.length > 0) return res.status(400).json({ error: "Kontot finns redan. Logga in ist\xE4llet." });
-  const passwordHash = await bcryptjs_default.hash(password, 12);
-  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
-  const [user] = await db.insert(usersTable).values({
-    name: name.trim().slice(0, 80),
-    email: storageEmail,
-    passwordHash,
-    role: isFirstUser ? "admin" : "user"
-  }).returning();
-  return res.status(201).json({ token: signToken(user), user: formatUser(user) });
-});
-router6.post("/auth/login", async (req, res) => {
-  const { email: email3, identifier, phone, password } = req.body ?? {};
-  const storageEmail = contactToStorageEmail(identifier ?? email3 ?? phone);
-  if (!storageEmail || !password) return res.status(400).json({ error: "Fyll i e-post/telefon och l\xF6senord." });
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
-  if (!user) return res.status(401).json({ error: "Felaktiga inloggningsuppgifter." });
-  const ok = await bcryptjs_default.compare(password, user.passwordHash);
-  if (!ok) return res.status(401).json({ error: "Felaktiga inloggningsuppgifter." });
-  return res.json({ token: signToken(user), user: formatUser(user) });
-});
-router6.get("/auth/me", async (req, res) => {
-  const header = req.headers.authorization;
-  if (!header?.startsWith("Bearer ")) return res.status(401).json({ error: "Ej inloggad." });
-  try {
-    const payload = verifyToken(header.slice(7));
-    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, payload.id));
-    if (!user) return res.status(401).json({ error: "Anv\xE4ndare hittades inte." });
-    return res.json(formatUser(user));
-  } catch {
-    return res.status(401).json({ error: "Ogiltig eller utg\xE5ngen token." });
-  }
-});
-var auth_default = router6;
-
-// src/routes/ai.ts
-var import_express7 = __toESM(require_express2(), 1);
 
 // ../../node_modules/.pnpm/@anthropic-ai+sdk@0.92.0_zod@3.25.76/node_modules/@anthropic-ai/sdk/internal/tslib.mjs
 function __classPrivateFieldSet(receiver, state, value, kind, f) {
@@ -69396,7 +69016,433 @@ Anthropic.Messages = Messages2;
 Anthropic.Models = Models2;
 Anthropic.Beta = Beta;
 
+// src/routes/community.ts
+var router5 = (0, import_express5.Router)();
+var NEWS_FEEDS = [
+  {
+    source: "Food Supply",
+    url: "https://www.food-supply.se/xml/rss2/articles?description=true"
+  }
+];
+var WEEK_MS = 7 * 24 * 60 * 60 * 1e3;
+var newsCache = {};
+function getAiClient() {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) return null;
+  return new Anthropic({ apiKey: key });
+}
+router5.get("/posts", async (req, res) => {
+  const parsed = ListCommunityPostsQueryParams.safeParse(req.query);
+  const search = parsed.success ? parsed.data.search : void 0;
+  const rows = await db.select().from(communityPostsTable).where(search ? ilike(communityPostsTable.recipeName, `%${search}%`) : void 0).orderBy(desc(communityPostsTable.createdAt));
+  return res.json(rows.map(formatPost));
+});
+router5.get("/news", async (req, res) => {
+  const lang = req.query.lang === "en" ? "en" : "sv";
+  const cacheKey = `news:${lang}`;
+  res.set("Cache-Control", "public, max-age=0, s-maxage=604800, stale-while-revalidate=86400");
+  try {
+    if (newsCache[cacheKey] && newsCache[cacheKey].expiresAt > Date.now()) {
+      return res.json(newsCache[cacheKey].items);
+    }
+    const feedResults = await Promise.allSettled(NEWS_FEEDS.map(fetchFeed));
+    const swedishItems = feedResults.flatMap((result) => result.status === "fulfilled" ? result.value : []).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 8);
+    newsCache["news:sv"] = { expiresAt: Date.now() + WEEK_MS, items: swedishItems };
+    const items = lang === "en" ? await translateNewsToEnglish(swedishItems) : swedishItems;
+    newsCache[cacheKey] = { expiresAt: Date.now() + WEEK_MS, items };
+    return res.json(items);
+  } catch {
+    return res.json(newsCache[cacheKey]?.items ?? newsCache["news:sv"]?.items ?? []);
+  }
+});
+async function translateNewsToEnglish(items) {
+  if (!items.length) return items;
+  const client = getAiClient();
+  if (!client) return items.map((item) => ({ ...item, language: "sv" }));
+  try {
+    const response = await client.messages.create({
+      model: "claude-haiku-4-5",
+      max_tokens: 1800,
+      system: "Translate Swedish restaurant industry news into natural, concise English. Return only valid JSON.",
+      messages: [{
+        role: "user",
+        content: JSON.stringify({
+          instruction: "Translate each title and summary to English. Preserve id, source, url, and publishedAt exactly. Return a JSON array.",
+          items: items.map(({ id, title, summary, source, url: url2, publishedAt }) => ({ id, title, summary, source, url: url2, publishedAt }))
+        })
+      }]
+    });
+    const text2 = response.content[0]?.type === "text" ? response.content[0].text : "[]";
+    const parsed = JSON.parse(text2);
+    const byId = new Map(parsed.map((item) => [item.id, item]));
+    return items.map((item) => {
+      const translated = byId.get(item.id);
+      return {
+        ...item,
+        title: typeof translated?.title === "string" && translated.title.trim() ? translated.title : item.title,
+        summary: typeof translated?.summary === "string" && translated.summary.trim() ? translated.summary : item.summary,
+        language: "en",
+        translatedFrom: "sv"
+      };
+    });
+  } catch {
+    return items.map((item) => ({ ...item, language: "sv" }));
+  }
+}
+router5.post("/posts", async (req, res) => {
+  const parsed = CreateCommunityPostBody.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: "Invalid body" });
+  const [post] = await db.insert(communityPostsTable).values({
+    recipeName: parsed.data.recipeName,
+    chefName: parsed.data.chefName,
+    description: parsed.data.description,
+    category: parsed.data.category,
+    costSek: String(parsed.data.costSek)
+  }).returning();
+  await db.insert(activityLogTable).values({
+    type: "recipe_shared",
+    title: `Recept delat: ${post.recipeName}`,
+    subtitle: `av ${post.chefName} \xB7 ${post.category}`
+  });
+  return res.status(201).json(formatPost(post));
+});
+router5.post("/posts/:id/like", async (req, res) => {
+  const parsed = LikeCommunityPostParams.safeParse({ id: Number(req.params.id) });
+  if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
+  const [post] = await db.update(communityPostsTable).set({ likes: sql`likes + 1` }).where(eq(communityPostsTable.id, parsed.data.id)).returning();
+  if (!post) return res.status(404).json({ error: "Not found" });
+  return res.json(formatPost(post));
+});
+function formatPost(p) {
+  return {
+    id: p.id,
+    recipeName: p.recipeName,
+    chefName: p.chefName,
+    description: p.description,
+    category: p.category,
+    costSek: parseFloat(String(p.costSek)),
+    likes: p.likes,
+    createdAt: p.createdAt.toISOString()
+  };
+}
+async function fetchFeed(feed) {
+  const response = await fetch(feed.url, {
+    headers: {
+      "Accept": "application/rss+xml, application/xml, text/xml",
+      "User-Agent": "Smakvarlden/1.0 (+https://github.com/msx9973/smakvarlden-course)"
+    }
+  });
+  if (!response.ok) return [];
+  const xml = await response.text();
+  return parseRss(xml, feed.source);
+}
+function parseRss(xml, source) {
+  return [...xml.matchAll(/<item\b[\s\S]*?<\/item>/gi)].map((match) => {
+    const item = match[0];
+    const title = decodeXml(readTag(item, "title"));
+    const url2 = decodeXml(readTag(item, "link"));
+    const summary = stripHtml(decodeXml(readTag(item, "description"))).slice(0, 220);
+    const pubDate = readTag(item, "pubDate");
+    const publishedAt = pubDate ? new Date(pubDate).toISOString() : (/* @__PURE__ */ new Date()).toISOString();
+    return {
+      id: `${source}:${url2 || title}`,
+      title,
+      summary,
+      source,
+      url: url2,
+      publishedAt,
+      language: "sv"
+    };
+  }).filter((item) => item.title && item.url);
+}
+function readTag(xml, tag) {
+  const match = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i"));
+  return match ? match[1].replace(/^<!\[CDATA\[/, "").replace(/\]\]>$/, "").trim() : "";
+}
+function decodeXml(value) {
+  return value.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+}
+function stripHtml(value) {
+  return value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+}
+var community_default = router5;
+
+// src/routes/auth.ts
+var import_express6 = __toESM(require_express2(), 1);
+var import_node_crypto = __toESM(require("node:crypto"), 1);
+var import_jsonwebtoken = __toESM(require_jsonwebtoken(), 1);
+var router6 = (0, import_express6.Router)();
+var PHONE_EMAIL_DOMAIN = "phone.smakvarlden.local";
+var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+var GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+var GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+var GOOGLE_USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
+function getSecret() {
+  return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
+}
+function signToken(user) {
+  return import_jsonwebtoken.default.sign({ id: user.id, email: user.email, role: user.role }, getSecret(), {
+    expiresIn: "14d",
+    issuer: "smakvarlden",
+    audience: "smakvarlden-app"
+  });
+}
+function publicContact(email3) {
+  if (!email3.endsWith(`@${PHONE_EMAIL_DOMAIN}`)) return email3;
+  const digits = email3.slice("phone.".length, -`@${PHONE_EMAIL_DOMAIN}`.length);
+  return `+${digits}`;
+}
+function formatUser(u) {
+  return { id: u.id, name: u.name, email: publicContact(u.email), role: u.role, plan: u.plan, createdAt: u.createdAt.toISOString() };
+}
+function normalizeEmail(value) {
+  const email3 = value.trim().toLowerCase();
+  return EMAIL_RE.test(email3) ? email3 : null;
+}
+function normalizePhone(value) {
+  const compact = value.trim().replace(/[()\s-]/g, "");
+  const withPlus = compact.startsWith("00") ? `+${compact.slice(2)}` : compact.startsWith("0") ? `+46${compact.slice(1)}` : compact;
+  return /^\+[1-9]\d{7,14}$/.test(withPlus) ? withPlus : null;
+}
+function contactToStorageEmail(value) {
+  if (typeof value !== "string") return null;
+  const email3 = normalizeEmail(value);
+  if (email3) return email3;
+  const phone = normalizePhone(value);
+  if (phone) return `phone.${phone.slice(1)}@${PHONE_EMAIL_DOMAIN}`;
+  return null;
+}
+function validatePassword(password) {
+  if (typeof password !== "string") return "Fyll i l\xF6senord.";
+  if (password.length < 8) return "L\xF6senordet m\xE5ste vara minst 8 tecken.";
+  if (!/[A-Za-zÅÄÖåäö]/.test(password) || !/\d/.test(password)) {
+    return "L\xF6senordet m\xE5ste inneh\xE5lla b\xE5de bokst\xE4ver och siffror.";
+  }
+  return null;
+}
+function verifyToken(token) {
+  const decoded = import_jsonwebtoken.default.decode(token);
+  if (!decoded?.iss && !decoded?.aud) return import_jsonwebtoken.default.verify(token, getSecret());
+  return import_jsonwebtoken.default.verify(token, getSecret(), {
+    issuer: "smakvarlden",
+    audience: "smakvarlden-app"
+  });
+}
+function getOrigin(req) {
+  const configured = process.env.PUBLIC_APP_URL ?? process.env.URL;
+  if (configured) return configured.replace(/\/$/, "");
+  const proto = req.headers["x-forwarded-proto"]?.split(",")[0] ?? req.protocol ?? "https";
+  const host = req.headers["x-forwarded-host"]?.split(",")[0] ?? req.headers.host;
+  return `${proto}://${host}`;
+}
+function getGoogleRedirectUri(req) {
+  return process.env.GOOGLE_OAUTH_REDIRECT_URI ?? `${getOrigin(req)}/api/auth/google/callback`;
+}
+function getGoogleCredentials() {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  if (!clientId || !clientSecret) return null;
+  return { clientId, clientSecret };
+}
+function getSupabaseCredentials() {
+  const url2 = (process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL)?.replace(/\/$/, "");
+  const anonKey = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
+  if (!url2 || !anonKey) return null;
+  return { url: url2, anonKey };
+}
+function getSupabaseUrl() {
+  return (process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL)?.replace(/\/$/, "") ?? null;
+}
+function signState(returnTo) {
+  const payload = Buffer.from(JSON.stringify({
+    returnTo: returnTo.startsWith("/") ? returnTo : "/",
+    nonce: import_node_crypto.default.randomBytes(16).toString("hex"),
+    ts: Date.now()
+  })).toString("base64url");
+  const sig = import_node_crypto.default.createHmac("sha256", getSecret()).update(payload).digest("base64url");
+  return `${payload}.${sig}`;
+}
+function readState(value) {
+  if (typeof value !== "string") return null;
+  const [payload, sig] = value.split(".");
+  if (!payload || !sig) return null;
+  const expected = import_node_crypto.default.createHmac("sha256", getSecret()).update(payload).digest("base64url");
+  const actualBuffer = Buffer.from(sig);
+  const expectedBuffer = Buffer.from(expected);
+  if (actualBuffer.length !== expectedBuffer.length || !import_node_crypto.default.timingSafeEqual(actualBuffer, expectedBuffer)) return null;
+  try {
+    const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    if (!parsed.ts || Date.now() - parsed.ts > 10 * 60 * 1e3) return null;
+    return parsed.returnTo?.startsWith("/") ? parsed.returnTo : "/";
+  } catch {
+    return null;
+  }
+}
+function oauthResultHtml(token, returnTo) {
+  return `<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Loggar in...</title></head>
+<body>
+<script>
+localStorage.setItem("smakvarlden_token", ${JSON.stringify(token)});
+window.location.replace(${JSON.stringify(returnTo)});
+</script>
+</body>
+</html>`;
+}
+async function findOrCreateGoogleUser(profile) {
+  const email3 = normalizeEmail(profile.email);
+  if (!email3 || profile.email_verified === false) throw new Error("Google-kontot m\xE5ste ha en verifierad e-postadress.");
+  const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, email3));
+  if (existing) return existing;
+  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
+  const passwordHash = await bcryptjs_default.hash(import_node_crypto.default.randomBytes(32).toString("base64url"), 12);
+  const [user] = await db.insert(usersTable).values({
+    name: (profile.name ?? profile.given_name ?? email3.split("@")[0]).trim().slice(0, 80),
+    email: email3,
+    passwordHash,
+    role: isFirstUser ? "admin" : "user"
+  }).returning();
+  return user;
+}
+async function findOrCreateSupabaseUser(profile) {
+  const email3 = profile.email ? normalizeEmail(profile.email) : null;
+  const storageEmail = email3 ?? contactToStorageEmail(profile.phone) ?? `supabase.${profile.id}@${PHONE_EMAIL_DOMAIN}`;
+  const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
+  if (existing) return existing;
+  const fallbackName = email3?.split("@")[0] ?? profile.phone ?? "Smakv\xE4rlden anv\xE4ndare";
+  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
+  const passwordHash = await bcryptjs_default.hash(import_node_crypto.default.randomBytes(32).toString("base64url"), 12);
+  const [user] = await db.insert(usersTable).values({
+    name: (profile.user_metadata?.full_name ?? profile.user_metadata?.name ?? fallbackName).trim().slice(0, 80),
+    email: storageEmail,
+    passwordHash,
+    role: isFirstUser ? "admin" : "user"
+  }).returning();
+  return user;
+}
+router6.post("/auth/supabase", async (req, res) => {
+  const credentials = getSupabaseCredentials();
+  const { accessToken } = req.body ?? {};
+  if (!credentials) return res.status(503).json({ error: "Supabase Auth \xE4r inte konfigurerat." });
+  if (typeof accessToken !== "string" || accessToken.length < 20) {
+    return res.status(400).json({ error: "Supabase-session saknas." });
+  }
+  try {
+    const userResponse = await fetch(`${credentials.url}/auth/v1/user`, {
+      headers: {
+        apikey: credentials.anonKey,
+        Authorization: `Bearer ${accessToken}`
+      }
+    });
+    if (!userResponse.ok) return res.status(401).json({ error: "Ogiltig Supabase-session." });
+    const profile = await userResponse.json();
+    const user = await findOrCreateSupabaseUser(profile);
+    return res.json({ token: signToken(user), user: formatUser(user) });
+  } catch {
+    return res.status(500).json({ error: "Kunde inte verifiera Supabase-session." });
+  }
+});
+router6.get("/auth/google/start", (req, res) => {
+  const credentials = getGoogleCredentials();
+  if (!credentials) {
+    const supabaseUrl = getSupabaseUrl();
+    if (supabaseUrl) {
+      const url3 = new URL(`${supabaseUrl}/auth/v1/authorize`);
+      url3.searchParams.set("provider", "google");
+      url3.searchParams.set("redirect_to", `${getOrigin(req)}/login`);
+      return res.redirect(url3.toString());
+    }
+    return res.status(503).send("Google OAuth \xE4r inte konfigurerat.");
+  }
+  const returnTo = typeof req.query.returnTo === "string" ? req.query.returnTo : "/";
+  const url2 = new URL(GOOGLE_AUTH_URL);
+  url2.searchParams.set("client_id", credentials.clientId);
+  url2.searchParams.set("redirect_uri", getGoogleRedirectUri(req));
+  url2.searchParams.set("response_type", "code");
+  url2.searchParams.set("scope", "openid email profile");
+  url2.searchParams.set("state", signState(returnTo));
+  url2.searchParams.set("prompt", "select_account");
+  return res.redirect(url2.toString());
+});
+router6.get("/auth/google/callback", async (req, res) => {
+  const credentials = getGoogleCredentials();
+  const code = typeof req.query.code === "string" ? req.query.code : "";
+  const returnTo = readState(req.query.state) ?? "/";
+  if (!credentials || !code) return res.redirect(`/login?oauth=failed`);
+  try {
+    const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: credentials.clientId,
+        client_secret: credentials.clientSecret,
+        code,
+        grant_type: "authorization_code",
+        redirect_uri: getGoogleRedirectUri(req)
+      })
+    });
+    if (!tokenResponse.ok) throw new Error("Google token exchange failed");
+    const tokenData = await tokenResponse.json();
+    if (!tokenData.access_token) throw new Error("Google token saknas.");
+    const profileResponse = await fetch(GOOGLE_USERINFO_URL, {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    });
+    if (!profileResponse.ok) throw new Error("Google profil kunde inte h\xE4mtas.");
+    const profile = await profileResponse.json();
+    const user = await findOrCreateGoogleUser(profile);
+    const appToken = signToken(user);
+    return res.type("html").send(oauthResultHtml(appToken, returnTo));
+  } catch {
+    return res.redirect(`/login?oauth=failed`);
+  }
+});
+router6.post("/auth/register", async (req, res) => {
+  const { name, email: email3, contact, identifier, phone, password } = req.body ?? {};
+  const storageEmail = contactToStorageEmail(email3 ?? contact ?? identifier ?? phone);
+  if (typeof name !== "string" || name.trim().length < 2 || !storageEmail || !password) {
+    return res.status(400).json({ error: "Fyll i namn, e-post eller telefonnummer och l\xF6senord." });
+  }
+  const passwordError = validatePassword(password);
+  if (passwordError) return res.status(400).json({ error: passwordError });
+  const existing = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
+  if (existing.length > 0) return res.status(400).json({ error: "Kontot finns redan. Logga in ist\xE4llet." });
+  const passwordHash = await bcryptjs_default.hash(password, 12);
+  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
+  const [user] = await db.insert(usersTable).values({
+    name: name.trim().slice(0, 80),
+    email: storageEmail,
+    passwordHash,
+    role: isFirstUser ? "admin" : "user"
+  }).returning();
+  return res.status(201).json({ token: signToken(user), user: formatUser(user) });
+});
+router6.post("/auth/login", async (req, res) => {
+  const { email: email3, identifier, phone, password } = req.body ?? {};
+  const storageEmail = contactToStorageEmail(identifier ?? email3 ?? phone);
+  if (!storageEmail || !password) return res.status(400).json({ error: "Fyll i e-post/telefon och l\xF6senord." });
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
+  if (!user) return res.status(401).json({ error: "Felaktiga inloggningsuppgifter." });
+  const ok = await bcryptjs_default.compare(password, user.passwordHash);
+  if (!ok) return res.status(401).json({ error: "Felaktiga inloggningsuppgifter." });
+  return res.json({ token: signToken(user), user: formatUser(user) });
+});
+router6.get("/auth/me", async (req, res) => {
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) return res.status(401).json({ error: "Ej inloggad." });
+  try {
+    const payload = verifyToken(header.slice(7));
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, payload.id));
+    if (!user) return res.status(401).json({ error: "Anv\xE4ndare hittades inte." });
+    return res.json(formatUser(user));
+  } catch {
+    return res.status(401).json({ error: "Ogiltig eller utg\xE5ngen token." });
+  }
+});
+var auth_default = router6;
+
 // src/routes/ai.ts
+var import_express7 = __toESM(require_express2(), 1);
 var router7 = (0, import_express7.Router)();
 function getClient() {
   const key = process.env.ANTHROPIC_API_KEY;
