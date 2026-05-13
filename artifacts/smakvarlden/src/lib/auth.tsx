@@ -28,6 +28,7 @@ interface AuthState {
 const AuthContext = createContext<AuthState | null>(null);
 
 const TOKEN_KEY = "smakvarlden_token";
+const USER_KEY = "smakvarlden_user";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const API_BASE = `${BASE}/.netlify/functions/api/api`;
 
@@ -55,10 +56,30 @@ async function apiFetch(path: string, opts?: RequestInit) {
   return data;
 }
 
+function readCachedUser() {
+  try {
+    const raw = localStorage.getItem(USER_KEY);
+    return raw ? (JSON.parse(raw) as AuthUser) : null;
+  } catch {
+    localStorage.removeItem(USER_KEY);
+    return null;
+  }
+}
+
+function persistSession(nextToken: string, nextUser: AuthUser) {
+  localStorage.setItem(TOKEN_KEY, nextToken);
+  localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
+}
+
+function clearSession() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(() => readCachedUser());
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_KEY));
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => Boolean(localStorage.getItem(TOKEN_KEY)) && !readCachedUser());
 
   useEffect(() => {
     const supabaseAccessToken = readSupabaseAccessTokenFromUrl();
@@ -68,13 +89,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ accessToken: supabaseAccessToken }),
       })
         .then((data) => {
-          localStorage.setItem(TOKEN_KEY, data.token);
+          persistSession(data.token, data.user);
           setToken(data.token);
           setUser(data.user);
         })
         .catch(() => {
-          localStorage.removeItem(TOKEN_KEY);
+          clearSession();
           setToken(null);
+          setUser(null);
         })
         .finally(() => setLoading(false));
       return;
@@ -82,8 +104,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!token) { setLoading(false); return; }
     apiFetch("/auth/me")
-      .then((u) => setUser(u))
-      .catch(() => { localStorage.removeItem(TOKEN_KEY); setToken(null); })
+      .then((u) => {
+        localStorage.setItem(USER_KEY, JSON.stringify(u));
+        setUser(u);
+      })
+      .catch(() => {
+        clearSession();
+        setToken(null);
+        setUser(null);
+      })
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -102,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       method: "POST",
       body: JSON.stringify({ identifier, password }),
     });
-    localStorage.setItem(TOKEN_KEY, data.token);
+    persistSession(data.token, data.user);
     setToken(data.token);
     setUser(data.user);
   };
@@ -122,7 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       method: "POST",
       body: JSON.stringify({ name, contact, password }),
     });
-    localStorage.setItem(TOKEN_KEY, data.token);
+    persistSession(data.token, data.user);
     setToken(data.token);
     setUser(data.user);
   };
@@ -132,13 +161,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       method: "POST",
       body: JSON.stringify({ accessToken }),
     });
-    localStorage.setItem(TOKEN_KEY, data.token);
+    persistSession(data.token, data.user);
     setToken(data.token);
     setUser(data.user);
   };
 
   const logout = () => {
-    localStorage.removeItem(TOKEN_KEY);
+    clearSession();
     setToken(null);
     setUser(null);
   };
