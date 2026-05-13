@@ -132,6 +132,22 @@ function ShareDialog({ open, onClose }: { open: boolean; onClose: () => void }) 
 
 export default function Community() {
   const { t, lang } = useI18n();
+  const copy = {
+    subtitle: lang === "en" ? "Recipes, ideas and Swedish restaurant news for working kitchens" : "Recept delade av kockar i Sverige",
+    loginToShare: lang === "en" ? "Log in to share" : "Logga in f\u00f6r att dela",
+    newsTitle: lang === "en" ? "Swedish restaurant news" : "Svenska matnyheter",
+    newsSubtitle: lang === "en"
+      ? "Automatically updated from Swedish industry sources. Article titles open at the original source."
+      : "Uppdateras automatiskt fr\u00e5n svenska branschk\u00e4llor",
+    sourceLanguage: lang === "en" ? "Swedish source" : "Svensk k\u00e4lla",
+    openSource: lang === "en" ? "Open source" : "\u00d6ppna k\u00e4lla",
+    newsError: lang === "en" ? "The news feed could not be loaded right now." : "Nyhetsfl\u00f6det kunde inte h\u00e4mtas just nu.",
+    search: lang === "en" ? "Search community..." : "S\u00f6k i community...",
+    emptyTitle: lang === "en" ? "No posts found" : "Inga inl\u00e4gg hittades",
+    emptyDesc: lang === "en" ? "Be the first to share a recipe!" : "Var den f\u00f6rsta att dela ett recept!",
+    by: lang === "en" ? "by" : "av",
+    cost: lang === "en" ? "Cost" : "Kostnad",
+  };
   const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [showShare, setShowShare] = useState(false);
@@ -152,7 +168,7 @@ export default function Community() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-serif text-2xl font-bold tracking-tight" style={{ color: "hsl(17 47% 13%)" }}>{t("Community")}</h1>
-          <p className="text-[13px] mt-1" style={{ color: "hsl(20 20% 58%)" }}>{t("Recept delade av kockar i Sverige")}</p>
+          <p className="text-[13px] mt-1" style={{ color: "hsl(20 20% 58%)" }}>{copy.subtitle}</p>
         </div>
         {user ? (
           <button
@@ -167,7 +183,7 @@ export default function Community() {
             className="flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-semibold transition-all hover:opacity-90"
             style={{ background: "var(--sv-muted)", color: "var(--sv-text-2)", border: "1.5px solid var(--sv-border)" }}
           >
-            <Lock className="w-4 h-4" /> {t("Logga in för att dela")}
+            <Lock className="w-4 h-4" /> {copy.loginToShare}
           </Link>
         )}
       </div>
@@ -179,8 +195,8 @@ export default function Community() {
               <Newspaper className="w-5 h-5" style={{ color: "#3b82f6" }} />
             </div>
             <div>
-              <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>{t("Svenska matnyheter")}</h2>
-              <p className="text-[12px]" style={{ color: "var(--sv-text-2)" }}>{t("Uppdateras automatiskt från svenska branschkällor")}</p>
+              <h2 className="font-serif text-base font-semibold" style={{ color: "var(--sv-text)" }}>{copy.newsTitle}</h2>
+              <p className="text-[12px]" style={{ color: "var(--sv-text-2)" }}>{copy.newsSubtitle}</p>
             </div>
           </div>
           <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: "var(--sv-muted)", color: "var(--sv-text-2)" }}>
@@ -205,18 +221,22 @@ export default function Community() {
                 </div>
                 <h3 className="text-[13px] font-semibold leading-snug" style={{ color: "var(--sv-text)" }}>{item.title}</h3>
                 {item.summary && <p className="text-[12px] leading-relaxed mt-2 line-clamp-2" style={{ color: "var(--sv-text-2)" }}>{item.summary}</p>}
+                <div className="mt-3 flex items-center justify-between gap-2 text-[11px] font-semibold" style={{ color: "var(--sv-text-2)" }}>
+                  <span>{copy.sourceLanguage}</span>
+                  <span>{copy.openSource}</span>
+                </div>
               </a>
             ))}
           </div>
         ) : (
-          <p className="text-[13px]" style={{ color: "var(--sv-text-2)" }}>{t("Nyhetsflödet kunde inte hämtas just nu.")}</p>
+          <p className="text-[13px]" style={{ color: "var(--sv-text-2)" }}>{copy.newsError}</p>
         )}
       </div>
 
       <div className="relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "hsl(20 20% 62%)" }} />
         <input
-          placeholder={t("Sök i community...")}
+          placeholder={copy.search}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-11 pr-4 py-3 rounded-2xl text-[13px] outline-none transition-all"
@@ -238,8 +258,8 @@ export default function Community() {
             style={{ background: "hsl(36 27% 94%)" }}>
             <Users className="w-8 h-8" style={{ color: "hsl(20 20% 65%)" }} />
           </div>
-          <p className="font-serif text-base font-semibold" style={{ color: "hsl(17 47% 13%)" }}>{t("Inga inlägg hittades")}</p>
-          <p className="text-[13px] mt-1" style={{ color: "hsl(20 20% 60%)" }}>{t("Var den första att dela ett recept!")}</p>
+          <p className="font-serif text-base font-semibold" style={{ color: "hsl(17 47% 13%)" }}>{copy.emptyTitle}</p>
+          <p className="text-[13px] mt-1" style={{ color: "hsl(20 20% 60%)" }}>{copy.emptyDesc}</p>
         </div>
       ) : (
         <div className="flex flex-col gap-4">
@@ -256,12 +276,12 @@ export default function Community() {
                     <div>
                       <h3 className="font-serif font-semibold text-[15px]" style={{ color: "hsl(17 47% 13%)" }}>{post.recipeName}</h3>
                       <p className="text-[12px] mt-0.5" style={{ color: "hsl(20 20% 60%)" }}>
-                        {t("av")} <span className="font-semibold" style={{ color: "hsl(17 47% 20%)" }}>{post.chefName}</span>
+                        {copy.by} <span className="font-semibold" style={{ color: "hsl(17 47% 20%)" }}>{post.chefName}</span>
                         {" · "}{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: dateLocale })}
                       </p>
                     </div>
                     <div className="shrink-0 text-right">
-                      <div className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "hsl(44 54% 50%)" }}>{t("Kostnad")}</div>
+                      <div className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "hsl(44 54% 50%)" }}>{copy.cost}</div>
                       <div className="text-[16px] font-serif font-bold" style={{ color: "hsl(17 47% 13%)" }}>{post.costSek.toFixed(0)} kr</div>
                     </div>
                   </div>
