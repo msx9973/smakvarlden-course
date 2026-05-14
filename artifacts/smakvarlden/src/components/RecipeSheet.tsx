@@ -17,6 +17,11 @@ function marginColor(pct: number) {
   return "#dc2626";
 }
 
+function preferredImage(item: unknown) {
+  const value = item as { imageUrl?: string | null; image_url?: string | null; image?: string | null };
+  return value.imageUrl ?? value.image_url ?? value.image;
+}
+
 export function RecipeSheet({ recipeId, onClose }: RecipeSheetProps) {
   const { t } = useI18n();
   const recipe = useGetRecipe(recipeId!, {
@@ -49,7 +54,7 @@ export function RecipeSheet({ recipeId, onClose }: RecipeSheetProps) {
             <div className="relative px-6 py-5 shrink-0 overflow-hidden"
               style={{ background: "linear-gradient(135deg,hsl(17 47% 13%),hsl(17 37% 20%))" }}>
               <img
-                src={getRecipeImage(r.name, r.category)}
+                src={getRecipeImage(r.name, r.category, preferredImage(r))}
                 alt={r.name}
                 className="absolute inset-0 h-full w-full object-cover opacity-35"
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}

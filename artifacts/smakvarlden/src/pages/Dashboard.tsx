@@ -21,6 +21,7 @@ import { ResponsiveContainer, BarChart, Bar, Cell, Tooltip, XAxis, YAxis } from 
 import { useI18n } from "@/lib/i18n";
 import { useState } from "react";
 import { RecipeSheet } from "@/components/RecipeSheet";
+import { getRecipeImage } from "@/lib/foodImages";
 
 function StatCard({
   label, value, icon: Icon, sub, gradient, iconColor, href,
@@ -72,6 +73,11 @@ function ActivityIcon({ type }: { type: string }) {
 
 const MEDAL_COLORS = ["hsl(44 58% 48%)", "hsl(220 10% 58%)", "hsl(25 58% 42%)"];
 const CAT_COLORS = ["hsl(44 50% 46%)","#3b82f6","#10b981","#8b5cf6","#ef4444","#06b6d4","#ec4899","#84cc16"];
+
+function preferredImage(item: unknown) {
+  const value = item as { imageUrl?: string | null; image_url?: string | null; image?: string | null };
+  return value.imageUrl ?? value.image_url ?? value.image;
+}
 
 function StatsSidebar({ summary, catBreakdown }: {
   summary: ReturnType<typeof useGetDashboardSummary>["data"];
@@ -323,6 +329,15 @@ export default function Dashboard() {
                         style={{ color: MEDAL_COLORS[idx] ?? "var(--sv-text-2)" }}>
                         {idx + 1}
                       </span>
+                      <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl" style={{ background: "var(--sv-muted)" }}>
+                        <img
+                          src={getRecipeImage(recipe.name, recipe.category, preferredImage(recipe))}
+                          alt={recipe.name}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                        />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[13px] font-semibold truncate" style={{ color: "var(--sv-text)" }}>{recipe.name}</p>
                         <p className="text-[11px]" style={{ color: "var(--sv-text-2)" }}>

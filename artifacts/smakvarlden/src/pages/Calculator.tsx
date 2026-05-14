@@ -15,6 +15,7 @@ import { Link } from "wouter";
 import { RecipeSheet } from "@/components/RecipeSheet";
 import { AddIngredientDialog } from "@/components/AddIngredientDialog";
 import { useToast } from "@/hooks/use-toast";
+import { getIngredientImage } from "@/lib/foodImages";
 
 const BAR_COLORS = ["hsl(44 50% 46%)","#3b82f6","#10b981","#8b5cf6","#ef4444","#06b6d4","#ec4899","#84cc16"];
 
@@ -33,9 +34,16 @@ function marginGrad(pct: number) {
 interface CalcLine {
   ingredientId: number;
   name: string;
+  category?: string;
   unit: string;
   unitPriceSek: number;
   quantity: number;
+  imageUrl?: string | null;
+}
+
+function preferredImage(item: unknown) {
+  const value = item as { imageUrl?: string | null; image_url?: string | null; image?: string | null };
+  return value.imageUrl ?? value.image_url ?? value.image;
 }
 
 function DishCalculator() {
@@ -86,7 +94,15 @@ function DishCalculator() {
     .slice(0, 8);
 
   const addIngredient = (ing: Ingredient) => {
-    setLines((prev) => [...prev, { ingredientId: ing.id, name: ing.name, unit: ing.unit, unitPriceSek: ing.currentPriceSek, quantity: 1 }]);
+    setLines((prev) => [...prev, {
+      ingredientId: ing.id,
+      name: ing.name,
+      category: ing.category,
+      unit: ing.unit,
+      unitPriceSek: ing.currentPriceSek,
+      quantity: 1,
+      imageUrl: preferredImage(ing),
+    }]);
     setSearch("");
     setDropdownOpen(false);
   };
@@ -227,7 +243,18 @@ function DishCalculator() {
                 {filtered.length > 0 ? filtered.map((ing) => (
                   <button key={ing.id} type="button" onMouseDown={() => addIngredient(ing)}
                     className="w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors hover:bg-black/[.04] dark:hover:bg-white/[.04]">
-                    <span className="text-[13px] font-medium truncate" style={{ color: "var(--sv-text)" }}>{ing.name}</span>
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      <span className="h-8 w-8 shrink-0 overflow-hidden rounded-lg" style={{ background: "var(--sv-muted)" }}>
+                        <img
+                          src={getIngredientImage(ing.name, ing.category, preferredImage(ing))}
+                          alt={ing.name}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                        />
+                      </span>
+                      <span className="text-[13px] font-medium truncate" style={{ color: "var(--sv-text)" }}>{ing.name}</span>
+                    </span>
                     <span className="text-[11px] shrink-0" style={{ color: "var(--sv-text-2)" }}>{ing.currentPriceSek.toFixed(2)} kr/{ing.unit}</span>
                   </button>
                 )) : (
@@ -267,8 +294,21 @@ function DishCalculator() {
                   {lines.map((line, i) => (
                     <tr key={line.ingredientId} style={{ borderTop: i === 0 ? "none" : `1px solid var(--sv-border)` }}>
                       <td className="px-4 py-2.5">
-                        <span className="text-[13px] font-medium" style={{ color: "var(--sv-text)" }}>{line.name}</span>
-                        <span className="text-[11px] ml-1" style={{ color: "var(--sv-text-2)" }}>({line.unitPriceSek.toFixed(2)} kr/{line.unit})</span>
+                        <div className="flex items-center gap-2.5">
+                          <span className="h-9 w-9 shrink-0 overflow-hidden rounded-lg" style={{ background: "var(--sv-muted)" }}>
+                            <img
+                              src={getIngredientImage(line.name, line.category, line.imageUrl)}
+                              alt={line.name}
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                            />
+                          </span>
+                          <span>
+                            <span className="text-[13px] font-medium" style={{ color: "var(--sv-text)" }}>{line.name}</span>
+                            <span className="text-[11px] ml-1" style={{ color: "var(--sv-text-2)" }}>({line.unitPriceSek.toFixed(2)} kr/{line.unit})</span>
+                          </span>
+                        </div>
                       </td>
                       <td className="px-4 py-2.5 text-right">
                         <div className="flex items-center gap-1 justify-end">

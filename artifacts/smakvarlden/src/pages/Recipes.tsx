@@ -14,6 +14,11 @@ import { getRecipeImage } from "@/lib/foodImages";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
+function preferredImage(item: unknown) {
+  const value = item as { imageUrl?: string | null; image_url?: string | null; image?: string | null };
+  return value.imageUrl ?? value.image_url ?? value.image;
+}
+
 const CAT_GRADIENT: Record<string, string> = {
   "Huvudrätter":    "linear-gradient(135deg,hsl(17 47% 22%),hsl(17 47% 13%))",
   "Sallader":       "linear-gradient(135deg,#16a34a,#14532d)",
@@ -278,7 +283,7 @@ export default function Recipes() {
                     onClick={() => setSheetRecipeId(recipe.id)}>
                     <div className="relative h-36 shrink-0 overflow-hidden" style={{ background: catGrad }}>
                       <img
-                        src={getRecipeImage(recipe.name, recipe.category)}
+                        src={getRecipeImage(recipe.name, recipe.category, preferredImage(recipe))}
                         alt={recipe.name}
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                         loading="lazy"
@@ -288,6 +293,10 @@ export default function Recipes() {
                       <span className="absolute bottom-3 left-3 text-[11px] font-semibold px-2.5 py-1 rounded-full text-white"
                         style={{ background: "rgba(0,0,0,.35)", backdropFilter: "blur(8px)" }}>
                         {t(recipe.category)}
+                      </span>
+                      <span className="absolute right-3 top-3 text-[10px] font-semibold px-2 py-0.5 rounded-full text-white"
+                        style={{ background: "rgba(0,0,0,.34)", backdropFilter: "blur(8px)" }}>
+                        Foto
                       </span>
                     </div>
                     <div className="p-5 flex flex-col gap-4 flex-1">

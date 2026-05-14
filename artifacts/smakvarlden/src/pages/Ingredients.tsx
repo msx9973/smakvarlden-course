@@ -17,6 +17,11 @@ import { getIngredientImage } from "@/lib/foodImages";
 
 const CHART_COLORS = ["hsl(44 50% 46%)", "#3b82f6", "#10b981", "#ef4444", "#8b5cf6"];
 
+function preferredImage(item: unknown) {
+  const value = item as { imageUrl?: string | null; image_url?: string | null; image?: string | null };
+  return value.imageUrl ?? value.image_url ?? value.image;
+}
+
 function PriceChangePill({ pct }: { pct: number }) {
   const abs = Math.abs(pct);
   if (abs < 0.1) return (
@@ -224,7 +229,7 @@ export default function Ingredients() {
                     <div className="flex items-center gap-2.5">
                       <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0" style={{ background: "rgba(22,163,74,.12)" }}>
                         <img
-                          src={getIngredientImage(ing.name, ing.category)}
+                          src={getIngredientImage(ing.name, ing.category, preferredImage(ing))}
                           alt={ing.name}
                           className="w-full h-full object-cover"
                           loading="lazy"

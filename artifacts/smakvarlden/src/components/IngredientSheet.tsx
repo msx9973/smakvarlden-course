@@ -13,6 +13,9 @@ interface Ingredient {
   currentPriceSek: number;
   priceChangePct: number;
   supplier?: string | null;
+  imageUrl?: string | null;
+  image_url?: string | null;
+  image?: string | null;
 }
 
 interface IngredientSheetProps {
@@ -84,7 +87,11 @@ export function IngredientSheet({ ingredient, onClose }: IngredientSheetProps) {
             <div className="relative px-6 py-5 shrink-0 overflow-hidden"
               style={{ background: "linear-gradient(135deg,hsl(147 40% 13%),hsl(147 30% 20%))" }}>
               <img
-                src={getIngredientImage(ingredient.name, ingredient.category)}
+                src={getIngredientImage(
+                  ingredient.name,
+                  ingredient.category,
+                  ingredient.imageUrl ?? ingredient.image_url ?? ingredient.image,
+                )}
                 alt={ingredient.name}
                 className="absolute inset-0 h-full w-full object-cover opacity-35"
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}

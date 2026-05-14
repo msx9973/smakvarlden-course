@@ -7,6 +7,11 @@ import { ArrowLeft, TrendingUp, Leaf } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { getIngredientImage, getRecipeImage } from "@/lib/foodImages";
 
+function preferredImage(item: unknown) {
+  const value = item as { imageUrl?: string | null; image_url?: string | null; image?: string | null };
+  return value.imageUrl ?? value.image_url ?? value.image;
+}
+
 export default function RecipeDetail({ id }: { id: number }) {
   const { t } = useI18n();
   const recipe = useGetRecipe(id, { query: { queryKey: getGetRecipeQueryKey(id), enabled: !!id } });
@@ -49,7 +54,7 @@ export default function RecipeDetail({ id }: { id: number }) {
         <div className="relative overflow-hidden rounded-xl p-6 min-h-64 flex items-end card-shadow"
           style={{ background: "linear-gradient(135deg,hsl(17 47% 13%),hsl(17 37% 20%))" }}>
           <img
-            src={getRecipeImage(r.name, r.category)}
+            src={getRecipeImage(r.name, r.category, preferredImage(r))}
             alt={r.name}
             className="absolute inset-0 h-full w-full object-cover opacity-55"
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
@@ -138,7 +143,7 @@ export default function RecipeDetail({ id }: { id: number }) {
                     <div className="flex items-center gap-2.5">
                       <div className="w-9 h-9 rounded-lg overflow-hidden bg-muted shrink-0">
                         <img
-                          src={getIngredientImage(ing.ingredientName)}
+                          src={getIngredientImage(ing.ingredientName, undefined, preferredImage(ing))}
                           alt={ing.ingredientName}
                           className="w-full h-full object-cover"
                           loading="lazy"
