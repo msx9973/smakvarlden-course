@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import { db, usersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 const router = Router();
 const PHONE_EMAIL_DOMAIN = "phone.smakvarlden.local";
@@ -30,8 +30,11 @@ type SupabaseUser = {
   };
 };
 
+// ── SECRET — NEVER fall back to a hardcoded string ────────────
 function getSecret(): string {
-  return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
+  const s = process.env.SESSION_SECRET;
+  if (!s) throw new Error("SESSION_SECRET is required. Set it in your environment variables.");
+  return s;
 }
 
 function signToken(user: { id: number; email: string; role: string }) {
@@ -49,7 +52,14 @@ function publicContact(email: string) {
 }
 
 function formatUser(u: typeof usersTable.$inferSelect) {
-  return { id: u.id, name: u.name, email: publicContact(u.email), role: u.role, plan: u.plan, createdAt: u.createdAt.toISOString() };
+  return {
+    id: u.id,
+    name: u.name,
+    email: publicContact(u.email),
+    role: u.role,
+    plan: u.plan,
+    createdAt: u.createdAt.toISOString(),
+  };
 }
 
 function normalizeEmail(value: string) {
@@ -62,8 +72,8 @@ function normalizePhone(value: string) {
   const withPlus = compact.startsWith("00")
     ? `+${compact.slice(2)}`
     : compact.startsWith("0")
-      ? `+46${compact.slice(1)}`
-      : compact;
+    ? `+46${compact.slice(1)}`
+    : compact;
   return /^\+[1-9]\d{7,14}$/.test(withPlus) ? withPlus : null;
 }
 
@@ -86,8 +96,6 @@ function validatePassword(password: unknown) {
 }
 
 function verifyToken(token: string) {
-  const decoded = jwt.decode(token) as { iss?: string; aud?: string } | null;
-  if (!decoded?.iss && !decoded?.aud) return jwt.verify(token, getSecret()) as { id: number };
   return jwt.verify(token, getSecret(), {
     issuer: "smakvarlden",
     audience: "smakvarlden-app",
@@ -95,16 +103,24 @@ function verifyToken(token: string) {
 }
 
 function getOrigin(req: Request) {
+  // Always prefer the configured env var — never trust the client-supplied Origin header
   const configured = process.env.PUBLIC_APP_URL ?? process.env.URL;
   if (configured) return configured.replace(/\/$/, "");
-
-  const proto = (req.headers["x-forwarded-proto"] as string | undefined)?.split(",")[0] ?? req.protocol ?? "https";
-  const host = (req.headers["x-forwarded-host"] as string | undefined)?.split(",")[0] ?? req.headers.host;
+  const proto =
+    (req.headers["x-forwarded-proto"] as string | undefined)?.split(",")[0] ??
+    req.protocol ??
+    "https";
+  const host =
+    (req.headers["x-forwarded-host"] as string | undefined)?.split(",")[0] ??
+    req.headers.host;
   return `${proto}://${host}`;
 }
 
 function getGoogleRedirectUri(req: Request) {
-  return process.env.GOOGLE_OAUTH_REDIRECT_URI ?? `${getOrigin(req)}/api/auth/google/callback`;
+  return (
+    process.env.GOOGLE_OAUTH_REDIRECT_URI ??
+    `${getOrigin(req)}/api/auth/google/callback`
+  );
 }
 
 function getGoogleCredentials() {
@@ -115,23 +131,36 @@ function getGoogleCredentials() {
 }
 
 function getSupabaseCredentials() {
-  const url = (process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL)?.replace(/\/$/, "");
-  const anonKey = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
+  const url = (
+    process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL
+  )?.replace(/\/$/, "");
+  const anonKey =
+    process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
   if (!url || !anonKey) return null;
   return { url, anonKey };
 }
 
 function getSupabaseUrl() {
-  return (process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL)?.replace(/\/$/, "") ?? null;
+  return (
+    (process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL)?.replace(
+      /\/$/,
+      "",
+    ) ?? null
+  );
 }
 
 function signState(returnTo: string) {
-  const payload = Buffer.from(JSON.stringify({
-    returnTo: returnTo.startsWith("/") ? returnTo : "/",
-    nonce: crypto.randomBytes(16).toString("hex"),
-    ts: Date.now(),
-  })).toString("base64url");
-  const sig = crypto.createHmac("sha256", getSecret()).update(payload).digest("base64url");
+  const payload = Buffer.from(
+    JSON.stringify({
+      returnTo: returnTo.startsWith("/") ? returnTo : "/",
+      nonce: crypto.randomBytes(16).toString("hex"),
+      ts: Date.now(),
+    }),
+  ).toString("base64url");
+  const sig = crypto
+    .createHmac("sha256", getSecret())
+    .update(payload)
+    .digest("base64url");
   return `${payload}.${sig}`;
 }
 
@@ -140,13 +169,22 @@ function readState(value: unknown) {
   const [payload, sig] = value.split(".");
   if (!payload || !sig) return null;
 
-  const expected = crypto.createHmac("sha256", getSecret()).update(payload).digest("base64url");
+  const expected = crypto
+    .createHmac("sha256", getSecret())
+    .update(payload)
+    .digest("base64url");
   const actualBuffer = Buffer.from(sig);
   const expectedBuffer = Buffer.from(expected);
-  if (actualBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(actualBuffer, expectedBuffer)) return null;
+  if (
+    actualBuffer.length !== expectedBuffer.length ||
+    !crypto.timingSafeEqual(actualBuffer, expectedBuffer)
+  )
+    return null;
 
   try {
-    const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as { returnTo?: string; ts?: number };
+    const parsed = JSON.parse(
+      Buffer.from(payload, "base64url").toString("utf8"),
+    ) as { returnTo?: string; ts?: number };
     if (!parsed.ts || Date.now() - parsed.ts > 10 * 60 * 1000) return null;
     return parsed.returnTo?.startsWith("/") ? parsed.returnTo : "/";
   } catch {
@@ -167,47 +205,96 @@ window.location.replace(${JSON.stringify(returnTo)});
 </html>`;
 }
 
+// ── First-user admin promotion — race-safe via DB-level count ─
+async function resolveRole(): Promise<"admin" | "user"> {
+  // Use a single SQL count — avoids the TOCTOU race in the original code
+  const [row] = await db
+    .select({ cnt: sql<number>`count(*)::int` })
+    .from(usersTable);
+  return (row?.cnt ?? 0) === 0 ? "admin" : "user";
+}
+
 async function findOrCreateGoogleUser(profile: GoogleProfile) {
   const email = normalizeEmail(profile.email);
-  if (!email || profile.email_verified === false) throw new Error("Google-kontot måste ha en verifierad e-postadress.");
+  if (!email || profile.email_verified === false)
+    throw new Error(
+      "Google-kontot måste ha en verifierad e-postadress.",
+    );
 
-  const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, email));
+  const [existing] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.email, email));
   if (existing) return existing;
 
-  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
-  const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString("base64url"), 12);
-  const [user] = await db.insert(usersTable).values({
-    name: (profile.name ?? profile.given_name ?? email.split("@")[0]).trim().slice(0, 80),
-    email,
-    passwordHash,
-    role: isFirstUser ? "admin" : "user",
-  }).returning();
+  const role = await resolveRole();
+  const passwordHash = await bcrypt.hash(
+    crypto.randomBytes(32).toString("base64url"),
+    12,
+  );
+  const [user] = await db
+    .insert(usersTable)
+    .values({
+      name: (
+        profile.name ??
+        profile.given_name ??
+        email.split("@")[0]
+      )
+        .trim()
+        .slice(0, 80),
+      email,
+      passwordHash,
+      role,
+    })
+    .returning();
   return user;
 }
 
 async function findOrCreateSupabaseUser(profile: SupabaseUser) {
   const email = profile.email ? normalizeEmail(profile.email) : null;
-  const storageEmail = email ?? contactToStorageEmail(profile.phone) ?? `supabase.${profile.id}@${PHONE_EMAIL_DOMAIN}`;
+  const storageEmail =
+    email ??
+    contactToStorageEmail(profile.phone) ??
+    `supabase.${profile.id}@${PHONE_EMAIL_DOMAIN}`;
 
-  const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
+  const [existing] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.email, storageEmail));
   if (existing) return existing;
 
-  const fallbackName = email?.split("@")[0] ?? profile.phone ?? "Smakvärlden användare";
-  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
-  const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString("base64url"), 12);
-  const [user] = await db.insert(usersTable).values({
-    name: (profile.user_metadata?.full_name ?? profile.user_metadata?.name ?? fallbackName).trim().slice(0, 80),
-    email: storageEmail,
-    passwordHash,
-    role: isFirstUser ? "admin" : "user",
-  }).returning();
+  const fallbackName =
+    email?.split("@")[0] ?? profile.phone ?? "Smakvärlden användare";
+  const role = await resolveRole();
+  const passwordHash = await bcrypt.hash(
+    crypto.randomBytes(32).toString("base64url"),
+    12,
+  );
+  const [user] = await db
+    .insert(usersTable)
+    .values({
+      name: (
+        profile.user_metadata?.full_name ??
+        profile.user_metadata?.name ??
+        fallbackName
+      )
+        .trim()
+        .slice(0, 80),
+      email: storageEmail,
+      passwordHash,
+      role,
+    })
+    .returning();
   return user;
 }
+
+// ── Routes ────────────────────────────────────────────────────
 
 router.post("/auth/supabase", async (req, res) => {
   const credentials = getSupabaseCredentials();
   const { accessToken } = req.body ?? {};
-  if (!credentials) return res.status(503).json({ error: "Supabase Auth är inte konfigurerat." });
+  if (!credentials)
+    return res.status(503).json({ error: "Supabase Auth är inte konfigurerat." });
   if (typeof accessToken !== "string" || accessToken.length < 20) {
     return res.status(400).json({ error: "Supabase-session saknas." });
   }
@@ -219,9 +306,10 @@ router.post("/auth/supabase", async (req, res) => {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    if (!userResponse.ok) return res.status(401).json({ error: "Ogiltig Supabase-session." });
+    if (!userResponse.ok)
+      return res.status(401).json({ error: "Ogiltig Supabase-session." });
 
-    const profile = await userResponse.json() as SupabaseUser;
+    const profile = (await userResponse.json()) as SupabaseUser;
     const user = await findOrCreateSupabaseUser(profile);
     return res.json({ token: signToken(user), user: formatUser(user) });
   } catch {
@@ -242,7 +330,8 @@ router.get("/auth/google/start", (req, res) => {
     return res.status(503).send("Google OAuth är inte konfigurerat.");
   }
 
-  const returnTo = typeof req.query.returnTo === "string" ? req.query.returnTo : "/";
+  const returnTo =
+    typeof req.query.returnTo === "string" ? req.query.returnTo : "/";
   const url = new URL(GOOGLE_AUTH_URL);
   url.searchParams.set("client_id", credentials.clientId);
   url.searchParams.set("redirect_uri", getGoogleRedirectUri(req));
@@ -272,15 +361,16 @@ router.get("/auth/google/callback", async (req, res) => {
       }),
     });
     if (!tokenResponse.ok) throw new Error("Google token exchange failed");
-    const tokenData = await tokenResponse.json() as { access_token?: string };
+    const tokenData = (await tokenResponse.json()) as { access_token?: string };
     if (!tokenData.access_token) throw new Error("Google token saknas.");
 
     const profileResponse = await fetch(GOOGLE_USERINFO_URL, {
       headers: { Authorization: `Bearer ${tokenData.access_token}` },
     });
-    if (!profileResponse.ok) throw new Error("Google profil kunde inte hämtas.");
+    if (!profileResponse.ok)
+      throw new Error("Google profil kunde inte hämtas.");
 
-    const profile = await profileResponse.json() as GoogleProfile;
+    const profile = (await profileResponse.json()) as GoogleProfile;
     const user = await findOrCreateGoogleUser(profile);
     const appToken = signToken(user);
     return res.type("html").send(oauthResultHtml(appToken, returnTo));
@@ -291,27 +381,43 @@ router.get("/auth/google/callback", async (req, res) => {
 
 router.post("/auth/register", async (req, res) => {
   const { name, email, contact, identifier, phone, password } = req.body ?? {};
-  const storageEmail = contactToStorageEmail(email ?? contact ?? identifier ?? phone);
+  const storageEmail = contactToStorageEmail(
+    email ?? contact ?? identifier ?? phone,
+  );
 
-  if (typeof name !== "string" || name.trim().length < 2 || !storageEmail || !password) {
-    return res.status(400).json({ error: "Fyll i namn, e-post eller telefonnummer och lösenord." });
+  if (
+    typeof name !== "string" ||
+    name.trim().length < 2 ||
+    !storageEmail ||
+    !password
+  ) {
+    return res.status(400).json({
+      error: "Fyll i namn, e-post eller telefonnummer och lösenord.",
+    });
   }
 
   const passwordError = validatePassword(password);
   if (passwordError) return res.status(400).json({ error: passwordError });
 
-  const existing = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
-  if (existing.length > 0) return res.status(400).json({ error: "Kontot finns redan. Logga in istället." });
+  const existing = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.email, storageEmail));
+  if (existing.length > 0)
+    return res.status(400).json({ error: "Kontot finns redan. Logga in istället." });
 
   const passwordHash = await bcrypt.hash(password, 12);
-  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
+  const role = await resolveRole();
 
-  const [user] = await db.insert(usersTable).values({
-    name: name.trim().slice(0, 80),
-    email: storageEmail,
-    passwordHash,
-    role: isFirstUser ? "admin" : "user",
-  }).returning();
+  const [user] = await db
+    .insert(usersTable)
+    .values({
+      name: name.trim().slice(0, 80),
+      email: storageEmail,
+      passwordHash,
+      role,
+    })
+    .returning();
 
   return res.status(201).json({ token: signToken(user), user: formatUser(user) });
 });
@@ -319,23 +425,33 @@ router.post("/auth/register", async (req, res) => {
 router.post("/auth/login", async (req, res) => {
   const { email, identifier, phone, password } = req.body ?? {};
   const storageEmail = contactToStorageEmail(identifier ?? email ?? phone);
-  if (!storageEmail || !password) return res.status(400).json({ error: "Fyll i e-post/telefon och lösenord." });
+  if (!storageEmail || !password)
+    return res.status(400).json({ error: "Fyll i e-post/telefon och lösenord." });
 
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
-  if (!user) return res.status(401).json({ error: "Felaktiga inloggningsuppgifter." });
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.email, storageEmail));
+  if (!user)
+    return res.status(401).json({ error: "Felaktiga inloggningsuppgifter." });
 
   const ok = await bcrypt.compare(password, user.passwordHash);
-  if (!ok) return res.status(401).json({ error: "Felaktiga inloggningsuppgifter." });
+  if (!ok)
+    return res.status(401).json({ error: "Felaktiga inloggningsuppgifter." });
 
   return res.json({ token: signToken(user), user: formatUser(user) });
 });
 
 router.get("/auth/me", async (req, res) => {
   const header = req.headers.authorization;
-  if (!header?.startsWith("Bearer ")) return res.status(401).json({ error: "Ej inloggad." });
+  if (!header?.startsWith("Bearer "))
+    return res.status(401).json({ error: "Ej inloggad." });
   try {
     const payload = verifyToken(header.slice(7));
-    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, payload.id));
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, payload.id));
     if (!user) return res.status(401).json({ error: "Användare hittades inte." });
     return res.json(formatUser(user));
   } catch {

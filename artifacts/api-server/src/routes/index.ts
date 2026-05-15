@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { requireAuth, requireAdmin } from "../middleware/requireAuth";
 import healthRouter from "./health";
 import recipesRouter from "./recipes";
 import ingredientsRouter from "./ingredients";
@@ -15,19 +16,29 @@ import demoRouter from "./demo";
 
 const router: IRouter = Router();
 
-router.use(healthRouter);
-router.use(authRouter);
-router.use(aiRouter);
-router.use(scbRouter);
-router.use("/recipes", recipesRouter);
-router.use("/ingredients", ingredientsRouter);
-router.use("/dashboard", dashboardRouter);
-router.use("/community", communityRouter);
-router.use("/svinn", svinnRouter);
-router.use("/market", marketRouter);
-router.use("/spoonacular", spoonacularRouter);
-router.use("/stripe", stripeRouter);
-router.use("/starter", demoRouter);
-router.use("/demo", demoRouter);
+// ── Public routes (no auth required) ──────────────────────────
+router.use(healthRouter);          // GET /health
+router.use(authRouter);            // POST /auth/login, /auth/register, GET /auth/me, OAuth callbacks
+router.use("/stripe/webhook", stripeRouter); // Stripe webhook must stay public
+
+// ── Community — read is public, write requires auth ──────────
+router.use("/community", communityRouter);  // auth guards are inside communityRouter
+
+// ── Protected routes — all require a valid JWT ────────────────
+router.use("/recipes",     requireAuth, recipesRouter);
+router.use("/ingredients", requireAuth, ingredientsRouter);
+router.use("/dashboard",   requireAuth, dashboardRouter);
+router.use("/svinn",       requireAuth, svinnRouter);
+router.use("/market",      requireAuth, marketRouter);
+router.use("/spoonacular", requireAuth, spoonacularRouter);
+router.use("/starter",     requireAuth, demoRouter);
+router.use("/demo",        requireAuth, demoRouter);
+
+// ── Admin-only routes ─────────────────────────────────────────
+router.use("/ai",  requireAuth, requireAdmin, aiRouter);
+router.use("/scb", requireAuth, requireAdmin, scbRouter);
+
+// ── Stripe checkout (auth required — see stripe.ts) ──────────
+router.use("/stripe", requireAuth, stripeRouter);
 
 export default router;
