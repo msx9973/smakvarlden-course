@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
-import { AuthProvider, useAuth } from "@/lib/auth";
+import { AuthProvider, useAuth, AppErrorBoundary } from "@/lib/auth";
 import { LanguageProvider } from "@/lib/i18n";
 import { useLocation } from "wouter";
 import { lazy, Suspense, useEffect } from "react";
@@ -25,15 +25,7 @@ const MarketInsights = lazy(() => import("@/pages/MarketInsights"));
 const Upgrade = lazy(() => import("@/pages/Upgrade"));
 
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60_000,
-      gcTime: 30 * 60_000,
-      retry: 1,
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-    },
-  },
+  defaultOptions: { queries: { staleTime: 5 * 60_000, gcTime: 30 * 60_000, retry: 1, refetchOnMount: false, refetchOnWindowFocus: false } },
 });
 
 function LoginPage() {
@@ -46,11 +38,19 @@ function PaymentSuccessBanner() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("payment") === "success") {
-      toast({ title: "Betalning lyckades!", description: "Välkommen till Pro Chef. Alla funktioner ar nu upplasta." });
+      toast({ title: "Betalning lyckades!", description: "Välkommen till Pro Chef. Alla funktioner är nu upplåsta." });
       window.history.replaceState({}, "", window.location.pathname);
     }
-  }, []);
+  }, [toast]);
   return null;
+}
+
+function RouteLoader({ compact = false }: { compact?: boolean }) {
+  return (
+    <div className={compact ? "flex min-h-[40vh] items-center justify-center" : "min-h-screen flex items-center justify-center bg-background"}>
+      <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 }
 
 function Router() {
@@ -62,55 +62,38 @@ function Router() {
       </div>
     );
   }
-
   return (
-    <Suspense fallback={<RouteLoader />}>
-      <Switch>
-        <Route path="/login" component={LoginPage} />
-        <Route>
-          <Layout>
-            <PaymentSuccessBanner />
-            <Suspense fallback={<RouteLoader compact />}>
-              <Switch>
-                <Route path="/" component={Dashboard} />
-                <Route path="/recipes">
-                  <Recipes />
-                </Route>
-                <Route path="/recipes/:id">
-                  {(params) => <RecipeDetail id={Number(params.id)} />}
-                </Route>
-                <Route path="/ingredients">
-                  <Ingredients />
-                </Route>
-                <Route path="/calculator">
-                  <Calculator />
-                </Route>
-                <Route path="/community">
-                  <Community />
-                </Route>
-                <Route path="/community/:id">
-                  {(params) => <CommunityPost id={Number(params.id)} />}
-                </Route>
-                <Route path="/admin" component={Admin} />
-                <Route path="/help" component={HelpCenter} />
-                <Route path="/svinn" component={Svinn} />
-                <Route path="/market" component={MarketInsights} />
-                <Route path="/upgrade" component={Upgrade} />
-                <Route component={NotFound} />
-              </Switch>
-            </Suspense>
-          </Layout>
-        </Route>
-      </Switch>
-    </Suspense>
-  );
-}
-
-function RouteLoader({ compact = false }: { compact?: boolean }) {
-  return (
-    <div className={compact ? "flex min-h-[40vh] items-center justify-center" : "min-h-screen flex items-center justify-center bg-background"}>
-      <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
+    <AppErrorBoundary>
+      <Suspense fallback={<RouteLoader />}>
+        <Switch>
+          <Route path="/login" component={LoginPage} />
+          <Route>
+            <Layout>
+              <PaymentSuccessBanner />
+              <AppErrorBoundary>
+                <Suspense fallback={<RouteLoader compact />}>
+                  <Switch>
+                    <Route path="/" component={Dashboard} />
+                    <Route path="/recipes"><Recipes /></Route>
+                    <Route path="/recipes/:id">{(params) => <RecipeDetail id={Number(params.id)} />}</Route>
+                    <Route path="/ingredients"><Ingredients /></Route>
+                    <Route path="/calculator"><Calculator /></Route>
+                    <Route path="/community"><Community /></Route>
+                    <Route path="/community/:id">{(params) => <CommunityPost id={Number(params.id)} />}</Route>
+                    <Route path="/admin" component={Admin} />
+                    <Route path="/help" component={HelpCenter} />
+                    <Route path="/svinn" component={Svinn} />
+                    <Route path="/market" component={MarketInsights} />
+                    <Route path="/upgrade" component={Upgrade} />
+                    <Route component={NotFound} />
+                  </Switch>
+                </Suspense>
+              </AppErrorBoundary>
+            </Layout>
+          </Route>
+        </Switch>
+      </Suspense>
+    </AppErrorBoundary>
   );
 }
 
