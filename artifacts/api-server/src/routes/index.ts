@@ -16,15 +16,15 @@ import demoRouter from "./demo";
 
 const router: IRouter = Router();
 
-// ── Public routes (no auth required) ──────────────────────────
-router.use(healthRouter);          // GET /health
-router.use(authRouter);            // POST /auth/login, /auth/register, GET /auth/me, OAuth callbacks
-router.use("/stripe/webhook", stripeRouter); // Stripe webhook must stay public
+// Public routes
+router.use(healthRouter);
+router.use(authRouter);
+router.use("/stripe/webhook", stripeRouter);
 
-// ── Community — read is public, write requires auth ──────────
-router.use("/community", communityRouter);  // auth guards are inside communityRouter
+// Community read is public, write requires auth (guards inside communityRouter)
+router.use("/community", communityRouter);
 
-// ── Protected routes — all require a valid JWT ────────────────
+// Protected routes
 router.use("/recipes",     requireAuth, recipesRouter);
 router.use("/ingredients", requireAuth, ingredientsRouter);
 router.use("/dashboard",   requireAuth, dashboardRouter);
@@ -34,11 +34,11 @@ router.use("/spoonacular", requireAuth, spoonacularRouter);
 router.use("/starter",     requireAuth, demoRouter);
 router.use("/demo",        requireAuth, demoRouter);
 
-// ── Admin-only routes ─────────────────────────────────────────
+// Admin-only routes
 router.use("/ai",  requireAuth, requireAdmin, aiRouter);
 router.use("/scb", requireAuth, requireAdmin, scbRouter);
 
-// ── Stripe checkout (auth required — see stripe.ts) ──────────
+// Stripe checkout (auth required)
 router.use("/stripe", requireAuth, stripeRouter);
 
 export default router;
