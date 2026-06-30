@@ -20,7 +20,7 @@ type LambdaEvent = {
   isBase64Encoded?: boolean;
 };
 
-type LambdaContext = unknown;
+type LambdaContext = Record<string, unknown>;
 
 type SupabaseUser = {
   id: string;
