@@ -104,7 +104,7 @@ function parseRss(xml: string, source: string): NewsItem[] {
     const url = decodeXml(readTag(item, "link"));
     const summary = stripHtml(decodeXml(readTag(item, "description"))).slice(0, 220);
     const pubDate = readTag(item, "pubDate");
-    return { id: `${source}:${url || title}`, title, summary, source, url, publishedAt: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(), language: "sv" };
+    return { id: `${source}:${url || title}`, title, summary, source, url, publishedAt: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(), language: "sv" as const };
   }).filter((i) => i.title && i.url);
 }
 

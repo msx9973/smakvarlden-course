@@ -10,6 +10,7 @@ import {
   Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine,
 } from "recharts";
 import { useI18n } from "@/lib/i18n";
+import { apiFetch } from "@/lib/auth";
 
 interface Overview {
   dataNote:      string;
@@ -38,12 +39,7 @@ interface Overview {
 function useMarketOverview() {
   return useQuery<Overview>({
     queryKey: ["market-overview"],
-    queryFn: async () => {
-      const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-      const r = await fetch(`${base}/api/market/overview`);
-      if (!r.ok) throw new Error("Failed to load market data");
-      return r.json();
-    },
+    queryFn: () => apiFetch("/market/overview") as Promise<Overview>,
     staleTime: 5 * 60_000,
   });
 }

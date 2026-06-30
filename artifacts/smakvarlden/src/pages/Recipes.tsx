@@ -12,8 +12,6 @@ import { apiFetch, useAuth } from "@/lib/auth";
 import { RecipeSheet } from "@/components/RecipeSheet";
 import { getRecipeImage } from "@/lib/foodImages";
 
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-
 function preferredImage(item: unknown) {
   const value = item as { imageUrl?: string | null; image_url?: string | null; image?: string | null };
   return value.imageUrl ?? value.image_url ?? value.image;
@@ -60,8 +58,8 @@ function useSpoonSearch(query: string, enabled: boolean) {
     timer.current = setTimeout(async () => {
       setLoading(true);
       try {
-        const r = await fetch(`${BASE}/api/spoonacular/recipes/search?query=${encodeURIComponent(query)}&number=12`);
-        if (r.ok) { const d = await r.json(); setResults(d.results ?? []); }
+        const data = await apiFetch(`/spoonacular/recipes/search?query=${encodeURIComponent(query)}&number=12`);
+        setResults((data as { results?: SpoonRecipe[] }).results ?? []);
       } finally { setLoading(false); }
     }, 600);
     return () => { if (timer.current) clearTimeout(timer.current); };

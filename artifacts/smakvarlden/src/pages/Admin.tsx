@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { useAuth } from "@/lib/auth";
+import { apiFetch, useAuth } from "@/lib/auth";
 import { Shield, RefreshCw, Database, Users, ChefHat, CheckCircle, AlertCircle } from "lucide-react";
 
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-
 export default function Admin() {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const [scbLoading, setScbLoading] = useState(false);
   const [scbResult, setScbResult] = useState<{ updated: number; message: string; lastUpdated?: string } | null>(null);
   const [scbError, setScbError] = useState("");
@@ -25,12 +23,7 @@ export default function Admin() {
     setScbError("");
     setScbResult(null);
     try {
-      const res = await fetch(`${BASE}/api/ingredients/sync-scb`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Synk misslyckades");
+      const data = await apiFetch("/scb/ingredients/sync-scb", { method: "POST" });
       setScbResult(data);
     } catch (e: unknown) {
       setScbError(e instanceof Error ? e.message : "Fel uppstod");

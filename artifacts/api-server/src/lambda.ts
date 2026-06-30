@@ -20,15 +20,17 @@ type LambdaEvent = {
   isBase64Encoded?: boolean;
 };
 
-type LambdaContext = unknown;
+type LambdaContext = Record<string, unknown>;
 
 type SupabaseUser = {
   id: string;
   email?: string;
   phone?: string;
+  email_confirmed_at?: string | null;
   user_metadata?: {
     name?: string;
     full_name?: string;
+    email_verified?: boolean;
   };
 };
 
@@ -41,7 +43,9 @@ function json(statusCode: number, body: unknown) {
 }
 
 function getSecret(): string {
-  return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
+  const s = process.env.SESSION_SECRET;
+  if (!s) throw new Error("SESSION_SECRET environment variable is required but was not set.");
+  return s;
 }
 
 function signToken(user: { id: number; email: string; role: string }) {
@@ -93,6 +97,11 @@ function contactToStorageEmail(value: unknown) {
   const phone = normalizePhone(value);
   if (phone) return `phone.${phone.slice(1)}@${PHONE_EMAIL_DOMAIN}`;
   return null;
+}
+
+function hasVerifiedSupabaseEmail(profile: SupabaseUser) {
+  if (!profile.email) return true;
+  return Boolean(profile.email_confirmed_at || profile.user_metadata?.email_verified === true);
 }
 
 function validatePassword(password: unknown) {
@@ -244,6 +253,7 @@ async function supabase(body: Record<string, unknown>) {
     if (!userResponse.ok) return json(401, { error: "Ogiltig Supabase-session." });
 
     const profile = await userResponse.json() as SupabaseUser;
+    if (!hasVerifiedSupabaseEmail(profile)) return json(401, { error: "Supabase-kontot måste ha en verifierad e-postadress." });
     const user = await findOrCreateSupabaseUser(profile);
     return json(200, { token: signToken(user), user: formatUser(user) });
   } catch {
