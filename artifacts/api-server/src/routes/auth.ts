@@ -13,7 +13,7 @@ const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
 
 type GoogleProfile = { sub: string; email: string; email_verified?: boolean; name?: string; given_name?: string; };
-type SupabaseUser = { id: string; email?: string; phone?: string; user_metadata?: { name?: string; full_name?: string; }; };
+type SupabaseUser = { id: string; email?: string; phone?: string; email_confirmed_at?: string | null; user_metadata?: { name?: string; full_name?: string; email_verified?: boolean; }; };
 
 function getSecret(): string {
   const s = process.env.SESSION_SECRET;
@@ -55,6 +55,11 @@ function contactToStorageEmail(value: unknown) {
   const phone = normalizePhone(value);
   if (phone) return `phone.${phone.slice(1)}@${PHONE_EMAIL_DOMAIN}`;
   return null;
+}
+
+function hasVerifiedSupabaseEmail(profile: SupabaseUser) {
+  if (!profile.email) return true;
+  return Boolean(profile.email_confirmed_at || profile.user_metadata?.email_verified === true);
 }
 
 function validatePassword(password: unknown) {
@@ -160,6 +165,7 @@ router.post("/auth/supabase", async (req, res) => {
     const userResponse = await fetch(`${credentials.url}/auth/v1/user`, { headers: { apikey: credentials.anonKey, Authorization: `Bearer ${accessToken}` } });
     if (!userResponse.ok) return res.status(401).json({ error: "Ogiltig Supabase-session." });
     const profile = await userResponse.json() as SupabaseUser;
+    if (!hasVerifiedSupabaseEmail(profile)) return res.status(401).json({ error: "Supabase-kontot måste ha en verifierad e-postadress." });
     const user = await findOrCreateSupabaseUser(profile);
     return res.json({ token: signToken(user), user: formatUser(user) });
   } catch { return res.status(500).json({ error: "Kunde inte verifiera Supabase-session." }); }

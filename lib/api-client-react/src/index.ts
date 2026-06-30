@@ -31,11 +31,21 @@ function apiBase(): string {
   return "";
 }
 
+function authHeaders(headers?: HeadersInit): Headers {
+  const next = new Headers(headers);
+  if (!next.has("Content-Type")) next.set("Content-Type", "application/json");
+  if (!next.has("Authorization") && typeof localStorage !== "undefined") {
+    const token = localStorage.getItem("smakvarlden_token");
+    if (token) next.set("Authorization", `Bearer ${token}`);
+  }
+  return next;
+}
+
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${apiBase()}/api${path}`;
   const res = await fetch(url, {
-    headers: { "Content-Type": "application/json", ...init?.headers },
     ...init,
+    headers: authHeaders(init?.headers),
   });
   if (res.status === 204) return undefined as T;
   if (!res.ok) {
