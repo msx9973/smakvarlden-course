@@ -88,6 +88,14 @@ export type CommunityPost = {
     likes: number;
     createdAt: string;
 };
+export type CommunityNewsItem = {
+    id: string;
+    title: string;
+    summary: string;
+    source: string;
+    url: string;
+    publishedAt: string;
+};
 type ListParams = {
     category?: string;
     search?: string;
@@ -113,8 +121,15 @@ export declare const getListCommunityPostsQueryKey: (params?: {
 }) => readonly ["listCommunityPosts", {
     search?: string;
 }];
-export declare function useListRecipes(params?: ListParams, options?: QueryOptions<Recipe[]>): import("@tanstack/react-query").UseQueryResult<Recipe[], Error>;
-export declare function useGetRecipe(id: number, options?: QueryOptions<RecipeDetail>): import("@tanstack/react-query").UseQueryResult<RecipeDetail, Error>;
+export declare const getListCommunityNewsQueryKey: (params?: {
+    lang?: string;
+    v?: string;
+}) => readonly ["listCommunityNews", {
+    lang?: string;
+    v?: string;
+}];
+export declare function useListRecipes(params?: ListParams, options?: QueryOptions<Recipe[]>): import("@tanstack/react-query").UseQueryResult<NoInfer<Recipe[]>, Error>;
+export declare function useGetRecipe(id: number, options?: QueryOptions<RecipeDetail>): import("@tanstack/react-query").UseQueryResult<NoInfer<RecipeDetail>, Error>;
 export declare function useCreateRecipe(options?: MutationOptions<Recipe, {
     data: Partial<Recipe> & {
         ingredients?: unknown[];
@@ -131,8 +146,8 @@ export declare function useDeleteRecipe(options?: MutationOptions<void, {
 }, unknown>;
 export declare function useGetTopPerformingRecipes(params?: {
     limit?: number;
-}, options?: QueryOptions<RecipePerformance[]>): import("@tanstack/react-query").UseQueryResult<RecipePerformance[], Error>;
-export declare function useListIngredients(params?: ListParams, options?: QueryOptions<Ingredient[]>): import("@tanstack/react-query").UseQueryResult<Ingredient[], Error>;
+}, options?: QueryOptions<RecipePerformance[]>): import("@tanstack/react-query").UseQueryResult<NoInfer<RecipePerformance[]>, Error>;
+export declare function useListIngredients(params?: ListParams, options?: QueryOptions<Ingredient[]>): import("@tanstack/react-query").UseQueryResult<NoInfer<Ingredient[]>, Error>;
 export declare function useCreateIngredient(options?: MutationOptions<Ingredient, {
     data: Partial<Ingredient>;
 }>): import("@tanstack/react-query").UseMutationResult<Ingredient, Error, {
@@ -143,17 +158,21 @@ export declare function useDeleteIngredient(options?: MutationOptions<void, {
 }>): import("@tanstack/react-query").UseMutationResult<void, Error, {
     id: number;
 }, unknown>;
-export declare function useGetIngredientPriceTrends(options?: QueryOptions<IngredientPriceTrend[]>): import("@tanstack/react-query").UseQueryResult<IngredientPriceTrend[], Error>;
-export declare function useGetIngredientCategoryBreakdown(options?: QueryOptions<IngredientCategoryBreakdown[]>): import("@tanstack/react-query").UseQueryResult<IngredientCategoryBreakdown[], Error>;
-export declare function useGetDashboardSummary(options?: QueryOptions<DashboardSummary>): import("@tanstack/react-query").UseQueryResult<DashboardSummary, Error>;
+export declare function useGetIngredientPriceTrends(options?: QueryOptions<IngredientPriceTrend[]>): import("@tanstack/react-query").UseQueryResult<NoInfer<IngredientPriceTrend[]>, Error>;
+export declare function useGetIngredientCategoryBreakdown(options?: QueryOptions<IngredientCategoryBreakdown[]>): import("@tanstack/react-query").UseQueryResult<NoInfer<IngredientCategoryBreakdown[]>, Error>;
+export declare function useGetDashboardSummary(options?: QueryOptions<DashboardSummary>): import("@tanstack/react-query").UseQueryResult<NoInfer<DashboardSummary>, Error>;
 export declare function useGetDashboardRecentActivity(params?: {
     limit?: number;
-}, options?: QueryOptions<Activity[]>): import("@tanstack/react-query").UseQueryResult<Activity[], Error>;
+}, options?: QueryOptions<Activity[]>): import("@tanstack/react-query").UseQueryResult<NoInfer<Activity[]>, Error>;
 export declare function getGetCommunityPostQueryKey(id: number): readonly ["getCommunityPost", number];
-export declare function useGetCommunityPost(id: number, options?: QueryOptions<CommunityPost>): import("@tanstack/react-query").UseQueryResult<CommunityPost, Error>;
+export declare function useGetCommunityPost(id: number, options?: QueryOptions<CommunityPost>): import("@tanstack/react-query").UseQueryResult<NoInfer<CommunityPost>, Error>;
 export declare function useListCommunityPosts(params?: {
     search?: string;
-}, options?: QueryOptions<CommunityPost[]>): import("@tanstack/react-query").UseQueryResult<CommunityPost[], Error>;
+}, options?: QueryOptions<CommunityPost[]>): import("@tanstack/react-query").UseQueryResult<NoInfer<CommunityPost[]>, Error>;
+export declare function useListCommunityNews(params?: {
+    lang?: string;
+    v?: string;
+}, options?: QueryOptions<CommunityNewsItem[]>): import("@tanstack/react-query").UseQueryResult<NoInfer<CommunityNewsItem[]>, Error>;
 export declare function useCreateCommunityPost(options?: MutationOptions<CommunityPost, {
     data: Partial<CommunityPost>;
 }>): import("@tanstack/react-query").UseMutationResult<CommunityPost, Error, {
