@@ -20,7 +20,7 @@ type LambdaEvent = {
   isBase64Encoded?: boolean;
 };
 
-type LambdaContext = unknown;
+type LambdaContext = Parameters<typeof expressHandler>[1];
 
 type SupabaseUser = {
   id: string;
@@ -41,7 +41,9 @@ function json(statusCode: number, body: unknown) {
 }
 
 function getSecret(): string {
-  return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) throw new Error("SESSION_SECRET is required. Set it in your environment variables.");
+  return secret;
 }
 
 function signToken(user: { id: number; email: string; role: string }) {
