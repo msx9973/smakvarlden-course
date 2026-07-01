@@ -11,7 +11,7 @@ import scbRouter from "./scb";
 import svinnRouter from "./svinn";
 import marketRouter from "./market";
 import spoonacularRouter from "./spoonacular";
-import stripeRouter from "./stripe";
+import stripeRouter, { stripeWebhookRouter } from "./stripe";
 import demoRouter from "./demo";
 
 const router: IRouter = Router();
@@ -19,7 +19,7 @@ const router: IRouter = Router();
 // Public routes
 router.use(healthRouter);
 router.use(authRouter);
-router.use("/stripe/webhook", stripeRouter);
+router.use("/stripe/webhook", stripeWebhookRouter);
 
 // Community read is public, write requires auth (guards inside communityRouter)
 router.use("/community", communityRouter);
