@@ -20,7 +20,7 @@ type LambdaEvent = {
   isBase64Encoded?: boolean;
 };
 
-type LambdaContext = unknown;
+type LambdaContext = Parameters<typeof expressHandler>[1];
 
 type SupabaseUser = {
   id: string;
