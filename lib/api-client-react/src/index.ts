@@ -18,6 +18,8 @@ type MutationOptions<TData, TVariables> = {
 
 /* ── API base URL ─────────────────────────────────────── */
 
+const TOKEN_KEY = "smakvarlden_token";
+
 function apiBase(): string {
   if (typeof import.meta !== "undefined") {
     try {
@@ -31,12 +33,33 @@ function apiBase(): string {
   return "";
 }
 
+function readToken(): string | null {
+  try {
+    return typeof localStorage === "undefined" ? null : localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function encodeJsonPayload(body: BodyInit | null | undefined): string | null {
+  if (typeof body !== "string") return null;
+  try {
+    return btoa(unescape(encodeURIComponent(body)));
+  } catch {
+    return null;
+  }
+}
+
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${apiBase()}/api${path}`;
-  const res = await fetch(url, {
-    headers: { "Content-Type": "application/json", ...init?.headers },
-    ...init,
-  });
+  const headers = new Headers(init?.headers);
+  const token = readToken();
+  const encodedPayload = encodeJsonPayload(init?.body);
+  if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+  if (token && !headers.has("Authorization")) headers.set("Authorization", `Bearer ${token}`);
+  if (encodedPayload && !headers.has("X-Smakvarlden-Payload")) headers.set("X-Smakvarlden-Payload", encodedPayload);
+
+  const res = await fetch(url, { ...init, headers });
   if (res.status === 204) return undefined as T;
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
