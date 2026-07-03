@@ -1,12 +1,9 @@
-import { useState } from "react";
 import { Link } from "wouter";
 import { useGetRecipe, getGetRecipeQueryKey } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, TrendingUp, Leaf, Pencil } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { getIngredientImage, getRecipeImage } from "@/lib/foodImages";
-import { EditRecipeDialog } from "@/components/EditRecipeDialog";
+import { getRecipeImage } from "@/lib/foodImages";
 
 function preferredImage(item: unknown) {
   const value = item as { imageUrl?: string | null; image_url?: string | null; image?: string | null };
@@ -21,8 +18,6 @@ function marginColor(pct: number) {
 
 export default function RecipeDetail({ id }: { id: number }) {
   const { t } = useI18n();
-  const qc = useQueryClient();
-  const [editOpen, setEditOpen] = useState(false);
 
   const recipe = useGetRecipe(id, {
     query: { queryKey: getGetRecipeQueryKey(id), enabled: !!id },
@@ -58,8 +53,6 @@ export default function RecipeDetail({ id }: { id: number }) {
   const r = recipe.data;
   const margin = r.profitMarginPct;
   const mColor = marginColor(margin);
-  const profitSek = r.sellingPriceSek - r.totalCostSek;
-  const costPerServing = r.servings > 0 ? r.totalCostSek / r.servings : r.totalCostSek;
 
   return (
     <div className="flex flex-col gap-6 max-w-3xl">
@@ -67,9 +60,6 @@ export default function RecipeDetail({ id }: { id: number }) {
         <Link href="/recipes" className="flex items-center gap-1.5 text-[13px] font-medium hover:opacity-70" style={{ color: "var(--sv-text-2)" }}>
           <ArrowLeft className="w-4 h-4" /> {t("Tillbaka till recept")}
         </Link>
-        <button onClick={() => setEditOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-full text-[12px] font-semibold" style={{ background: "var(--sv-muted)", color: "var(--sv-text-2)", border: "1.5px solid var(--sv-border)" }}>
-          <Pencil className="w-3.5 h-3.5" /> {t("Redigera")}
-        </button>
       </div>
       <div className="relative overflow-hidden rounded-2xl min-h-56 flex items-end" style={{ background: "linear-gradient(135deg,hsl(17 47% 13%),hsl(17 37% 20%))" }}>
         <img src={getRecipeImage(r.name, r.category, preferredImage(r))} alt={r.name} className="absolute inset-0 h-full w-full object-cover opacity-55" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
@@ -82,7 +72,6 @@ export default function RecipeDetail({ id }: { id: number }) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[{label:t("Portioner"),value:String(r.servings)},{label:t("Kostnad"),value:`${r.totalCostSek.toFixed(0)} kr`},{label:t("Försäljningspris"),value:r.sellingPriceSek>0?`${r.sellingPriceSek.toFixed(0)} kr`:"—"},{label:t("Marginal"),value:r.sellingPriceSek>0?`${margin.toFixed(1)}%`:"—",color:mColor}].map((m)=>( <div key={m.label} className="rounded-xl p-4 text-center" style={{background:"var(--sv-surface)",boxShadow:"0 2px 8px var(--sv-shadow)",border:"1px solid var(--sv-border)"}}><p className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{color:"var(--sv-text-2)"}}>{m.label}</p><p className="text-2xl font-serif font-bold" style={{color:m.color??"var(--sv-text)"}}>{m.value}</p></div> ))}
       </div>
-      <EditRecipeDialog recipe={r.id?{id:r.id,name:r.name,description:r.description,category:r.category,servings:r.servings,sellingPriceSek:r.sellingPriceSek,isShared:r.isShared}:null} onClose={()=>{setEditOpen(false);qc.invalidateQueries({queryKey:getGetRecipeQueryKey(id)});}} />
     </div>
   );
 }
