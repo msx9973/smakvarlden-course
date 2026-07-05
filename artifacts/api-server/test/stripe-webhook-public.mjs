@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 
+process.env.NODE_ENV = "production";
 process.env.SESSION_SECRET = "test-session-secret";
 process.env.STATIC_DIR = "/tmp/smakvarlden-test-static-missing";
 process.env.STRIPE_SECRET_KEY = "sk_test_1234567890";
