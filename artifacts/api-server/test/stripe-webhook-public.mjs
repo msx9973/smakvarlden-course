@@ -1,62 +1,21 @@
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
-import { createServer } from "node:net";
-import { once } from "node:events";
 
-async function getFreePort() {
-  const server = createServer();
-  server.listen(0, "127.0.0.1");
-  await once(server, "listening");
-  const { port } = server.address();
-  server.close();
-  await once(server, "close");
-  return port;
-}
+process.env.SESSION_SECRET = "test-session-secret";
+process.env.STATIC_DIR = "/tmp/smakvarlden-test-static-missing";
+process.env.STRIPE_SECRET_KEY = "sk_test_1234567890";
+process.env.STRIPE_WEBHOOK_SECRET = "";
 
-async function waitForServer(port, child, logs) {
-  const deadline = Date.now() + 10_000;
-  while (Date.now() < deadline) {
-    assert.equal(child.exitCode, null, `server exited early:\n${logs()}`);
-    try {
-      const response = await fetch(`http://127.0.0.1:${port}/api/healthz`);
-      if (response.ok) return;
-    } catch {
-      // Server is still starting.
-    }
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-  throw new Error(`server did not start:\n${logs()}`);
-}
+const mod = await import("../../../netlify/functions/api.js");
+const handler = mod.handler ?? mod.default?.handler;
+assert.equal(typeof handler, "function", "expected Netlify function to export handler");
 
-const port = await getFreePort();
-let output = "";
-const child = spawn(process.execPath, ["--enable-source-maps", "./dist/index.mjs"], {
-  cwd: new URL("..", import.meta.url),
-  env: {
-    ...process.env,
-    PORT: String(port),
-    SESSION_SECRET: "test-session-secret",
-    STATIC_DIR: "/tmp/smakvarlden-test-static-missing",
-    STRIPE_SECRET_KEY: "sk_test_1234567890",
-    STRIPE_WEBHOOK_SECRET: "",
-  },
-  stdio: ["ignore", "pipe", "pipe"],
-});
+const response = await handler({
+  httpMethod: "POST",
+  path: "/api/stripe/webhook",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ id: "evt_test_route", type: "ping", data: { object: {} } }),
+  isBase64Encoded: false,
+}, {});
 
-child.stdout.on("data", (chunk) => { output += chunk.toString(); });
-child.stderr.on("data", (chunk) => { output += chunk.toString(); });
-
-try {
-  await waitForServer(port, child, () => output);
-
-  const response = await fetch(`http://127.0.0.1:${port}/api/stripe/webhook`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ id: "evt_test_route", type: "ping", data: { object: {} } }),
-  });
-
-  assert.equal(response.status, 200, `expected public webhook to return 200, got ${response.status}: ${await response.text()}`);
-  assert.deepEqual(await response.json(), { received: true });
-} finally {
-  child.kill();
-}
+assert.equal(response.statusCode, 200, `expected public webhook to return 200, got ${response.statusCode}: ${response.body}`);
+assert.deepEqual(JSON.parse(response.body), { received: true });
