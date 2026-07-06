@@ -1,4 +1,4 @@
-import { Router, type Request } from "express";
+import { Router, type Request, type Response } from "express";
 import Stripe from "stripe";
 import { db, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
@@ -53,7 +53,7 @@ router.post("/checkout", async (req, res) => {
   }
 });
 
-router.post("/webhook", async (req, res) => {
+export async function handleStripeWebhook(req: Request, res: Response) {
   const stripe = getStripe();
   if (!stripe) return res.status(503).json({ error: "Stripe inte konfigurerat." });
   const sig = req.headers["stripe-signature"] as string;
@@ -79,7 +79,9 @@ router.post("/webhook", async (req, res) => {
     if (customerId) await db.update(usersTable).set({ plan: "free" }).where(eq(usersTable.stripeCustomerId, customerId));
   }
   return res.json({ received: true });
-});
+}
+
+router.post("/webhook", handleStripeWebhook);
 
 router.get("/status", async (req, res) => {
   const user = req.user;
