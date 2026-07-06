@@ -6,7 +6,8 @@ process.env.DATABASE_URL = "postgres://user:pass@127.0.0.1:1/db";
 process.env.SESSION_SECRET = "test-session-secret";
 process.env.STRIPE_SECRET_KEY = "sk_test_route_smoke";
 process.env.STRIPE_WEBHOOK_SECRET = "";
-process.env.NODE_ENV = "test";
+process.env.NODE_ENV = "production";
+process.env.AWS_LAMBDA_FUNCTION_NAME = "stripe-webhook-route-smoke";
 
 const require = createRequire(import.meta.url);
 const { handler } = require("../../../netlify/functions/api.js");
