@@ -60,7 +60,10 @@ function useSpoonSearch(query: string, enabled: boolean) {
     timer.current = setTimeout(async () => {
       setLoading(true);
       try {
-        const r = await fetch(`${BASE}/api/spoonacular/recipes/search?query=${encodeURIComponent(query)}&number=12`);
+        const token = localStorage.getItem("smakvarlden_token");
+        const r = await fetch(`${BASE}/api/spoonacular/recipes/search?query=${encodeURIComponent(query)}&number=12`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         if (r.ok) { const d = await r.json(); setResults(d.results ?? []); }
       } finally { setLoading(false); }
     }, 600);

@@ -14,6 +14,12 @@ const USER_KEY = "smakvarlden_user";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const API_BASE = `${BASE}/api`;
 
+class ApiError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+  }
+}
+
 function encodeJsonPayload(body: BodyInit | null | undefined) {
   if (typeof body !== "string") return null;
   try { return btoa(unescape(encodeURIComponent(body))); } catch { return null; }
@@ -25,8 +31,12 @@ async function apiFetch(path: string, opts?: RequestInit) {
   const headers: Record<string, string> = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(encodedPayload ? { "X-Smakvarlden-Payload": encodedPayload } : {}), ...((opts?.headers as Record<string, string>) ?? {}) };
   const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error ?? "Något gick fel.");
+  if (!res.ok) throw new ApiError(data.error ?? "Något gick fel.", res.status);
   return data;
+}
+
+function isUnauthorizedError(error: unknown) {
+  return error instanceof ApiError && error.status === 401;
 }
 
 function readCachedUser() {
@@ -74,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!token) { setLoading(false); return; }
     apiFetch("/auth/me")
       .then((u: AuthUser) => { localStorage.setItem(USER_KEY, JSON.stringify(u)); setUser(u); })
-      .catch(() => { clearSession(); setToken(null); setUser(null); })
+      .catch((error) => { if (isUnauthorizedError(error)) { clearSession(); setToken(null); setUser(null); } })
       .finally(() => setLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
