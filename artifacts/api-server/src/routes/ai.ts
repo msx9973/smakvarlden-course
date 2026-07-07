@@ -30,7 +30,7 @@ Always respond in English, concisely and professionally. Be specific and practic
 Svara alltid på svenska, kortfattat och professionellt. Var specifik och praktisk. Inkludera gärna ungefärliga kostnader i SEK när du föreslår ingredienser.`;
 }
 
-router.post("/ai/chat", async (req, res) => {
+router.post("/chat", async (req, res) => {
   const client = getClient();
   if (!client) {
     return res.status(503).json({ error: "AI-funktionen är inte konfigurerad. Lägg till ANTHROPIC_API_KEY i miljövariabler." });
@@ -62,7 +62,7 @@ router.post("/ai/chat", async (req, res) => {
   }
 });
 
-router.post("/ai/suggest", async (req, res) => {
+router.post("/suggest", async (req, res) => {
   const client = getClient();
   if (!client) {
     return res.status(503).json({ error: "AI-funktionen är inte konfigurerad." });

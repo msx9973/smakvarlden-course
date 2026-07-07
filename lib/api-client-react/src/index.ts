@@ -16,6 +16,8 @@ type MutationOptions<TData, TVariables> = {
   mutation?: UseMutationOptions<TData, Error, TVariables>;
 };
 
+const TOKEN_KEY = "smakvarlden_token";
+
 /* ── API base URL ─────────────────────────────────────── */
 
 function apiBase(): string {
@@ -33,9 +35,15 @@ function apiBase(): string {
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${apiBase()}/api${path}`;
+  const headers = new Headers(init?.headers);
+  if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+  if (typeof localStorage !== "undefined") {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (token && !headers.has("Authorization")) headers.set("Authorization", `Bearer ${token}`);
+  }
   const res = await fetch(url, {
-    headers: { "Content-Type": "application/json", ...init?.headers },
     ...init,
+    headers,
   });
   if (res.status === 204) return undefined as T;
   if (!res.ok) {
@@ -206,6 +214,21 @@ export function useCreateRecipe(
     mutationFn: ({ data }) =>
       apiFetch<Recipe>("/recipes", { method: "POST", body: JSON.stringify(data) }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["listRecipes"] }),
+    ...options?.mutation,
+  });
+}
+
+export function useUpdateRecipe(
+  options?: MutationOptions<Recipe, { id: number; data: Partial<Recipe> }>,
+) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) =>
+      apiFetch<Recipe>(`/recipes/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ["listRecipes"] });
+      qc.invalidateQueries({ queryKey: getGetRecipeQueryKey(variables.id) });
+    },
     ...options?.mutation,
   });
 }

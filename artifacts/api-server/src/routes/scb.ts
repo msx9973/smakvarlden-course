@@ -87,7 +87,7 @@ export async function syncSCBPrices(): Promise<{ updated: number; message: strin
   };
 }
 
-router.post("/ingredients/sync-scb", async (_req, res) => {
+router.post("/sync-scb", async (_req, res) => {
   const result = await syncSCBPrices();
   return res.json(result);
 });
