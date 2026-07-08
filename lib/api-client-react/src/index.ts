@@ -18,6 +18,8 @@ type MutationOptions<TData, TVariables> = {
 
 /* ── API base URL ─────────────────────────────────────── */
 
+const TOKEN_KEY = "smakvarlden_token";
+
 function apiBase(): string {
   if (typeof import.meta !== "undefined") {
     try {
@@ -31,11 +33,36 @@ function apiBase(): string {
   return "";
 }
 
+function encodeJsonPayload(body: BodyInit | null | undefined) {
+  if (typeof body !== "string") return null;
+  try {
+    return btoa(unescape(encodeURIComponent(body)));
+  } catch {
+    return null;
+  }
+}
+
+function authHeaders(body: BodyInit | null | undefined, headers?: HeadersInit) {
+  const token = typeof localStorage !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
+  const encodedPayload = encodeJsonPayload(body);
+  const result: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(encodedPayload ? { "X-Smakvarlden-Payload": encodedPayload } : {}),
+  };
+
+  new Headers(headers).forEach((value, key) => {
+    result[key] = value;
+  });
+
+  return result;
+}
+
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${apiBase()}/api${path}`;
   const res = await fetch(url, {
-    headers: { "Content-Type": "application/json", ...init?.headers },
     ...init,
+    headers: authHeaders(init?.body, init?.headers),
   });
   if (res.status === 204) return undefined as T;
   if (!res.ok) {
@@ -206,6 +233,21 @@ export function useCreateRecipe(
     mutationFn: ({ data }) =>
       apiFetch<Recipe>("/recipes", { method: "POST", body: JSON.stringify(data) }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["listRecipes"] }),
+    ...options?.mutation,
+  });
+}
+
+export function useUpdateRecipe(
+  options?: MutationOptions<Recipe, { id: number; data: Partial<Recipe> }>,
+) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) =>
+      apiFetch<Recipe>(`/recipes/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ["listRecipes"] });
+      qc.invalidateQueries({ queryKey: getGetRecipeQueryKey(variables.id) });
+    },
     ...options?.mutation,
   });
 }
