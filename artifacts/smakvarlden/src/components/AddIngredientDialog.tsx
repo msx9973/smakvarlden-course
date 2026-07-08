@@ -25,7 +25,10 @@ function useIngredientSuggestions(query: string) {
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
       try {
-        const r = await fetch(`${BASE}/api/spoonacular/ingredients/autocomplete?query=${encodeURIComponent(query)}&number=6`);
+        const token = localStorage.getItem("smakvarlden_token");
+        const r = await fetch(`${BASE}/api/spoonacular/ingredients/autocomplete?query=${encodeURIComponent(query)}&number=6`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
         if (r.ok) setSuggestions(await r.json());
       } catch { /* ignore */ }
     }, 400);
