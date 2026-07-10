@@ -15,23 +15,23 @@ import{r as i,o as We,O as Be,x as se,n as X,j as g,P as I,p as Ve,w as oe,v as 
     margin-right: `).concat(c,"px ").concat(r,`;
     `),n==="padding"&&"padding-right: ".concat(c,"px ").concat(r,";")].filter(Boolean).join(""),`
   }
-  
+
   .`).concat(H,` {
     right: `).concat(c,"px ").concat(r,`;
   }
-  
+
   .`).concat(K,` {
     margin-right: `).concat(c,"px ").concat(r,`;
   }
-  
+
   .`).concat(H," .").concat(H,` {
     right: 0 `).concat(r,`;
   }
-  
+
   .`).concat(K," .").concat(K,` {
     margin-right: 0 `).concat(r,`;
   }
-  
+
   body[`).concat(M,`] {
     `).concat(at,": ").concat(c,`px;
   }
