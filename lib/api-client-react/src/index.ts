@@ -33,9 +33,13 @@ function apiBase(): string {
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${apiBase()}/api${path}`;
+  const headers = new Headers(init?.headers);
+  if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+  const token = typeof localStorage !== "undefined" ? localStorage.getItem("smakvarlden_token") : null;
+  if (token && !headers.has("Authorization")) headers.set("Authorization", `Bearer ${token}`);
   const res = await fetch(url, {
-    headers: { "Content-Type": "application/json", ...init?.headers },
     ...init,
+    headers,
   });
   if (res.status === 204) return undefined as T;
   if (!res.ok) {
