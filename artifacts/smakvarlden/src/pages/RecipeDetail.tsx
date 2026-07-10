@@ -82,7 +82,12 @@ export default function RecipeDetail({ id }: { id: number }) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[{label:t("Portioner"),value:String(r.servings)},{label:t("Kostnad"),value:`${r.totalCostSek.toFixed(0)} kr`},{label:t("Försäljningspris"),value:r.sellingPriceSek>0?`${r.sellingPriceSek.toFixed(0)} kr`:"—"},{label:t("Marginal"),value:r.sellingPriceSek>0?`${margin.toFixed(1)}%`:"—",color:mColor}].map((m)=>( <div key={m.label} className="rounded-xl p-4 text-center" style={{background:"var(--sv-surface)",boxShadow:"0 2px 8px var(--sv-shadow)",border:"1px solid var(--sv-border)"}}><p className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{color:"var(--sv-text-2)"}}>{m.label}</p><p className="text-2xl font-serif font-bold" style={{color:m.color??"var(--sv-text)"}}>{m.value}</p></div> ))}
       </div>
-      <EditRecipeDialog recipe={r.id?{id:r.id,name:r.name,description:r.description,category:r.category,servings:r.servings,sellingPriceSek:r.sellingPriceSek,isShared:r.isShared}:null} onClose={()=>{setEditOpen(false);qc.invalidateQueries({queryKey:getGetRecipeQueryKey(id)});}} />
+      <EditRecipeDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        recipe={r.id ? { id: r.id, name: r.name, description: r.description, category: r.category, servings: r.servings, sellingPriceSek: r.sellingPriceSek, isShared: r.isShared } : null}
+        onSaved={() => qc.invalidateQueries({ queryKey: getGetRecipeQueryKey(id) })}
+      />
     </div>
   );
 }

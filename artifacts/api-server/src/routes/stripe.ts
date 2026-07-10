@@ -1,4 +1,4 @@
-import { Router, type Request } from "express";
+import { Router, type Request, type Response } from "express";
 import Stripe from "stripe";
 import { db, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
@@ -53,16 +53,17 @@ router.post("/checkout", async (req, res) => {
   }
 });
 
-router.post("/webhook", async (req, res) => {
+export async function handleStripeWebhook(req: Request, res: Response) {
   const stripe = getStripe();
   if (!stripe) return res.status(503).json({ error: "Stripe inte konfigurerat." });
   const sig = req.headers["stripe-signature"] as string;
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) return res.status(500).json({ error: "Stripe webhook secret is not configured." });
+  if (!sig) return res.status(400).json({ error: "Stripe signature is required." });
   let event: Stripe.Event;
   try {
     const raw = Buffer.isBuffer(req.body) ? req.body : (req as unknown as { rawBody?: Buffer }).rawBody ?? Buffer.from(JSON.stringify(req.body));
-    if (webhookSecret && sig) { event = stripe.webhooks.constructEvent(raw, sig, webhookSecret); }
-    else { event = Buffer.isBuffer(req.body) ? JSON.parse(req.body.toString("utf8")) as Stripe.Event : req.body as Stripe.Event; }
+    event = stripe.webhooks.constructEvent(raw, sig, webhookSecret);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Webhook-fel";
     return res.status(400).json({ error: msg });
@@ -79,7 +80,9 @@ router.post("/webhook", async (req, res) => {
     if (customerId) await db.update(usersTable).set({ plan: "free" }).where(eq(usersTable.stripeCustomerId, customerId));
   }
   return res.json({ received: true });
-});
+}
+
+router.post("/webhook", handleStripeWebhook);
 
 router.get("/status", async (req, res) => {
   const user = req.user;
