@@ -11,7 +11,7 @@ import scbRouter from "./scb";
 import svinnRouter from "./svinn";
 import marketRouter from "./market";
 import spoonacularRouter from "./spoonacular";
-import stripeRouter from "./stripe";
+import stripeRouter, { handleStripeWebhook } from "./stripe";
 import demoRouter from "./demo";
 
 const router: IRouter = Router();
@@ -19,10 +19,14 @@ const router: IRouter = Router();
 // Public routes
 router.use(healthRouter);
 router.use(authRouter);
-router.use("/stripe/webhook", stripeRouter);
+router.post("/stripe/webhook", handleStripeWebhook);
 
 // Community read is public, write requires auth (guards inside communityRouter)
 router.use("/community", communityRouter);
+
+// Admin-only routes keep their existing public URL paths but require admin auth.
+router.use(requireAuth, requireAdmin, aiRouter);
+router.use(requireAuth, requireAdmin, scbRouter);
 
 // Protected routes
 router.use("/recipes",     requireAuth, recipesRouter);
@@ -33,10 +37,6 @@ router.use("/market",      requireAuth, marketRouter);
 router.use("/spoonacular", requireAuth, spoonacularRouter);
 router.use("/starter",     requireAuth, demoRouter);
 router.use("/demo",        requireAuth, demoRouter);
-
-// Admin-only routes
-router.use("/ai",  requireAuth, requireAdmin, aiRouter);
-router.use("/scb", requireAuth, requireAdmin, scbRouter);
 
 // Stripe checkout (auth required)
 router.use("/stripe", requireAuth, stripeRouter);
