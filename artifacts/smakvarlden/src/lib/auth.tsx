@@ -19,14 +19,14 @@ function encodeJsonPayload(body: BodyInit | null | undefined) {
   try { return btoa(unescape(encodeURIComponent(body))); } catch { return null; }
 }
 
-async function apiFetch(path: string, opts?: RequestInit) {
+async function apiFetch<T = any>(path: string, opts?: RequestInit): Promise<T> {
   const token = localStorage.getItem(TOKEN_KEY);
   const encodedPayload = encodeJsonPayload(opts?.body);
   const headers: Record<string, string> = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(encodedPayload ? { "X-Smakvarlden-Payload": encodedPayload } : {}), ...((opts?.headers as Record<string, string>) ?? {}) };
   const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error ?? "Något gick fel.");
-  return data;
+  return data as T;
 }
 
 function readCachedUser() {
