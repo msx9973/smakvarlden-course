@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, ingredientsTable, recipeIngredientsTable, recipesTable, activityLogTable } from "@workspace/db";
-import { inArray } from "drizzle-orm";
+import { eq, inArray, isNull, or } from "drizzle-orm";
 
 const router = Router();
 
@@ -118,7 +118,7 @@ const demoRecipes = [
   },
 ];
 
-router.post("/seed", async (_req, res) => {
+router.post("/seed", async (req, res) => {
   const existingIngredients = await db
     .select({ name: ingredientsTable.name })
     .from(ingredientsTable);
@@ -143,7 +143,13 @@ router.post("/seed", async (_req, res) => {
   const ingredientRows = [...insertedIngredients, ...existingDemoIngredients];
   const ingredientByName = new Map(ingredientRows.map((ingredient) => [ingredient.name, ingredient]));
 
-  const existingRecipes = await db.select({ name: recipesTable.name }).from(recipesTable);
+  const recipeAccess = req.user!.role === "admin"
+    ? or(eq(recipesTable.userId, req.user!.id), isNull(recipesTable.userId))
+    : eq(recipesTable.userId, req.user!.id);
+  const existingRecipes = await db
+    .select({ name: recipesTable.name })
+    .from(recipesTable)
+    .where(recipeAccess);
   const existingRecipeNames = new Set(existingRecipes.map((row) => row.name));
   let createdRecipes = 0;
 
@@ -166,6 +172,7 @@ router.post("/seed", async (_req, res) => {
       totalCostSek: String(Math.round(totalCostSek * 100) / 100),
       sellingPriceSek: String(recipe.sellingPriceSek),
       profitMarginPct: String(Math.round(profitMarginPct * 100) / 100),
+      userId: req.user!.id,
       ingredientsJson: recipe.ingredients.map(([name, amount, unit]) => ({
         name: String(name),
         amount: Number(amount),

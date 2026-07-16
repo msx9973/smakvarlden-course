@@ -25,8 +25,10 @@ router.post("/stripe/webhook", handleStripeWebhook);
 router.use("/community", communityRouter);
 
 // Admin-only routes keep their existing public URL paths but require admin auth.
-router.use(requireAuth, requireAdmin, aiRouter);
-router.use(requireAuth, requireAdmin, scbRouter);
+router.use("/ai", requireAuth, requireAdmin);
+router.use("/ingredients/sync-scb", requireAuth, requireAdmin);
+router.use(aiRouter);
+router.use(scbRouter);
 
 // Protected routes
 router.use("/recipes",     requireAuth, recipesRouter);
