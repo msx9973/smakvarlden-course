@@ -62985,7 +62985,7 @@ router3.get("/:id", async (req, res) => {
   if (!row) return res.status(404).json({ error: "Not found" });
   return res.json(formatIngredient(row));
 });
-router3.put("/:id", async (req, res) => {
+router3.put("/:id", requireAdmin, async (req, res) => {
   const paramParsed = UpdateIngredientParams.safeParse({ id: Number(req.params.id) });
   const bodyParsed = UpdateIngredientBody.safeParse(req.body);
   if (!paramParsed.success || !bodyParsed.success) return res.status(400).json({ error: "Invalid input" });
@@ -62999,7 +62999,7 @@ router3.put("/:id", async (req, res) => {
   await recalcRecipesForIngredients([paramParsed.data.id]);
   return res.json(formatIngredient(row));
 });
-router3.delete("/:id", async (req, res) => {
+router3.delete("/:id", requireAdmin, async (req, res) => {
   const parsed = DeleteIngredientParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
   const affectedRecipes = await db.selectDistinct({ recipeId: recipeIngredientsTable.recipeId }).from(recipeIngredientsTable).where(eq(recipeIngredientsTable.ingredientId, parsed.data.id));
