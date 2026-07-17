@@ -62763,10 +62763,14 @@ var health_default = router;
 // src/routes/recipes.ts
 var import_express2 = __toESM(require_express2(), 1);
 var router2 = (0, import_express2.Router)();
+function accessibleBy(req) {
+  const user = req.user;
+  return user.role === "admin" ? or(eq(recipesTable.userId, user.id), isNull(recipesTable.userId)) : eq(recipesTable.userId, user.id);
+}
 router2.get("/top-performing", async (req, res) => {
   const parsed = GetTopPerformingRecipesQueryParams.safeParse(req.query);
   const limit = parsed.success ? parsed.data.limit ?? 5 : 5;
-  const rows = await db.select().from(recipesTable).orderBy(desc(recipesTable.profitMarginPct)).limit(limit);
+  const rows = await db.select().from(recipesTable).where(accessibleBy(req)).orderBy(desc(recipesTable.profitMarginPct)).limit(limit);
   return res.json(rows.map((r) => ({
     id: r.id,
     name: r.name,
@@ -62781,10 +62785,10 @@ router2.get("/", async (req, res) => {
   const parsed = ListRecipesQueryParams.safeParse(req.query);
   if (!parsed.success) return res.status(400).json({ error: "Invalid query params" });
   const { category, search } = parsed.data;
-  const conditions = [];
+  const conditions = [accessibleBy(req)];
   if (category) conditions.push(eq(recipesTable.category, category));
   if (search) conditions.push(ilike(recipesTable.name, `%${search}%`));
-  const rows = await db.select().from(recipesTable).where(conditions.length ? and(...conditions) : void 0).orderBy(desc(recipesTable.updatedAt));
+  const rows = await db.select().from(recipesTable).where(and(...conditions)).orderBy(desc(recipesTable.updatedAt));
   return res.json(rows.map(formatRecipe));
 });
 router2.post("/", async (req, res) => {
@@ -62811,7 +62815,8 @@ router2.post("/", async (req, res) => {
     totalCostSek: String(Math.round(totalCostSek * 100) / 100),
     sellingPriceSek: String(sellingPriceSek),
     profitMarginPct: String(Math.round(profitMarginPct * 100) / 100),
-    isShared: isShared ?? false
+    isShared: isShared ?? false,
+    userId: req.user.id
   }).returning();
   if (ingredients && ingredients.length > 0) {
     await db.insert(recipeIngredientsTable).values(
@@ -62833,7 +62838,9 @@ router2.post("/", async (req, res) => {
 router2.get("/:id", async (req, res) => {
   const parsed = GetRecipeParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
-  const [recipe] = await db.select().from(recipesTable).where(eq(recipesTable.id, parsed.data.id));
+  const [recipe] = await db.select().from(recipesTable).where(
+    and(eq(recipesTable.id, parsed.data.id), accessibleBy(req))
+  );
   if (!recipe) return res.status(404).json({ error: "Not found" });
   const recipeIngredients = await db.select({
     ingredientId: recipeIngredientsTable.ingredientId,
@@ -62866,7 +62873,8 @@ router2.put("/:id", async (req, res) => {
   const paramParsed = UpdateRecipeParams.safeParse({ id: Number(req.params.id) });
   const bodyParsed = UpdateRecipeBody.safeParse(req.body);
   if (!paramParsed.success || !bodyParsed.success) return res.status(400).json({ error: "Invalid input" });
-  const [existing] = await db.select().from(recipesTable).where(eq(recipesTable.id, paramParsed.data.id));
+  const access = and(eq(recipesTable.id, paramParsed.data.id), accessibleBy(req));
+  const [existing] = await db.select().from(recipesTable).where(access);
   if (!existing) return res.status(404).json({ error: "Not found" });
   const newSellingPrice = bodyParsed.data.sellingPriceSek ?? parseFloat(String(existing.sellingPriceSek));
   const existingTotalCost = parseFloat(String(existing.totalCostSek));
@@ -62880,7 +62888,7 @@ router2.put("/:id", async (req, res) => {
     profitMarginPct: String(Math.round(newProfitMarginPct * 100) / 100),
     isShared: bodyParsed.data.isShared ?? existing.isShared,
     updatedAt: /* @__PURE__ */ new Date()
-  }).where(eq(recipesTable.id, paramParsed.data.id)).returning();
+  }).where(access).returning();
   await db.insert(activityLogTable).values({
     type: "recipe_updated",
     title: `Recept uppdaterat: ${updated.name}`,
@@ -62891,7 +62899,8 @@ router2.put("/:id", async (req, res) => {
 router2.delete("/:id", async (req, res) => {
   const parsed = DeleteRecipeParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
-  await db.delete(recipesTable).where(eq(recipesTable.id, parsed.data.id));
+  const [deleted] = await db.delete(recipesTable).where(and(eq(recipesTable.id, parsed.data.id), accessibleBy(req))).returning({ id: recipesTable.id });
+  if (!deleted) return res.status(404).json({ error: "Not found" });
   return res.status(204).send();
 });
 function formatRecipe(r) {
@@ -62976,7 +62985,7 @@ router3.get("/:id", async (req, res) => {
   if (!row) return res.status(404).json({ error: "Not found" });
   return res.json(formatIngredient(row));
 });
-router3.put("/:id", async (req, res) => {
+router3.put("/:id", requireAdmin, async (req, res) => {
   const paramParsed = UpdateIngredientParams.safeParse({ id: Number(req.params.id) });
   const bodyParsed = UpdateIngredientBody.safeParse(req.body);
   if (!paramParsed.success || !bodyParsed.success) return res.status(400).json({ error: "Invalid input" });
@@ -62990,7 +62999,7 @@ router3.put("/:id", async (req, res) => {
   await recalcRecipesForIngredients([paramParsed.data.id]);
   return res.json(formatIngredient(row));
 });
-router3.delete("/:id", async (req, res) => {
+router3.delete("/:id", requireAdmin, async (req, res) => {
   const parsed = DeleteIngredientParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
   const affectedRecipes = await db.selectDistinct({ recipeId: recipeIngredientsTable.recipeId }).from(recipeIngredientsTable).where(eq(recipeIngredientsTable.ingredientId, parsed.data.id));
@@ -87689,19 +87698,19 @@ router12.post("/checkout", async (req, res) => {
     return res.status(500).json({ error: msg });
   }
 });
-router12.post("/webhook", async (req, res) => {
+async function handleStripeWebhook(req, res) {
   const stripe = getStripe();
   if (!stripe) return res.status(503).json({ error: "Stripe inte konfigurerat." });
-  const sig = req.headers["stripe-signature"];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) return res.status(503).json({ error: "Stripe webhook inte konfigurerat." });
+  const signatureHeader = req.headers["stripe-signature"];
+  const sig = Array.isArray(signatureHeader) ? signatureHeader[0] : signatureHeader;
+  if (!sig) return res.status(400).json({ error: "Stripe-signatur saknas." });
   let event;
   try {
-    const raw = Buffer.isBuffer(req.body) ? req.body : req.rawBody ?? Buffer.from(JSON.stringify(req.body));
-    if (webhookSecret && sig) {
-      event = stripe.webhooks.constructEvent(raw, sig, webhookSecret);
-    } else {
-      event = Buffer.isBuffer(req.body) ? JSON.parse(req.body.toString("utf8")) : req.body;
-    }
+    const raw = Buffer.isBuffer(req.body) ? req.body : req.rawBody;
+    if (!raw) return res.status(400).json({ error: "Webhook-payload saknas." });
+    event = stripe.webhooks.constructEvent(raw, sig, webhookSecret);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Webhook-fel";
     return res.status(400).json({ error: msg });
@@ -87718,7 +87727,7 @@ router12.post("/webhook", async (req, res) => {
     if (customerId) await db.update(usersTable).set({ plan: "free" }).where(eq(usersTable.stripeCustomerId, customerId));
   }
   return res.json({ received: true });
-});
+}
 router12.get("/status", async (req, res) => {
   const user = req.user;
   if (!user) return res.status(401).json({ error: "Ej inloggad" });
@@ -87841,7 +87850,7 @@ var demoRecipes = [
     ]
   }
 ];
-router13.post("/seed", async (_req, res) => {
+router13.post("/seed", async (req, res) => {
   const existingIngredients = await db.select({ name: ingredientsTable.name }).from(ingredientsTable);
   const existingIngredientNames = new Set(existingIngredients.map((row) => row.name));
   const ingredientsToInsert = demoIngredients.filter((ingredient) => !existingIngredientNames.has(ingredient.name));
@@ -87856,7 +87865,8 @@ router13.post("/seed", async (_req, res) => {
   const existingDemoIngredients = await db.select().from(ingredientsTable).where(inArray(ingredientsTable.name, allIngredientNames));
   const ingredientRows = [...insertedIngredients, ...existingDemoIngredients];
   const ingredientByName = new Map(ingredientRows.map((ingredient) => [ingredient.name, ingredient]));
-  const existingRecipes = await db.select({ name: recipesTable.name }).from(recipesTable);
+  const recipeAccess = req.user.role === "admin" ? or(eq(recipesTable.userId, req.user.id), isNull(recipesTable.userId)) : eq(recipesTable.userId, req.user.id);
+  const existingRecipes = await db.select({ name: recipesTable.name }).from(recipesTable).where(recipeAccess);
   const existingRecipeNames = new Set(existingRecipes.map((row) => row.name));
   let createdRecipes = 0;
   for (const recipe of demoRecipes) {
@@ -87874,6 +87884,7 @@ router13.post("/seed", async (_req, res) => {
       totalCostSek: String(Math.round(totalCostSek * 100) / 100),
       sellingPriceSek: String(recipe.sellingPriceSek),
       profitMarginPct: String(Math.round(profitMarginPct * 100) / 100),
+      userId: req.user.id,
       ingredientsJson: recipe.ingredients.map(([name, amount, unit]) => ({
         name: String(name),
         amount: Number(amount),
@@ -87912,8 +87923,12 @@ var demo_default = router13;
 var router14 = (0, import_express14.Router)();
 router14.use(health_default);
 router14.use(auth_default);
-router14.use("/stripe/webhook", stripe_default);
+router14.post("/stripe/webhook", handleStripeWebhook);
 router14.use("/community", community_default);
+router14.use("/ai", requireAuth, requireAdmin);
+router14.use("/ingredients/sync-scb", requireAuth, requireAdmin);
+router14.use(ai_default);
+router14.use(scb_default);
 router14.use("/recipes", requireAuth, recipes_default);
 router14.use("/ingredients", requireAuth, ingredients_default);
 router14.use("/dashboard", requireAuth, dashboard_default);
@@ -87922,8 +87937,6 @@ router14.use("/market", requireAuth, market_default);
 router14.use("/spoonacular", requireAuth, spoonacular_default);
 router14.use("/starter", requireAuth, demo_default);
 router14.use("/demo", requireAuth, demo_default);
-router14.use("/ai", requireAuth, requireAdmin, ai_default);
-router14.use("/scb", requireAuth, requireAdmin, scb_default);
 router14.use("/stripe", requireAuth, stripe_default);
 var routes_default = router14;
 
@@ -88017,7 +88030,9 @@ function json3(statusCode, body) {
   };
 }
 function getSecret3() {
-  return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) throw new Error("SESSION_SECRET environment variable is required but was not set.");
+  return secret;
 }
 function signToken2(user) {
   return import_jsonwebtoken3.default.sign({ id: user.id, email: user.email, role: user.role }, getSecret3(), {

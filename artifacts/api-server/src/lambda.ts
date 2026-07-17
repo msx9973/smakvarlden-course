@@ -42,7 +42,9 @@ function json(statusCode: number, body: unknown) {
 }
 
 function getSecret(): string {
-  return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) throw new Error("SESSION_SECRET environment variable is required but was not set.");
+  return secret;
 }
 
 function signToken(user: { id: number; email: string; role: string }) {
