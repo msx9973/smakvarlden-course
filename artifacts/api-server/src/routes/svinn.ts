@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db, ingredientsTable, recipesTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
+import { recipesAccessibleBy } from "../auth/recipeAccess";
 
 const router = Router();
 
@@ -33,7 +34,7 @@ const SVINN_TIPS = [
   { icon: "♻️", title: "Återanvänd trimspill", desc: "Fiskhuvud, benskaldjur och grönsaksskal ger utmärkt fond och buljonger." },
 ];
 
-router.get("/summary", async (_req, res) => {
+router.get("/summary", async (req, res) => {
   const ingredientRows = await db
     .select({
       category: ingredientsTable.category,
@@ -61,7 +62,8 @@ router.get("/summary", async (_req, res) => {
       avgCost: sql<number>`avg(total_cost_sek::numeric)`,
       totalRecipes: sql<number>`count(*)::int`,
     })
-    .from(recipesTable);
+    .from(recipesTable)
+    .where(recipesAccessibleBy(req));
 
   const avgDailyPortions = 40;
 

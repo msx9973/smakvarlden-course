@@ -1,6 +1,7 @@
-import { Router, type Request } from "express";
+import { Router } from "express";
 import { db, recipesTable, recipeIngredientsTable, ingredientsTable, activityLogTable } from "@workspace/db";
-import { eq, ilike, and, desc, isNull, or, sql } from "drizzle-orm";
+import { eq, ilike, and, desc, sql } from "drizzle-orm";
+import { recipesAccessibleBy } from "../auth/recipeAccess";
 import {
   CreateRecipeBody,
   ListRecipesQueryParams,
@@ -13,18 +14,11 @@ import {
 
 const router = Router();
 
-function accessibleBy(req: Request) {
-  const user = req.user!;
-  return user.role === "admin"
-    ? or(eq(recipesTable.userId, user.id), isNull(recipesTable.userId))!
-    : eq(recipesTable.userId, user.id);
-}
-
 router.get("/top-performing", async (req, res) => {
   const parsed = GetTopPerformingRecipesQueryParams.safeParse(req.query);
   const limit = parsed.success ? (parsed.data.limit ?? 5) : 5;
   const rows = await db.select().from(recipesTable)
-    .where(accessibleBy(req))
+    .where(recipesAccessibleBy(req))
     .orderBy(desc(recipesTable.profitMarginPct))
     .limit(limit);
   return res.json(rows.map((r) => ({
@@ -42,7 +36,7 @@ router.get("/", async (req, res) => {
   const parsed = ListRecipesQueryParams.safeParse(req.query);
   if (!parsed.success) return res.status(400).json({ error: "Invalid query params" });
   const { category, search } = parsed.data;
-  const conditions = [accessibleBy(req)];
+  const conditions = [recipesAccessibleBy(req)];
   if (category) conditions.push(eq(recipesTable.category, category));
   if (search) conditions.push(ilike(recipesTable.name, `%${search}%`));
   const rows = await db.select().from(recipesTable).where(and(...conditions)).orderBy(desc(recipesTable.updatedAt));
@@ -108,7 +102,7 @@ router.get("/:id", async (req, res) => {
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
 
   const [recipe] = await db.select().from(recipesTable).where(
-    and(eq(recipesTable.id, parsed.data.id), accessibleBy(req)),
+    and(eq(recipesTable.id, parsed.data.id), recipesAccessibleBy(req)),
   );
   if (!recipe) return res.status(404).json({ error: "Not found" });
 
@@ -153,7 +147,7 @@ router.put("/:id", async (req, res) => {
   const bodyParsed = UpdateRecipeBody.safeParse(req.body);
   if (!paramParsed.success || !bodyParsed.success) return res.status(400).json({ error: "Invalid input" });
 
-  const access = and(eq(recipesTable.id, paramParsed.data.id), accessibleBy(req));
+  const access = and(eq(recipesTable.id, paramParsed.data.id), recipesAccessibleBy(req));
   const [existing] = await db.select().from(recipesTable).where(access);
   if (!existing) return res.status(404).json({ error: "Not found" });
 
@@ -190,7 +184,7 @@ router.delete("/:id", async (req, res) => {
   const parsed = DeleteRecipeParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
   const [deleted] = await db.delete(recipesTable)
-    .where(and(eq(recipesTable.id, parsed.data.id), accessibleBy(req)))
+    .where(and(eq(recipesTable.id, parsed.data.id), recipesAccessibleBy(req)))
     .returning({ id: recipesTable.id });
   if (!deleted) return res.status(404).json({ error: "Not found" });
   return res.status(204).send();
