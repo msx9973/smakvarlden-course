@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db, recipesTable, recipeIngredientsTable, ingredientsTable, activityLogTable } from "@workspace/db";
 import { eq, ilike, and, desc, sql } from "drizzle-orm";
+import { recipesAccessibleBy } from "../auth/recipeAccess";
 import {
   CreateRecipeBody,
   ListRecipesQueryParams,
@@ -16,7 +17,10 @@ const router = Router();
 router.get("/top-performing", async (req, res) => {
   const parsed = GetTopPerformingRecipesQueryParams.safeParse(req.query);
   const limit = parsed.success ? (parsed.data.limit ?? 5) : 5;
-  const rows = await db.select().from(recipesTable).orderBy(desc(recipesTable.profitMarginPct)).limit(limit);
+  const rows = await db.select().from(recipesTable)
+    .where(recipesAccessibleBy(req))
+    .orderBy(desc(recipesTable.profitMarginPct))
+    .limit(limit);
   return res.json(rows.map((r) => ({
     id: r.id,
     name: r.name,
@@ -32,10 +36,10 @@ router.get("/", async (req, res) => {
   const parsed = ListRecipesQueryParams.safeParse(req.query);
   if (!parsed.success) return res.status(400).json({ error: "Invalid query params" });
   const { category, search } = parsed.data;
-  const conditions = [];
+  const conditions = [recipesAccessibleBy(req)];
   if (category) conditions.push(eq(recipesTable.category, category));
   if (search) conditions.push(ilike(recipesTable.name, `%${search}%`));
-  const rows = await db.select().from(recipesTable).where(conditions.length ? and(...conditions) : undefined).orderBy(desc(recipesTable.updatedAt));
+  const rows = await db.select().from(recipesTable).where(and(...conditions)).orderBy(desc(recipesTable.updatedAt));
   return res.json(rows.map(formatRecipe));
 });
 
@@ -70,6 +74,7 @@ router.post("/", async (req, res) => {
     sellingPriceSek: String(sellingPriceSek),
     profitMarginPct: String(Math.round(profitMarginPct * 100) / 100),
     isShared: isShared ?? false,
+    userId: req.user!.id,
   }).returning();
 
   if (ingredients && ingredients.length > 0) {
@@ -96,7 +101,9 @@ router.get("/:id", async (req, res) => {
   const parsed = GetRecipeParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
 
-  const [recipe] = await db.select().from(recipesTable).where(eq(recipesTable.id, parsed.data.id));
+  const [recipe] = await db.select().from(recipesTable).where(
+    and(eq(recipesTable.id, parsed.data.id), recipesAccessibleBy(req)),
+  );
   if (!recipe) return res.status(404).json({ error: "Not found" });
 
   const recipeIngredients = await db
@@ -140,7 +147,8 @@ router.put("/:id", async (req, res) => {
   const bodyParsed = UpdateRecipeBody.safeParse(req.body);
   if (!paramParsed.success || !bodyParsed.success) return res.status(400).json({ error: "Invalid input" });
 
-  const [existing] = await db.select().from(recipesTable).where(eq(recipesTable.id, paramParsed.data.id));
+  const access = and(eq(recipesTable.id, paramParsed.data.id), recipesAccessibleBy(req));
+  const [existing] = await db.select().from(recipesTable).where(access);
   if (!existing) return res.status(404).json({ error: "Not found" });
 
   const newSellingPrice = bodyParsed.data.sellingPriceSek ?? parseFloat(String(existing.sellingPriceSek));
@@ -160,7 +168,7 @@ router.put("/:id", async (req, res) => {
       isShared: bodyParsed.data.isShared ?? existing.isShared,
       updatedAt: new Date(),
     })
-    .where(eq(recipesTable.id, paramParsed.data.id))
+    .where(access)
     .returning();
 
   await db.insert(activityLogTable).values({
@@ -175,7 +183,10 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   const parsed = DeleteRecipeParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
-  await db.delete(recipesTable).where(eq(recipesTable.id, parsed.data.id));
+  const [deleted] = await db.delete(recipesTable)
+    .where(and(eq(recipesTable.id, parsed.data.id), recipesAccessibleBy(req)))
+    .returning({ id: recipesTable.id });
+  if (!deleted) return res.status(404).json({ error: "Not found" });
   return res.status(204).send();
 });
 

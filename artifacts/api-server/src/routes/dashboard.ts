@@ -1,17 +1,18 @@
 import { Router } from "express";
-import { db, recipesTable, ingredientsTable, communityPostsTable, activityLogTable } from "@workspace/db";
+import { db, recipesTable, ingredientsTable, communityPostsTable } from "@workspace/db";
 import { desc, sql } from "drizzle-orm";
 import { GetDashboardRecentActivityQueryParams } from "@workspace/api-zod";
+import { recipesAccessibleBy } from "../auth/recipeAccess";
 
 const router = Router();
 
-router.get("/summary", async (_req, res) => {
+router.get("/summary", async (req, res) => {
   const [recipeSummary] = await db.select({
     total: sql<number>`count(*)::int`,
     avgCost: sql<number>`avg(total_cost_sek::numeric)`,
     avgMargin: sql<number>`avg(profit_margin_pct::numeric)`,
     sharedCount: sql<number>`count(*) filter (where is_shared = true)::int`,
-  }).from(recipesTable);
+  }).from(recipesTable).where(recipesAccessibleBy(req));
 
   const [ingredientSummary] = await db.select({
     total: sql<number>`count(*)::int`,
@@ -25,7 +26,11 @@ router.get("/summary", async (_req, res) => {
   const [topCategoryRow] = await db.select({
     category: recipesTable.category,
     cnt: sql<number>`count(*)::int`,
-  }).from(recipesTable).groupBy(recipesTable.category).orderBy(desc(sql`count(*)`)).limit(1);
+  }).from(recipesTable)
+    .where(recipesAccessibleBy(req))
+    .groupBy(recipesTable.category)
+    .orderBy(desc(sql`count(*)`))
+    .limit(1);
 
   return res.json({
     totalRecipes: recipeSummary.total ?? 0,
@@ -42,13 +47,27 @@ router.get("/summary", async (_req, res) => {
 router.get("/recent-activity", async (req, res) => {
   const parsed = GetDashboardRecentActivityQueryParams.safeParse(req.query);
   const limit = parsed.success ? (parsed.data.limit ?? 10) : 10;
-  const rows = await db.select().from(activityLogTable).orderBy(desc(activityLogTable.timestamp)).limit(limit);
+  // The legacy activity table has no owner column, so returning it would expose
+  // other tenants' recipe names. Derive the feed from recipes the caller can see.
+  const rows = await db.select({
+    id: recipesTable.id,
+    name: recipesTable.name,
+    category: recipesTable.category,
+    createdAt: recipesTable.createdAt,
+    updatedAt: recipesTable.updatedAt,
+  }).from(recipesTable)
+    .where(recipesAccessibleBy(req))
+    .orderBy(desc(recipesTable.updatedAt))
+    .limit(limit);
+
   return res.json(rows.map((r) => ({
     id: r.id,
-    type: r.type,
-    title: r.title,
-    subtitle: r.subtitle,
-    timestamp: r.timestamp.toISOString(),
+    type: r.updatedAt.getTime() > r.createdAt.getTime() ? "recipe_updated" : "recipe_created",
+    title: r.updatedAt.getTime() > r.createdAt.getTime()
+      ? `Recept uppdaterat: ${r.name}`
+      : `Nytt recept: ${r.name}`,
+    subtitle: r.category,
+    timestamp: r.updatedAt.toISOString(),
   })));
 });
 
