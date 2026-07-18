@@ -60271,15 +60271,19 @@ var health_default = router;
 
 // src/routes/recipes.ts
 var import_express2 = __toESM(require_express2(), 1);
-var router2 = (0, import_express2.Router)();
-function accessibleBy(req) {
+
+// src/auth/recipeAccess.ts
+function recipesAccessibleBy(req) {
   const user = req.user;
   return user.role === "admin" ? or(eq(recipesTable.userId, user.id), isNull(recipesTable.userId)) : eq(recipesTable.userId, user.id);
 }
+
+// src/routes/recipes.ts
+var router2 = (0, import_express2.Router)();
 router2.get("/top-performing", async (req, res) => {
   const parsed = GetTopPerformingRecipesQueryParams.safeParse(req.query);
   const limit = parsed.success ? parsed.data.limit ?? 5 : 5;
-  const rows = await db.select().from(recipesTable).where(accessibleBy(req)).orderBy(desc(recipesTable.profitMarginPct)).limit(limit);
+  const rows = await db.select().from(recipesTable).where(recipesAccessibleBy(req)).orderBy(desc(recipesTable.profitMarginPct)).limit(limit);
   return res.json(rows.map((r) => ({
     id: r.id,
     name: r.name,
@@ -60294,7 +60298,7 @@ router2.get("/", async (req, res) => {
   const parsed = ListRecipesQueryParams.safeParse(req.query);
   if (!parsed.success) return res.status(400).json({ error: "Invalid query params" });
   const { category, search } = parsed.data;
-  const conditions = [accessibleBy(req)];
+  const conditions = [recipesAccessibleBy(req)];
   if (category) conditions.push(eq(recipesTable.category, category));
   if (search) conditions.push(ilike(recipesTable.name, `%${search}%`));
   const rows = await db.select().from(recipesTable).where(and(...conditions)).orderBy(desc(recipesTable.updatedAt));
@@ -60348,7 +60352,7 @@ router2.get("/:id", async (req, res) => {
   const parsed = GetRecipeParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
   const [recipe] = await db.select().from(recipesTable).where(
-    and(eq(recipesTable.id, parsed.data.id), accessibleBy(req))
+    and(eq(recipesTable.id, parsed.data.id), recipesAccessibleBy(req))
   );
   if (!recipe) return res.status(404).json({ error: "Not found" });
   const recipeIngredients = await db.select({
@@ -60382,7 +60386,7 @@ router2.put("/:id", async (req, res) => {
   const paramParsed = UpdateRecipeParams.safeParse({ id: Number(req.params.id) });
   const bodyParsed = UpdateRecipeBody.safeParse(req.body);
   if (!paramParsed.success || !bodyParsed.success) return res.status(400).json({ error: "Invalid input" });
-  const access = and(eq(recipesTable.id, paramParsed.data.id), accessibleBy(req));
+  const access = and(eq(recipesTable.id, paramParsed.data.id), recipesAccessibleBy(req));
   const [existing] = await db.select().from(recipesTable).where(access);
   if (!existing) return res.status(404).json({ error: "Not found" });
   const newSellingPrice = bodyParsed.data.sellingPriceSek ?? parseFloat(String(existing.sellingPriceSek));
@@ -60408,7 +60412,7 @@ router2.put("/:id", async (req, res) => {
 router2.delete("/:id", async (req, res) => {
   const parsed = DeleteRecipeParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
-  const [deleted] = await db.delete(recipesTable).where(and(eq(recipesTable.id, parsed.data.id), accessibleBy(req))).returning({ id: recipesTable.id });
+  const [deleted] = await db.delete(recipesTable).where(and(eq(recipesTable.id, parsed.data.id), recipesAccessibleBy(req))).returning({ id: recipesTable.id });
   if (!deleted) return res.status(404).json({ error: "Not found" });
   return res.status(204).send();
 });
@@ -60529,13 +60533,13 @@ var ingredients_default = router3;
 // src/routes/dashboard.ts
 var import_express4 = __toESM(require_express2(), 1);
 var router4 = (0, import_express4.Router)();
-router4.get("/summary", async (_req, res) => {
+router4.get("/summary", async (req, res) => {
   const [recipeSummary] = await db.select({
     total: sql`count(*)::int`,
     avgCost: sql`avg(total_cost_sek::numeric)`,
     avgMargin: sql`avg(profit_margin_pct::numeric)`,
     sharedCount: sql`count(*) filter (where is_shared = true)::int`
-  }).from(recipesTable);
+  }).from(recipesTable).where(recipesAccessibleBy(req));
   const [ingredientSummary] = await db.select({
     total: sql`count(*)::int`,
     alerts: sql`count(*) filter (where abs(price_change_pct::numeric) > 5)::int`
@@ -60546,7 +60550,7 @@ router4.get("/summary", async (_req, res) => {
   const [topCategoryRow] = await db.select({
     category: recipesTable.category,
     cnt: sql`count(*)::int`
-  }).from(recipesTable).groupBy(recipesTable.category).orderBy(desc(sql`count(*)`)).limit(1);
+  }).from(recipesTable).where(recipesAccessibleBy(req)).groupBy(recipesTable.category).orderBy(desc(sql`count(*)`)).limit(1);
   return res.json({
     totalRecipes: recipeSummary.total ?? 0,
     totalIngredients: ingredientSummary.total ?? 0,
@@ -60561,13 +60565,19 @@ router4.get("/summary", async (_req, res) => {
 router4.get("/recent-activity", async (req, res) => {
   const parsed = GetDashboardRecentActivityQueryParams.safeParse(req.query);
   const limit = parsed.success ? parsed.data.limit ?? 10 : 10;
-  const rows = await db.select().from(activityLogTable).orderBy(desc(activityLogTable.timestamp)).limit(limit);
+  const rows = await db.select({
+    id: recipesTable.id,
+    name: recipesTable.name,
+    category: recipesTable.category,
+    createdAt: recipesTable.createdAt,
+    updatedAt: recipesTable.updatedAt
+  }).from(recipesTable).where(recipesAccessibleBy(req)).orderBy(desc(recipesTable.updatedAt)).limit(limit);
   return res.json(rows.map((r) => ({
     id: r.id,
-    type: r.type,
-    title: r.title,
-    subtitle: r.subtitle,
-    timestamp: r.timestamp.toISOString()
+    type: r.updatedAt.getTime() > r.createdAt.getTime() ? "recipe_updated" : "recipe_created",
+    title: r.updatedAt.getTime() > r.createdAt.getTime() ? `Recept uppdaterat: ${r.name}` : `Nytt recept: ${r.name}`,
+    subtitle: r.category,
+    timestamp: r.updatedAt.toISOString()
   })));
 });
 var dashboard_default = router4;
@@ -69078,7 +69088,7 @@ var SVINN_TIPS = [
   { icon: "\u{1F4CB}", title: "Behovsstyrd ink\xF6p", desc: "Planera veckans meny i f\xF6rv\xE4g och k\xF6p exakt vad som beh\xF6vs. Minskar svinn 20\u201330%." },
   { icon: "\u267B\uFE0F", title: "\xC5teranv\xE4nd trimspill", desc: "Fiskhuvud, benskaldjur och gr\xF6nsaksskal ger utm\xE4rkt fond och buljonger." }
 ];
-router9.get("/summary", async (_req, res) => {
+router9.get("/summary", async (req, res) => {
   const ingredientRows = await db.select({
     category: ingredientsTable.category,
     count: sql`count(*)::int`,
@@ -69097,7 +69107,7 @@ router9.get("/summary", async (_req, res) => {
   const [recipeSummary] = await db.select({
     avgCost: sql`avg(total_cost_sek::numeric)`,
     totalRecipes: sql`count(*)::int`
-  }).from(recipesTable);
+  }).from(recipesTable).where(recipesAccessibleBy(req));
   const avgDailyPortions = 40;
   const categorySvinn = ingredientRows.map((row) => {
     const rate = SVINN_RATES[row.category] ?? DEFAULT_RATE;
@@ -69229,7 +69239,7 @@ async function fetchScbMarketData() {
     source: "SCB KPI 2020 COICOP, tabell KPI2020COICOPM"
   };
 }
-router10.get("/overview", async (_req, res) => {
+router10.get("/overview", async (req, res) => {
   const ingredientRows = await db.select({
     id: ingredientsTable.id,
     name: ingredientsTable.name,
@@ -69262,7 +69272,7 @@ router10.get("/overview", async (_req, res) => {
     avgMargin: sql`round(avg(${recipesTable.profitMarginPct})::numeric, 1)`,
     avgPrice: sql`round(avg(${recipesTable.sellingPriceSek})::numeric, 2)`,
     recipeCount: sql`count(*)::int`
-  }).from(recipesTable);
+  }).from(recipesTable).where(recipesAccessibleBy(req));
   const [priceAlerts] = await db.select({ count: sql`count(*)::int` }).from(ingredientsTable).where(sql`abs(${ingredientsTable.priceChangePct}::numeric) > 5`);
   const econ = recipeEcon ?? { avgCost: 0, avgMargin: 0, avgPrice: 0, recipeCount: 0 };
   const foodCostPct = Number(econ.avgPrice) > 0 ? Number((Number(econ.avgCost) / Number(econ.avgPrice) * 100).toFixed(1)) : 0;
