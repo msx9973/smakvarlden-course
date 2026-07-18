@@ -11,8 +11,7 @@ import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useRef } from "react";
 import { useI18n, INGREDIENT_CATEGORIES } from "@/lib/i18n";
-
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+import { apiFetch } from "@/lib/auth";
 
 interface SpoonIngredient { id: number; name: string; }
 
@@ -25,9 +24,9 @@ function useIngredientSuggestions(query: string) {
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
       try {
-        const r = await fetch(`${BASE}/api/spoonacular/ingredients/autocomplete?query=${encodeURIComponent(query)}&number=6`);
-        if (r.ok) setSuggestions(await r.json());
-      } catch { /* ignore */ }
+        const data = await apiFetch<SpoonIngredient[]>(`/spoonacular/ingredients/autocomplete?query=${encodeURIComponent(query)}&number=6`);
+        setSuggestions(data);
+      } catch { setSuggestions([]); }
     }, 400);
     return () => { if (timer.current) clearTimeout(timer.current); };
   }, [query]);

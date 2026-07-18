@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { db, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import app from "./app";
+import { createUserWithInitialRole } from "./auth/createUser";
 
 const expressHandler = serverless(app, { basePath: "/.netlify/functions/api" });
 const PHONE_EMAIL_DOMAIN = "phone.smakvarlden.local";
@@ -41,7 +42,9 @@ function json(statusCode: number, body: unknown) {
 }
 
 function getSecret(): string {
-  return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) throw new Error("SESSION_SECRET environment variable is required but was not set.");
+  return secret;
 }
 
 function signToken(user: { id: number; email: string; role: string }) {
@@ -163,15 +166,12 @@ async function findOrCreateSupabaseUser(profile: SupabaseUser) {
   if (existing) return existing;
 
   const fallbackName = email?.split("@")[0] ?? profile.phone ?? "Smakvärlden användare";
-  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
   const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString("base64url"), 12);
-  const [user] = await db.insert(usersTable).values({
+  return createUserWithInitialRole({
     name: (profile.user_metadata?.full_name ?? profile.user_metadata?.name ?? fallbackName).trim().slice(0, 80),
     email: storageEmail,
     passwordHash,
-    role: isFirstUser ? "admin" : "user",
-  }).returning();
-  return user;
+  });
 }
 
 async function login(body: Record<string, unknown>) {
@@ -203,13 +203,11 @@ async function register(body: Record<string, unknown>) {
   if (existing.length > 0) return json(400, { error: "Kontot finns redan. Logga in istället." });
 
   const passwordHash = await bcrypt.hash(String(password), 12);
-  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
-  const [user] = await db.insert(usersTable).values({
+  const user = await createUserWithInitialRole({
     name: name.trim().slice(0, 80),
     email: storageEmail,
     passwordHash,
-    role: isFirstUser ? "admin" : "user",
-  }).returning();
+  });
 
   return json(201, { token: signToken(user), user: formatUser(user) });
 }
