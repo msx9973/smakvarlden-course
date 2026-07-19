@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db, ingredientsTable, recipesTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
+import { recipesAccessibleBy } from "../auth/recipeAccess";
 
 const router = Router();
 
@@ -103,7 +104,7 @@ async function fetchScbMarketData(): Promise<ScbMarketData | null> {
   };
 }
 
-router.get("/overview", async (_req, res) => {
+router.get("/overview", async (req, res) => {
   const ingredientRows = await db
     .select({
       id: ingredientsTable.id,
@@ -151,7 +152,8 @@ router.get("/overview", async (_req, res) => {
       avgPrice: sql<number>`round(avg(${recipesTable.sellingPriceSek})::numeric, 2)`,
       recipeCount: sql<number>`count(*)::int`,
     })
-    .from(recipesTable);
+    .from(recipesTable)
+    .where(recipesAccessibleBy(req));
 
   const [priceAlerts] = await db
     .select({ count: sql<number>`count(*)::int` })

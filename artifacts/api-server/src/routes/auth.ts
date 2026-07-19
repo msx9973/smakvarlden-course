@@ -3,7 +3,8 @@ import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import { db, usersTable } from "@workspace/db";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import { createUserWithInitialRole } from "../auth/createUser";
 
 const router = Router();
 const PHONE_EMAIL_DOMAIN = "phone.smakvarlden.local";
@@ -123,20 +124,17 @@ function oauthResultHtml(token: string, returnTo: string) {
   return `<!doctype html><html lang="sv"><head><meta charset="utf-8"><title>Loggar in...</title></head><body><script>localStorage.setItem("smakvarlden_token", ${JSON.stringify(token)});window.location.replace(${JSON.stringify(returnTo)});<\/script></body></html>`;
 }
 
-async function resolveRole(): Promise<"admin" | "user"> {
-  const [row] = await db.select({ cnt: sql`count(*)::int` }).from(usersTable);
-  return (row?.cnt ?? 0) === 0 ? "admin" : "user";
-}
-
 async function findOrCreateGoogleUser(profile: GoogleProfile) {
   const email = normalizeEmail(profile.email);
   if (!email || profile.email_verified === false) throw new Error("Google-kontot måste ha en verifierad e-postadress.");
   const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, email));
   if (existing) return existing;
-  const role = await resolveRole();
   const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString("base64url"), 12);
-  const [user] = await db.insert(usersTable).values({ name: (profile.name ?? profile.given_name ?? email.split("@")[0]).trim().slice(0, 80), email, passwordHash, role }).returning();
-  return user;
+  return createUserWithInitialRole({
+    name: (profile.name ?? profile.given_name ?? email.split("@")[0]).trim().slice(0, 80),
+    email,
+    passwordHash,
+  });
 }
 
 async function findOrCreateSupabaseUser(profile: SupabaseUser) {
@@ -145,10 +143,12 @@ async function findOrCreateSupabaseUser(profile: SupabaseUser) {
   const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
   if (existing) return existing;
   const fallbackName = email?.split("@")[0] ?? profile.phone ?? "Smakvärlden användare";
-  const role = await resolveRole();
   const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString("base64url"), 12);
-  const [user] = await db.insert(usersTable).values({ name: (profile.user_metadata?.full_name ?? profile.user_metadata?.name ?? fallbackName).trim().slice(0, 80), email: storageEmail, passwordHash, role }).returning();
-  return user;
+  return createUserWithInitialRole({
+    name: (profile.user_metadata?.full_name ?? profile.user_metadata?.name ?? fallbackName).trim().slice(0, 80),
+    email: storageEmail,
+    passwordHash,
+  });
 }
 
 router.post("/auth/supabase", async (req, res) => {
@@ -210,8 +210,11 @@ router.post("/auth/register", async (req, res) => {
   const existing = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
   if (existing.length > 0) return res.status(400).json({ error: "Kontot finns redan. Logga in istället." });
   const passwordHash = await bcrypt.hash(password, 12);
-  const role = await resolveRole();
-  const [user] = await db.insert(usersTable).values({ name: name.trim().slice(0, 80), email: storageEmail, passwordHash, role }).returning();
+  const user = await createUserWithInitialRole({
+    name: name.trim().slice(0, 80),
+    email: storageEmail,
+    passwordHash,
+  });
   return res.status(201).json({ token: signToken(user), user: formatUser(user) });
 });
 
