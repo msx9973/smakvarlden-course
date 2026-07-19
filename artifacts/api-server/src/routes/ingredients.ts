@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db, ingredientsTable, activityLogTable, recipeIngredientsTable, recipesTable } from "@workspace/db";
 import { eq, ilike, and, sql, inArray } from "drizzle-orm";
 import { CreateIngredientBody, ListIngredientsQueryParams, GetIngredientParams, UpdateIngredientBody, UpdateIngredientParams, DeleteIngredientParams } from "@workspace/api-zod";
+import { requireAdmin } from "../middleware/requireAuth";
 
 const router = Router();
 
@@ -71,7 +72,7 @@ router.get("/:id", async (req, res) => {
   return res.json(formatIngredient(row));
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireAdmin, async (req, res) => {
   const paramParsed = UpdateIngredientParams.safeParse({ id: Number(req.params.id) });
   const bodyParsed = UpdateIngredientBody.safeParse(req.body);
   if (!paramParsed.success || !bodyParsed.success) return res.status(400).json({ error: "Invalid input" });
@@ -86,20 +87,29 @@ router.put("/:id", async (req, res) => {
   return res.json(formatIngredient(row));
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireAdmin, async (req, res) => {
   const parsed = DeleteIngredientParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
-  const affectedRecipes = await db.selectDistinct({ recipeId: recipeIngredientsTable.recipeId }).from(recipeIngredientsTable).where(eq(recipeIngredientsTable.ingredientId, parsed.data.id));
-  await db.delete(ingredientsTable).where(eq(ingredientsTable.id, parsed.data.id));
-  for (const { recipeId } of affectedRecipes) {
-    const lines = await db.select({ quantity: recipeIngredientsTable.quantity, priceSek: ingredientsTable.currentPriceSek }).from(recipeIngredientsTable).innerJoin(ingredientsTable, eq(recipeIngredientsTable.ingredientId, ingredientsTable.id)).where(eq(recipeIngredientsTable.recipeId, recipeId));
-    const totalCost = Math.round(lines.reduce((s, l) => s + parseFloat(String(l.quantity)) * parseFloat(String(l.priceSek)), 0) * 100) / 100;
-    const [recipe] = await db.select({ sellingPriceSek: recipesTable.sellingPriceSek }).from(recipesTable).where(eq(recipesTable.id, recipeId));
-    if (!recipe) continue;
-    const sp = parseFloat(String(recipe.sellingPriceSek));
-    const margin = sp > 0 ? Math.round(((sp - totalCost) / sp) * 100 * 100) / 100 : 0;
-    await db.update(recipesTable).set({ totalCostSek: String(totalCost), profitMarginPct: String(margin), updatedAt: new Date() }).where(eq(recipesTable.id, recipeId));
-  }
+  const result = await db.transaction(async (tx) => {
+    const [ingredient] = await tx
+      .select({ id: ingredientsTable.id })
+      .from(ingredientsTable)
+      .where(eq(ingredientsTable.id, parsed.data.id))
+      .for("update");
+    if (!ingredient) return "not-found" as const;
+
+    const [usage] = await tx
+      .select({ recipeId: recipeIngredientsTable.recipeId })
+      .from(recipeIngredientsTable)
+      .where(eq(recipeIngredientsTable.ingredientId, parsed.data.id))
+      .limit(1);
+    if (usage) return "in-use" as const;
+
+    await tx.delete(ingredientsTable).where(eq(ingredientsTable.id, parsed.data.id));
+    return "deleted" as const;
+  });
+  if (result === "not-found") return res.status(404).json({ error: "Not found" });
+  if (result === "in-use") return res.status(409).json({ error: "Ingredient is used by one or more recipes" });
   return res.status(204).send();
 });
 
