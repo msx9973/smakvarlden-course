@@ -210,21 +210,6 @@ export function useCreateRecipe(
   });
 }
 
-export function useUpdateRecipe(
-  options?: MutationOptions<Recipe, { id: number; data: Partial<Recipe> }>,
-) {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }) =>
-      apiFetch<Recipe>(`/recipes/${id}`, { method: "PUT", body: JSON.stringify(data) }),
-    onSuccess: (_data, variables) => {
-      qc.invalidateQueries({ queryKey: ["listRecipes"] });
-      qc.invalidateQueries({ queryKey: getGetRecipeQueryKey(variables.id) });
-    },
-    ...options?.mutation,
-  });
-}
-
 export function useDeleteRecipe(options?: MutationOptions<void, { id: number }>) {
   const qc = useQueryClient();
   return useMutation({
