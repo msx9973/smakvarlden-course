@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import { db, usersTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
+import { oauthResultHtml, sanitizeReturnTo } from "../lib/safeOAuthRedirect";
 
 const router = Router();
 const PHONE_EMAIL_DOMAIN = "phone.smakvarlden.local";
@@ -99,7 +100,7 @@ function getSupabaseUrl() {
 }
 
 function signState(returnTo: string) {
-  const payload = Buffer.from(JSON.stringify({ returnTo: returnTo.startsWith("/") ? returnTo : "/", nonce: crypto.randomBytes(16).toString("hex"), ts: Date.now() })).toString("base64url");
+  const payload = Buffer.from(JSON.stringify({ returnTo: sanitizeReturnTo(returnTo), nonce: crypto.randomBytes(16).toString("hex"), ts: Date.now() })).toString("base64url");
   const sig = crypto.createHmac("sha256", getSecret()).update(payload).digest("base64url");
   return `${payload}.${sig}`;
 }
@@ -115,12 +116,8 @@ function readState(value: unknown) {
   try {
     const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as { returnTo?: string; ts?: number };
     if (!parsed.ts || Date.now() - parsed.ts > 10 * 60 * 1000) return null;
-    return parsed.returnTo?.startsWith("/") ? parsed.returnTo : "/";
+    return sanitizeReturnTo(parsed.returnTo);
   } catch { return null; }
-}
-
-function oauthResultHtml(token: string, returnTo: string) {
-  return `<!doctype html><html lang="sv"><head><meta charset="utf-8"><title>Loggar in...</title></head><body><script>localStorage.setItem("smakvarlden_token", ${JSON.stringify(token)});window.location.replace(${JSON.stringify(returnTo)});<\/script></body></html>`;
 }
 
 async function resolveRole(): Promise<"admin" | "user"> {
@@ -172,7 +169,7 @@ router.get("/auth/google/start", (req, res) => {
     if (supabaseUrl) { const url = new URL(`${supabaseUrl}/auth/v1/authorize`); url.searchParams.set("provider", "google"); url.searchParams.set("redirect_to", `${getOrigin(req)}/login`); return res.redirect(url.toString()); }
     return res.status(503).send("Google OAuth är inte konfigurerat.");
   }
-  const returnTo = typeof req.query.returnTo === "string" ? req.query.returnTo : "/";
+  const returnTo = sanitizeReturnTo(req.query.returnTo);
   const url = new URL(GOOGLE_AUTH_URL);
   url.searchParams.set("client_id", credentials.clientId);
   url.searchParams.set("redirect_uri", getGoogleRedirectUri(req));
