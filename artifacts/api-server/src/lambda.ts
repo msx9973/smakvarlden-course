@@ -5,10 +5,15 @@ import jwt from "jsonwebtoken";
 import { db, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import app from "./app";
+import {
+  PHONE_EMAIL_DOMAIN,
+  assertSupabaseIdentityVerified,
+  contactToStorageEmail,
+  normalizeEmail,
+  shouldClaimUnverifiedPasswordAccount,
+} from "./lib/accountIdentity";
 
 const expressHandler = serverless(app, { basePath: "/.netlify/functions/api" });
-const PHONE_EMAIL_DOMAIN = "phone.smakvarlden.local";
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type LambdaEvent = {
   path?: string;
@@ -26,6 +31,8 @@ type SupabaseUser = {
   id: string;
   email?: string;
   phone?: string;
+  email_confirmed_at?: string | null;
+  phone_confirmed_at?: string | null;
   user_metadata?: {
     name?: string;
     full_name?: string;
@@ -41,7 +48,9 @@ function json(statusCode: number, body: unknown) {
 }
 
 function getSecret(): string {
-  return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) throw new Error("SESSION_SECRET environment variable is required but was not set.");
+  return secret;
 }
 
 function signToken(user: { id: number; email: string; role: string }) {
@@ -53,8 +62,6 @@ function signToken(user: { id: number; email: string; role: string }) {
 }
 
 function verifyToken(token: string) {
-  const decoded = jwt.decode(token) as { iss?: string; aud?: string } | null;
-  if (!decoded?.iss && !decoded?.aud) return jwt.verify(token, getSecret()) as { id: number };
   return jwt.verify(token, getSecret(), {
     issuer: "smakvarlden",
     audience: "smakvarlden-app",
@@ -69,30 +76,6 @@ function publicContact(email: string) {
 
 function formatUser(u: typeof usersTable.$inferSelect) {
   return { id: u.id, name: u.name, email: publicContact(u.email), role: u.role, plan: u.plan, createdAt: u.createdAt.toISOString() };
-}
-
-function normalizeEmail(value: string) {
-  const email = value.trim().toLowerCase();
-  return EMAIL_RE.test(email) ? email : null;
-}
-
-function normalizePhone(value: string) {
-  const compact = value.trim().replace(/[()\s-]/g, "");
-  const withPlus = compact.startsWith("00")
-    ? `+${compact.slice(2)}`
-    : compact.startsWith("0")
-      ? `+46${compact.slice(1)}`
-      : compact;
-  return /^\+[1-9]\d{7,14}$/.test(withPlus) ? withPlus : null;
-}
-
-function contactToStorageEmail(value: unknown) {
-  if (typeof value !== "string") return null;
-  const email = normalizeEmail(value);
-  if (email) return email;
-  const phone = normalizePhone(value);
-  if (phone) return `phone.${phone.slice(1)}@${PHONE_EMAIL_DOMAIN}`;
-  return null;
 }
 
 function validatePassword(password: unknown) {
@@ -155,21 +138,47 @@ function getSupabaseCredentials() {
   return { url, anonKey };
 }
 
+async function randomPasswordHash() {
+  return bcrypt.hash(crypto.randomBytes(32).toString("base64url"), 12);
+}
+
+async function claimUnverifiedAccount(
+  existing: typeof usersTable.$inferSelect,
+  name: string,
+) {
+  const passwordHash = await randomPasswordHash();
+  const [updated] = await db.update(usersTable).set({
+    passwordHash,
+    emailVerified: true,
+    name: name.trim().slice(0, 80) || existing.name,
+  }).where(eq(usersTable.id, existing.id)).returning();
+  return updated;
+}
+
 async function findOrCreateSupabaseUser(profile: SupabaseUser) {
-  const email = profile.email ? normalizeEmail(profile.email) : null;
-  const storageEmail = email ?? contactToStorageEmail(profile.phone) ?? `supabase.${profile.id}@${PHONE_EMAIL_DOMAIN}`;
+  assertSupabaseIdentityVerified(profile);
+  const normalizedEmail = profile.email ? normalizeEmail(profile.email) : null;
+  const storageEmail = normalizedEmail ?? contactToStorageEmail(profile.phone) ?? `supabase.${profile.id}@${PHONE_EMAIL_DOMAIN}`;
 
   const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
-  if (existing) return existing;
+  const fallbackName = normalizedEmail?.split("@")[0] ?? profile.phone ?? "Smakvärlden användare";
+  const oauthName = (profile.user_metadata?.full_name ?? profile.user_metadata?.name ?? fallbackName).trim().slice(0, 80);
 
-  const fallbackName = email?.split("@")[0] ?? profile.phone ?? "Smakvärlden användare";
+  if (existing) {
+    if (shouldClaimUnverifiedPasswordAccount(existing)) {
+      return claimUnverifiedAccount(existing, oauthName);
+    }
+    return existing;
+  }
+
   const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
-  const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString("base64url"), 12);
+  const passwordHash = await randomPasswordHash();
   const [user] = await db.insert(usersTable).values({
-    name: (profile.user_metadata?.full_name ?? profile.user_metadata?.name ?? fallbackName).trim().slice(0, 80),
+    name: oauthName,
     email: storageEmail,
     passwordHash,
     role: isFirstUser ? "admin" : "user",
+    emailVerified: true,
   }).returning();
   return user;
 }
@@ -209,6 +218,7 @@ async function register(body: Record<string, unknown>) {
     email: storageEmail,
     passwordHash,
     role: isFirstUser ? "admin" : "user",
+    emailVerified: false,
   }).returning();
 
   return json(201, { token: signToken(user), user: formatUser(user) });
@@ -246,7 +256,10 @@ async function supabase(body: Record<string, unknown>) {
     const profile = await userResponse.json() as SupabaseUser;
     const user = await findOrCreateSupabaseUser(profile);
     return json(200, { token: signToken(user), user: formatUser(user) });
-  } catch {
+  } catch (err) {
+    if (err instanceof Error && /verifierad|verifierat/i.test(err.message)) {
+      return json(403, { error: err.message });
+    }
     return json(500, { error: "Kunde inte verifiera Supabase-session." });
   }
 }
