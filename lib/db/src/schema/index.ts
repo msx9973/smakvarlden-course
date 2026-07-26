@@ -18,6 +18,9 @@ export const usersTable = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   role: userRoleEnum("role").notNull().default("user"),
   plan: text("plan").notNull().default("free"),
+  // Default true keeps legacy rows linkable; password register sets false until a
+  // federated login proves contact ownership and claims the account.
+  emailVerified: boolean("email_verified").notNull().default(true),
   stripeCustomerId: text("stripe_customer_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -81,7 +84,7 @@ export const communityPostsTable = pgTable("community_posts", {
 export const insertIngredientSchema = createInsertSchema(ingredientsTable).omit({ id: true, updatedAt: true });
 export const insertRecipeSchema = createInsertSchema(recipesTable).omit({ id: true, createdAt: true, updatedAt: true, ingredientsJson: true });
 export const insertCommunityPostSchema = createInsertSchema(communityPostsTable).omit({ id: true, likes: true, createdAt: true });
-export const insertUserSchema = createInsertSchema(usersTable).omit({ id: true, createdAt: true, role: true });
+export const insertUserSchema = createInsertSchema(usersTable).omit({ id: true, createdAt: true, role: true, emailVerified: true });
 
 export type InsertIngredient = z.infer<typeof insertIngredientSchema>;
 export type Ingredient = typeof ingredientsTable.$inferSelect;

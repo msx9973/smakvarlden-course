@@ -4,16 +4,28 @@ import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import { db, usersTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
+import {
+  PHONE_EMAIL_DOMAIN,
+  assertSupabaseIdentityVerified,
+  contactToStorageEmail,
+  normalizeEmail,
+  shouldClaimUnverifiedPasswordAccount,
+} from "../lib/accountIdentity";
 
 const router = Router();
-const PHONE_EMAIL_DOMAIN = "phone.smakvarlden.local";
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
 
 type GoogleProfile = { sub: string; email: string; email_verified?: boolean; name?: string; given_name?: string; };
-type SupabaseUser = { id: string; email?: string; phone?: string; user_metadata?: { name?: string; full_name?: string; }; };
+type SupabaseUser = {
+  id: string;
+  email?: string;
+  phone?: string;
+  email_confirmed_at?: string | null;
+  phone_confirmed_at?: string | null;
+  user_metadata?: { name?: string; full_name?: string; };
+};
 
 function getSecret(): string {
   const s = process.env.SESSION_SECRET;
@@ -35,26 +47,6 @@ function publicContact(email: string) {
 
 function formatUser(u: typeof usersTable.$inferSelect) {
   return { id: u.id, name: u.name, email: publicContact(u.email), role: u.role, plan: u.plan, createdAt: u.createdAt.toISOString() };
-}
-
-function normalizeEmail(value: string) {
-  const email = value.trim().toLowerCase();
-  return EMAIL_RE.test(email) ? email : null;
-}
-
-function normalizePhone(value: string) {
-  const compact = value.trim().replace(/[()\s-]/g, "");
-  const withPlus = compact.startsWith("00") ? `+${compact.slice(2)}` : compact.startsWith("0") ? `+46${compact.slice(1)}` : compact;
-  return /^\+[1-9]\d{7,14}$/.test(withPlus) ? withPlus : null;
-}
-
-function contactToStorageEmail(value: unknown) {
-  if (typeof value !== "string") return null;
-  const email = normalizeEmail(value);
-  if (email) return email;
-  const phone = normalizePhone(value);
-  if (phone) return `phone.${phone.slice(1)}@${PHONE_EMAIL_DOMAIN}`;
-  return null;
 }
 
 function validatePassword(password: unknown) {
@@ -128,26 +120,68 @@ async function resolveRole(): Promise<"admin" | "user"> {
   return (row?.cnt ?? 0) === 0 ? "admin" : "user";
 }
 
+async function randomPasswordHash() {
+  return bcrypt.hash(crypto.randomBytes(32).toString("base64url"), 12);
+}
+
+async function claimUnverifiedAccount(
+  existing: typeof usersTable.$inferSelect,
+  name: string,
+) {
+  const passwordHash = await randomPasswordHash();
+  const [updated] = await db.update(usersTable).set({
+    passwordHash,
+    emailVerified: true,
+    name: name.trim().slice(0, 80) || existing.name,
+  }).where(eq(usersTable.id, existing.id)).returning();
+  return updated;
+}
+
 async function findOrCreateGoogleUser(profile: GoogleProfile) {
   const email = normalizeEmail(profile.email);
   if (!email || profile.email_verified === false) throw new Error("Google-kontot måste ha en verifierad e-postadress.");
   const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, email));
-  if (existing) return existing;
+  const oauthName = (profile.name ?? profile.given_name ?? email.split("@")[0]).trim().slice(0, 80);
+  if (existing) {
+    if (shouldClaimUnverifiedPasswordAccount(existing)) {
+      return claimUnverifiedAccount(existing, oauthName);
+    }
+    return existing;
+  }
   const role = await resolveRole();
-  const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString("base64url"), 12);
-  const [user] = await db.insert(usersTable).values({ name: (profile.name ?? profile.given_name ?? email.split("@")[0]).trim().slice(0, 80), email, passwordHash, role }).returning();
+  const passwordHash = await randomPasswordHash();
+  const [user] = await db.insert(usersTable).values({
+    name: oauthName,
+    email,
+    passwordHash,
+    role,
+    emailVerified: true,
+  }).returning();
   return user;
 }
 
 async function findOrCreateSupabaseUser(profile: SupabaseUser) {
+  assertSupabaseIdentityVerified(profile);
   const email = profile.email ? normalizeEmail(profile.email) : null;
   const storageEmail = email ?? contactToStorageEmail(profile.phone) ?? `supabase.${profile.id}@${PHONE_EMAIL_DOMAIN}`;
   const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
-  if (existing) return existing;
   const fallbackName = email?.split("@")[0] ?? profile.phone ?? "Smakvärlden användare";
+  const oauthName = (profile.user_metadata?.full_name ?? profile.user_metadata?.name ?? fallbackName).trim().slice(0, 80);
+  if (existing) {
+    if (shouldClaimUnverifiedPasswordAccount(existing)) {
+      return claimUnverifiedAccount(existing, oauthName);
+    }
+    return existing;
+  }
   const role = await resolveRole();
-  const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString("base64url"), 12);
-  const [user] = await db.insert(usersTable).values({ name: (profile.user_metadata?.full_name ?? profile.user_metadata?.name ?? fallbackName).trim().slice(0, 80), email: storageEmail, passwordHash, role }).returning();
+  const passwordHash = await randomPasswordHash();
+  const [user] = await db.insert(usersTable).values({
+    name: oauthName,
+    email: storageEmail,
+    passwordHash,
+    role,
+    emailVerified: true,
+  }).returning();
   return user;
 }
 
@@ -162,7 +196,12 @@ router.post("/auth/supabase", async (req, res) => {
     const profile = await userResponse.json() as SupabaseUser;
     const user = await findOrCreateSupabaseUser(profile);
     return res.json({ token: signToken(user), user: formatUser(user) });
-  } catch { return res.status(500).json({ error: "Kunde inte verifiera Supabase-session." }); }
+  } catch (err) {
+    if (err instanceof Error && /verifierad|verifierat/i.test(err.message)) {
+      return res.status(403).json({ error: err.message });
+    }
+    return res.status(500).json({ error: "Kunde inte verifiera Supabase-session." });
+  }
 });
 
 router.get("/auth/google/start", (req, res) => {
@@ -211,7 +250,13 @@ router.post("/auth/register", async (req, res) => {
   if (existing.length > 0) return res.status(400).json({ error: "Kontot finns redan. Logga in istället." });
   const passwordHash = await bcrypt.hash(password, 12);
   const role = await resolveRole();
-  const [user] = await db.insert(usersTable).values({ name: name.trim().slice(0, 80), email: storageEmail, passwordHash, role }).returning();
+  const [user] = await db.insert(usersTable).values({
+    name: name.trim().slice(0, 80),
+    email: storageEmail,
+    passwordHash,
+    role,
+    emailVerified: false,
+  }).returning();
   return res.status(201).json({ token: signToken(user), user: formatUser(user) });
 });
 
