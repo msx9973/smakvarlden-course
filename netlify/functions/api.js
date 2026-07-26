@@ -247,14 +247,14 @@ var require_get_framework = __commonJS({
 var require_clean_up_event = __commonJS({
   "../../node_modules/.pnpm/serverless-http@3.2.0/node_modules/serverless-http/lib/provider/aws/clean-up-event.js"(exports2, module2) {
     "use strict";
-    function removeBasePath(path3 = "/", basePath) {
+    function removeBasePath(path4 = "/", basePath) {
       if (basePath) {
-        const basePathIndex = path3.indexOf(basePath);
+        const basePathIndex = path4.indexOf(basePath);
         if (basePathIndex > -1) {
-          return path3.substr(basePathIndex + basePath.length) || "/";
+          return path4.substr(basePathIndex + basePath.length) || "/";
         }
       }
-      return path3;
+      return path4;
     }
     function isString(value) {
       return typeof value === "string" || value instanceof String;
@@ -1785,9 +1785,9 @@ var require_timespan = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/constants.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/internal/constants.js
 var require_constants = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/constants.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/internal/constants.js"(exports2, module2) {
     "use strict";
     var SEMVER_SPEC_VERSION = "2.0.0";
     var MAX_LENGTH = 256;
@@ -1817,9 +1817,9 @@ var require_constants = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/debug.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/internal/debug.js
 var require_debug = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/debug.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/internal/debug.js"(exports2, module2) {
     "use strict";
     var debug = typeof process === "object" && process.env && process.env.NODE_DEBUG && /\bsemver\b/i.test(process.env.NODE_DEBUG) ? (...args) => console.error("SEMVER", ...args) : () => {
     };
@@ -1827,9 +1827,9 @@ var require_debug = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/re.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/internal/re.js
 var require_re = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/re.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/internal/re.js"(exports2, module2) {
     "use strict";
     var {
       MAX_SAFE_COMPONENT_LENGTH,
@@ -1915,9 +1915,9 @@ var require_re = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/parse-options.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/internal/parse-options.js
 var require_parse_options = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/parse-options.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/internal/parse-options.js"(exports2, module2) {
     "use strict";
     var looseOption = Object.freeze({ loose: true });
     var emptyOpts = Object.freeze({});
@@ -1934,9 +1934,9 @@ var require_parse_options = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/identifiers.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/internal/identifiers.js
 var require_identifiers = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/identifiers.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/internal/identifiers.js"(exports2, module2) {
     "use strict";
     var numeric2 = /^[0-9]+$/;
     var compareIdentifiers = (a, b) => {
@@ -1959,15 +1959,27 @@ var require_identifiers = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/classes/semver.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/classes/semver.js
 var require_semver = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/classes/semver.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/classes/semver.js"(exports2, module2) {
     "use strict";
     var debug = require_debug();
     var { MAX_LENGTH, MAX_SAFE_INTEGER } = require_constants();
     var { safeRe: re, t } = require_re();
     var parseOptions = require_parse_options();
     var { compareIdentifiers } = require_identifiers();
+    var isPrereleaseIdentifier = (prerelease, identifier) => {
+      const identifiers = identifier.split(".");
+      if (identifiers.length > prerelease.length) {
+        return false;
+      }
+      for (let i = 0; i < identifiers.length; i++) {
+        if (compareIdentifiers(prerelease[i], identifiers[i]) !== 0) {
+          return false;
+        }
+      }
+      return true;
+    };
     var SemVer = class _SemVer {
       constructor(version3, options) {
         options = parseOptions(options);
@@ -2214,8 +2226,9 @@ var require_semver = __commonJS({
               if (identifierBase === false) {
                 prerelease = [identifier];
               }
-              if (compareIdentifiers(this.prerelease[0], identifier) === 0) {
-                if (isNaN(this.prerelease[1])) {
+              if (isPrereleaseIdentifier(this.prerelease, identifier)) {
+                const prereleaseBase = this.prerelease[identifier.split(".").length];
+                if (isNaN(prereleaseBase)) {
                   this.prerelease = prerelease;
                 }
               } else {
@@ -2238,9 +2251,9 @@ var require_semver = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/parse.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/parse.js
 var require_parse = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/parse.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/parse.js"(exports2, module2) {
     "use strict";
     var SemVer = require_semver();
     var parse3 = (version3, options, throwErrors = false) => {
@@ -2260,9 +2273,9 @@ var require_parse = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/valid.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/valid.js
 var require_valid = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/valid.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/valid.js"(exports2, module2) {
     "use strict";
     var parse3 = require_parse();
     var valid = (version3, options) => {
@@ -2273,9 +2286,9 @@ var require_valid = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/clean.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/clean.js
 var require_clean = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/clean.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/clean.js"(exports2, module2) {
     "use strict";
     var parse3 = require_parse();
     var clean = (version3, options) => {
@@ -2286,9 +2299,9 @@ var require_clean = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/inc.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/inc.js
 var require_inc = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/inc.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/inc.js"(exports2, module2) {
     "use strict";
     var SemVer = require_semver();
     var inc = (version3, release2, options, identifier, identifierBase) => {
@@ -2310,9 +2323,9 @@ var require_inc = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/diff.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/diff.js
 var require_diff = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/diff.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/diff.js"(exports2, module2) {
     "use strict";
     var parse3 = require_parse();
     var diff = (version1, version22) => {
@@ -2354,9 +2367,9 @@ var require_diff = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/major.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/major.js
 var require_major = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/major.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/major.js"(exports2, module2) {
     "use strict";
     var SemVer = require_semver();
     var major = (a, loose) => new SemVer(a, loose).major;
@@ -2364,9 +2377,9 @@ var require_major = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/minor.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/minor.js
 var require_minor = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/minor.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/minor.js"(exports2, module2) {
     "use strict";
     var SemVer = require_semver();
     var minor = (a, loose) => new SemVer(a, loose).minor;
@@ -2374,9 +2387,9 @@ var require_minor = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/patch.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/patch.js
 var require_patch = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/patch.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/patch.js"(exports2, module2) {
     "use strict";
     var SemVer = require_semver();
     var patch = (a, loose) => new SemVer(a, loose).patch;
@@ -2384,9 +2397,9 @@ var require_patch = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/prerelease.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/prerelease.js
 var require_prerelease = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/prerelease.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/prerelease.js"(exports2, module2) {
     "use strict";
     var parse3 = require_parse();
     var prerelease = (version3, options) => {
@@ -2397,9 +2410,9 @@ var require_prerelease = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/compare.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/compare.js
 var require_compare = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/compare.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/compare.js"(exports2, module2) {
     "use strict";
     var SemVer = require_semver();
     var compare2 = (a, b, loose) => new SemVer(a, loose).compare(new SemVer(b, loose));
@@ -2407,9 +2420,9 @@ var require_compare = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/rcompare.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/rcompare.js
 var require_rcompare = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/rcompare.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/rcompare.js"(exports2, module2) {
     "use strict";
     var compare2 = require_compare();
     var rcompare = (a, b, loose) => compare2(b, a, loose);
@@ -2417,9 +2430,9 @@ var require_rcompare = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/compare-loose.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/compare-loose.js
 var require_compare_loose = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/compare-loose.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/compare-loose.js"(exports2, module2) {
     "use strict";
     var compare2 = require_compare();
     var compareLoose = (a, b) => compare2(a, b, true);
@@ -2427,9 +2440,9 @@ var require_compare_loose = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/compare-build.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/compare-build.js
 var require_compare_build = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/compare-build.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/compare-build.js"(exports2, module2) {
     "use strict";
     var SemVer = require_semver();
     var compareBuild = (a, b, loose) => {
@@ -2441,9 +2454,9 @@ var require_compare_build = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/sort.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/sort.js
 var require_sort = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/sort.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/sort.js"(exports2, module2) {
     "use strict";
     var compareBuild = require_compare_build();
     var sort = (list, loose) => list.sort((a, b) => compareBuild(a, b, loose));
@@ -2451,9 +2464,9 @@ var require_sort = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/rsort.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/rsort.js
 var require_rsort = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/rsort.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/rsort.js"(exports2, module2) {
     "use strict";
     var compareBuild = require_compare_build();
     var rsort = (list, loose) => list.sort((a, b) => compareBuild(b, a, loose));
@@ -2461,9 +2474,9 @@ var require_rsort = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/gt.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/gt.js
 var require_gt = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/gt.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/gt.js"(exports2, module2) {
     "use strict";
     var compare2 = require_compare();
     var gt2 = (a, b, loose) => compare2(a, b, loose) > 0;
@@ -2471,9 +2484,9 @@ var require_gt = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/lt.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/lt.js
 var require_lt = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/lt.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/lt.js"(exports2, module2) {
     "use strict";
     var compare2 = require_compare();
     var lt2 = (a, b, loose) => compare2(a, b, loose) < 0;
@@ -2481,9 +2494,9 @@ var require_lt = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/eq.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/eq.js
 var require_eq = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/eq.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/eq.js"(exports2, module2) {
     "use strict";
     var compare2 = require_compare();
     var eq2 = (a, b, loose) => compare2(a, b, loose) === 0;
@@ -2491,9 +2504,9 @@ var require_eq = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/neq.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/neq.js
 var require_neq = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/neq.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/neq.js"(exports2, module2) {
     "use strict";
     var compare2 = require_compare();
     var neq = (a, b, loose) => compare2(a, b, loose) !== 0;
@@ -2501,9 +2514,9 @@ var require_neq = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/gte.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/gte.js
 var require_gte = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/gte.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/gte.js"(exports2, module2) {
     "use strict";
     var compare2 = require_compare();
     var gte2 = (a, b, loose) => compare2(a, b, loose) >= 0;
@@ -2511,9 +2524,9 @@ var require_gte = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/lte.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/lte.js
 var require_lte = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/lte.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/lte.js"(exports2, module2) {
     "use strict";
     var compare2 = require_compare();
     var lte2 = (a, b, loose) => compare2(a, b, loose) <= 0;
@@ -2521,9 +2534,9 @@ var require_lte = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/cmp.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/cmp.js
 var require_cmp = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/cmp.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/cmp.js"(exports2, module2) {
     "use strict";
     var eq2 = require_eq();
     var neq = require_neq();
@@ -2571,9 +2584,9 @@ var require_cmp = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/coerce.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/coerce.js
 var require_coerce = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/coerce.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/coerce.js"(exports2, module2) {
     "use strict";
     var SemVer = require_semver();
     var parse3 = require_parse();
@@ -2617,9 +2630,9 @@ var require_coerce = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/truncate.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/truncate.js
 var require_truncate = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/truncate.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/truncate.js"(exports2, module2) {
     "use strict";
     var parse3 = require_parse();
     var constants = require_constants();
@@ -2658,9 +2671,9 @@ var require_truncate = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/lrucache.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/internal/lrucache.js
 var require_lrucache = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/internal/lrucache.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/internal/lrucache.js"(exports2, module2) {
     "use strict";
     var LRUCache = class {
       constructor() {
@@ -2696,9 +2709,9 @@ var require_lrucache = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/classes/range.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/classes/range.js
 var require_range = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/classes/range.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/classes/range.js"(exports2, module2) {
     "use strict";
     var SPACE_CHARACTERS = /\s+/g;
     var Range = class _Range {
@@ -2766,6 +2779,7 @@ var require_range = __commonJS({
         return this.range;
       }
       parseRange(range) {
+        range = range.replace(BUILDSTRIPRE, "");
         const memoOpts = (this.options.includePrerelease && FLAG_INCLUDE_PRERELEASE) | (this.options.loose && FLAG_LOOSE);
         const memoKey = memoOpts + ":" + range;
         const cached2 = cache.get(memoKey);
@@ -2848,12 +2862,14 @@ var require_range = __commonJS({
     var SemVer = require_semver();
     var {
       safeRe: re,
+      src,
       t,
       comparatorTrimReplace,
       tildeTrimReplace,
       caretTrimReplace
     } = require_re();
     var { FLAG_INCLUDE_PRERELEASE, FLAG_LOOSE } = require_constants();
+    var BUILDSTRIPRE = new RegExp(src[t.BUILD], "g");
     var isNullSet = (c) => c.value === "<0.0.0-0";
     var isAny = (c) => c.value === "";
     var isSatisfiable = (comparators, options) => {
@@ -2882,20 +2898,22 @@ var require_range = __commonJS({
       return comp;
     };
     var isX = (id) => !id || id.toLowerCase() === "x" || id === "*";
+    var invalidXRangeOrder = (M, m, p) => isX(M) && !isX(m) || isX(m) && p && !isX(p);
     var replaceTildes = (comp, options) => {
       return comp.trim().split(/\s+/).map((c) => replaceTilde(c, options)).join(" ");
     };
     var replaceTilde = (comp, options) => {
       const r = options.loose ? re[t.TILDELOOSE] : re[t.TILDE];
+      const z = options.includePrerelease ? "-0" : "";
       return comp.replace(r, (_, M, m, p, pr) => {
         debug("tilde", comp, _, M, m, p, pr);
         let ret;
         if (isX(M)) {
           ret = "";
         } else if (isX(m)) {
-          ret = `>=${M}.0.0 <${+M + 1}.0.0-0`;
+          ret = `>=${M}.0.0${z} <${+M + 1}.0.0-0`;
         } else if (isX(p)) {
-          ret = `>=${M}.${m}.0 <${M}.${+m + 1}.0-0`;
+          ret = `>=${M}.${m}.0${z} <${M}.${+m + 1}.0-0`;
         } else if (pr) {
           debug("replaceTilde pr", pr);
           ret = `>=${M}.${m}.${p}-${pr} <${M}.${+m + 1}.0-0`;
@@ -2941,9 +2959,9 @@ var require_range = __commonJS({
           debug("no pr");
           if (M === "0") {
             if (m === "0") {
-              ret = `>=${M}.${m}.${p}${z} <${M}.${m}.${+p + 1}-0`;
+              ret = `>=${M}.${m}.${p} <${M}.${m}.${+p + 1}-0`;
             } else {
-              ret = `>=${M}.${m}.${p}${z} <${M}.${+m + 1}.0-0`;
+              ret = `>=${M}.${m}.${p} <${M}.${+m + 1}.0-0`;
             }
           } else {
             ret = `>=${M}.${m}.${p} <${+M + 1}.0.0-0`;
@@ -2962,6 +2980,9 @@ var require_range = __commonJS({
       const r = options.loose ? re[t.XRANGELOOSE] : re[t.XRANGE];
       return comp.replace(r, (ret, gtlt, M, m, p, pr) => {
         debug("xRange", comp, ret, gtlt, M, m, p, pr);
+        if (invalidXRangeOrder(M, m, p)) {
+          return comp;
+        }
         const xM = isX(M);
         const xm = xM || isX(m);
         const xp = xm || isX(p);
@@ -3073,9 +3094,9 @@ var require_range = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/classes/comparator.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/classes/comparator.js
 var require_comparator = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/classes/comparator.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/classes/comparator.js"(exports2, module2) {
     "use strict";
     var ANY = /* @__PURE__ */ Symbol("SemVer ANY");
     var Comparator = class _Comparator {
@@ -3186,9 +3207,9 @@ var require_comparator = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/satisfies.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/satisfies.js
 var require_satisfies = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/functions/satisfies.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/functions/satisfies.js"(exports2, module2) {
     "use strict";
     var Range = require_range();
     var satisfies = (version3, range, options) => {
@@ -3203,9 +3224,9 @@ var require_satisfies = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/to-comparators.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/to-comparators.js
 var require_to_comparators = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/to-comparators.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/to-comparators.js"(exports2, module2) {
     "use strict";
     var Range = require_range();
     var toComparators = (range, options) => new Range(range, options).set.map((comp) => comp.map((c) => c.value).join(" ").trim().split(" "));
@@ -3213,9 +3234,9 @@ var require_to_comparators = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/max-satisfying.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/max-satisfying.js
 var require_max_satisfying = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/max-satisfying.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/max-satisfying.js"(exports2, module2) {
     "use strict";
     var SemVer = require_semver();
     var Range = require_range();
@@ -3242,9 +3263,9 @@ var require_max_satisfying = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/min-satisfying.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/min-satisfying.js
 var require_min_satisfying = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/min-satisfying.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/min-satisfying.js"(exports2, module2) {
     "use strict";
     var SemVer = require_semver();
     var Range = require_range();
@@ -3271,9 +3292,9 @@ var require_min_satisfying = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/min-version.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/min-version.js
 var require_min_version = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/min-version.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/min-version.js"(exports2, module2) {
     "use strict";
     var SemVer = require_semver();
     var Range = require_range();
@@ -3330,9 +3351,9 @@ var require_min_version = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/valid.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/valid.js
 var require_valid2 = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/valid.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/valid.js"(exports2, module2) {
     "use strict";
     var Range = require_range();
     var validRange = (range, options) => {
@@ -3346,9 +3367,9 @@ var require_valid2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/outside.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/outside.js
 var require_outside = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/outside.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/outside.js"(exports2, module2) {
     "use strict";
     var SemVer = require_semver();
     var Comparator = require_comparator();
@@ -3415,9 +3436,9 @@ var require_outside = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/gtr.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/gtr.js
 var require_gtr = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/gtr.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/gtr.js"(exports2, module2) {
     "use strict";
     var outside = require_outside();
     var gtr = (version3, range, options) => outside(version3, range, ">", options);
@@ -3425,9 +3446,9 @@ var require_gtr = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/ltr.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/ltr.js
 var require_ltr = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/ltr.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/ltr.js"(exports2, module2) {
     "use strict";
     var outside = require_outside();
     var ltr = (version3, range, options) => outside(version3, range, "<", options);
@@ -3435,9 +3456,9 @@ var require_ltr = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/intersects.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/intersects.js
 var require_intersects = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/intersects.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/intersects.js"(exports2, module2) {
     "use strict";
     var Range = require_range();
     var intersects = (r1, r2, options) => {
@@ -3449,9 +3470,9 @@ var require_intersects = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/simplify.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/simplify.js
 var require_simplify = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/simplify.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/simplify.js"(exports2, module2) {
     "use strict";
     var satisfies = require_satisfies();
     var compare2 = require_compare();
@@ -3499,9 +3520,9 @@ var require_simplify = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/subset.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/subset.js
 var require_subset = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/ranges/subset.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/ranges/subset.js"(exports2, module2) {
     "use strict";
     var Range = require_range();
     var Comparator = require_comparator();
@@ -3609,7 +3630,7 @@ var require_subset = __commonJS({
             if (higher === c && higher !== gt2) {
               return false;
             }
-          } else if (gt2.operator === ">=" && !satisfies(gt2.semver, String(c), options)) {
+          } else if (gt2.operator === ">=" && !c.test(gt2.semver)) {
             return false;
           }
         }
@@ -3624,7 +3645,7 @@ var require_subset = __commonJS({
             if (lower === c && lower !== lt2) {
               return false;
             }
-          } else if (lt2.operator === "<=" && !satisfies(lt2.semver, String(c), options)) {
+          } else if (lt2.operator === "<=" && !c.test(lt2.semver)) {
             return false;
           }
         }
@@ -3661,9 +3682,9 @@ var require_subset = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/index.js
+// ../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/index.js
 var require_semver2 = __commonJS({
-  "../../node_modules/.pnpm/semver@7.8.0/node_modules/semver/index.js"(exports2, module2) {
+  "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/index.js"(exports2, module2) {
     "use strict";
     var internalRe = require_re();
     var constants = require_constants();
@@ -5643,9 +5664,9 @@ var require_pg_types = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/defaults.js
+// ../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/defaults.js
 var require_defaults = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/defaults.js"(exports2, module2) {
+  "../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/defaults.js"(exports2, module2) {
     "use strict";
     var user;
     try {
@@ -5681,6 +5702,8 @@ var require_defaults = __commonJS({
       idleTimeoutMillis: 3e4,
       client_encoding: "",
       ssl: false,
+      // SSL negotiation style: 'postgres' (traditional SSLRequest) or 'direct'
+      sslnegotiation: void 0,
       application_name: void 0,
       fallback_application_name: void 0,
       options: void 0,
@@ -5710,13 +5733,12 @@ var require_defaults = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/utils.js
+// ../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/utils.js
 var require_utils = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/utils.js"(exports2, module2) {
+  "../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/utils.js"(exports2, module2) {
     "use strict";
     var defaults2 = require_defaults();
-    var util2 = require("util");
-    var { isDate } = util2.types || util2;
+    var { isDate } = require("util/types");
     function escapeElement(elementRepresentation) {
       const escaped = elementRepresentation.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
       return '"' + escaped + '"';
@@ -5725,28 +5747,23 @@ var require_utils = __commonJS({
       let result = "{";
       for (let i = 0; i < val.length; i++) {
         if (i > 0) {
-          result = result + ",";
+          result += ",";
         }
-        if (val[i] === null || typeof val[i] === "undefined") {
-          result = result + "NULL";
-        } else if (Array.isArray(val[i])) {
-          result = result + arrayString(val[i]);
-        } else if (ArrayBuffer.isView(val[i])) {
-          let item = val[i];
+        let item = val[i];
+        if (item == null) {
+          result += "NULL";
+        } else if (Array.isArray(item)) {
+          result += arrayString(item);
+        } else if (ArrayBuffer.isView(item)) {
           if (!(item instanceof Buffer)) {
-            const buf = Buffer.from(item.buffer, item.byteOffset, item.byteLength);
-            if (buf.length === item.byteLength) {
-              item = buf;
-            } else {
-              item = buf.slice(item.byteOffset, item.byteOffset + item.byteLength);
-            }
+            item = Buffer.from(item.buffer, item.byteOffset, item.byteLength);
           }
           result += "\\\\x" + item.toString("hex");
         } else {
-          result += escapeElement(prepareValue(val[i]));
+          result += escapeElement(prepareValue(item));
         }
       }
-      result = result + "}";
+      result += "}";
       return result;
     }
     var prepareValue = function(val, seen) {
@@ -5758,11 +5775,7 @@ var require_utils = __commonJS({
           return val;
         }
         if (ArrayBuffer.isView(val)) {
-          const buf = Buffer.from(val.buffer, val.byteOffset, val.byteLength);
-          if (buf.length === val.byteLength) {
-            return buf;
-          }
-          return buf.slice(val.byteOffset, val.byteOffset + val.byteLength);
+          return Buffer.from(val.buffer, val.byteOffset, val.byteLength);
         }
         if (isDate(val)) {
           if (defaults2.parseInputDatesAsUTC) {
@@ -5868,51 +5881,13 @@ var require_utils = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/utils-legacy.js
-var require_utils_legacy = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/utils-legacy.js"(exports2, module2) {
-    "use strict";
-    var nodeCrypto2 = require("crypto");
-    function md5(string4) {
-      return nodeCrypto2.createHash("md5").update(string4, "utf-8").digest("hex");
-    }
-    function postgresMd5PasswordHash(user, password, salt) {
-      const inner = md5(password + user);
-      const outer = md5(Buffer.concat([Buffer.from(inner), salt]));
-      return "md5" + outer;
-    }
-    function sha256(text2) {
-      return nodeCrypto2.createHash("sha256").update(text2).digest();
-    }
-    function hashByName(hashName, text2) {
-      hashName = hashName.replace(/(\D)-/, "$1");
-      return nodeCrypto2.createHash(hashName).update(text2).digest();
-    }
-    function hmacSha256(key, msg) {
-      return nodeCrypto2.createHmac("sha256", key).update(msg).digest();
-    }
-    async function deriveKey(password, salt, iterations) {
-      return nodeCrypto2.pbkdf2Sync(password, salt, iterations, 32, "sha256");
-    }
-    module2.exports = {
-      postgresMd5PasswordHash,
-      randomBytes: nodeCrypto2.randomBytes,
-      deriveKey,
-      sha256,
-      hashByName,
-      hmacSha256,
-      md5
-    };
-  }
-});
-
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/utils-webcrypto.js
-var require_utils_webcrypto = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/utils-webcrypto.js"(exports2, module2) {
+// ../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/crypto/utils.js
+var require_utils2 = __commonJS({
+  "../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/crypto/utils.js"(exports2, module2) {
     var nodeCrypto2 = require("crypto");
     module2.exports = {
       postgresMd5PasswordHash,
-      randomBytes: randomBytes2,
+      randomBytes: randomBytes3,
       deriveKey,
       sha256,
       hashByName,
@@ -5922,7 +5897,7 @@ var require_utils_webcrypto = __commonJS({
     var webCrypto = nodeCrypto2.webcrypto || globalThis.crypto;
     var subtleCrypto = webCrypto.subtle;
     var textEncoder = new TextEncoder();
-    function randomBytes2(length) {
+    function randomBytes3(length) {
       return webCrypto.getRandomValues(Buffer.alloc(length));
     }
     async function md5(string4) {
@@ -5957,22 +5932,9 @@ var require_utils_webcrypto = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/utils.js
-var require_utils2 = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/utils.js"(exports2, module2) {
-    "use strict";
-    var useLegacyCrypto = parseInt(process.versions && process.versions.node && process.versions.node.split(".")[0]) < 15;
-    if (useLegacyCrypto) {
-      module2.exports = require_utils_legacy();
-    } else {
-      module2.exports = require_utils_webcrypto();
-    }
-  }
-});
-
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/cert-signatures.js
+// ../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/crypto/cert-signatures.js
 var require_cert_signatures = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/cert-signatures.js"(exports2, module2) {
+  "../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/crypto/cert-signatures.js"(exports2, module2) {
     function x509Error(msg, cert) {
       return new Error("SASL channel binding: " + msg + " when parsing public certificate " + cert.toString("base64"));
     }
@@ -6083,13 +6045,19 @@ var require_cert_signatures = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/sasl.js
+// ../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/crypto/sasl.js
 var require_sasl = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/sasl.js"(exports2, module2) {
+  "../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/crypto/sasl.js"(exports2, module2) {
     "use strict";
     var crypto6 = require_utils2();
     var { signatureAlgorithmHashFromCertificate } = require_cert_signatures();
-    function startSession(mechanisms, stream) {
+    function saslprep(password) {
+      const nonAsciiSpace = /[\u00A0\u1680\u2000-\u200B\u202F\u205F\u3000]/g;
+      const mappedToNothing = /[\u00AD\u034F\u1806\u180B\u180C\u180D\u200C\u200D\u2060\uFE00-\uFE0F\uFEFF]/g;
+      return password.replace(nonAsciiSpace, " ").replace(mappedToNothing, "").normalize("NFKC");
+    }
+    var DEFAULT_MAX_SCRAM_ITERATIONS = 1e5;
+    function startSession(mechanisms, stream, scramMaxIterations = DEFAULT_MAX_SCRAM_ITERATIONS) {
       const candidates = ["SCRAM-SHA-256"];
       if (stream) candidates.unshift("SCRAM-SHA-256-PLUS");
       const mechanism = candidates.find((candidate) => mechanisms.includes(candidate));
@@ -6105,7 +6073,8 @@ var require_sasl = __commonJS({
         mechanism,
         clientNonce,
         response: gs2Header + ",,n=*,r=" + clientNonce,
-        message: "SASLInitialResponse"
+        message: "SASLInitialResponse",
+        scramMaxIterations
       };
     }
     async function continueSession(session, password, serverData, stream) {
@@ -6127,6 +6096,12 @@ var require_sasl = __commonJS({
       } else if (sv.nonce.length === session.clientNonce.length) {
         throw new Error("SASL: SCRAM-SERVER-FIRST-MESSAGE: server nonce is too short");
       }
+      const scramMaxIterations = typeof session.scramMaxIterations === "number" ? session.scramMaxIterations : DEFAULT_MAX_SCRAM_ITERATIONS;
+      if (scramMaxIterations !== 0 && sv.iteration > scramMaxIterations) {
+        throw new Error(
+          "SASL: SCRAM-SERVER-FIRST-MESSAGE: iteration count " + sv.iteration + " exceeds scramMaxIterations of " + scramMaxIterations
+        );
+      }
       const clientFirstMessageBare = "n=*,r=" + session.clientNonce;
       const serverFirstMessage = "r=" + sv.nonce + ",s=" + sv.salt + ",i=" + sv.iteration;
       let channelBinding = stream ? "eSws" : "biws";
@@ -6141,7 +6116,7 @@ var require_sasl = __commonJS({
       const clientFinalMessageWithoutProof = "c=" + channelBinding + ",r=" + sv.nonce;
       const authMessage = clientFirstMessageBare + "," + serverFirstMessage + "," + clientFinalMessageWithoutProof;
       const saltBytes = Buffer.from(sv.salt, "base64");
-      const saltedPassword = await crypto6.deriveKey(password, saltBytes, sv.iteration);
+      const saltedPassword = await crypto6.deriveKey(saslprep(password), saltBytes, sv.iteration);
       const clientKey = await crypto6.hmacSha256(saltedPassword, "Client Key");
       const storedKey = await crypto6.sha256(clientKey);
       const clientSignature = await crypto6.hmacSha256(storedKey, authMessage);
@@ -6217,7 +6192,11 @@ var require_sasl = __commonJS({
     }
     function parseServerFinalMessage(serverData) {
       const attrPairs = parseAttributePairs(serverData);
+      const error40 = attrPairs.get("e");
       const serverSignature = attrPairs.get("v");
+      if (error40) {
+        throw new Error(`SASL: SCRAM-SERVER-FINAL-MESSAGE: server returned error: "${error40}"`);
+      }
       if (!serverSignature) {
         throw new Error("SASL: SCRAM-SERVER-FINAL-MESSAGE: server signature is missing");
       } else if (!isBase64(serverSignature)) {
@@ -6245,14 +6224,15 @@ var require_sasl = __commonJS({
     module2.exports = {
       startSession,
       continueSession,
-      finalizeSession
+      finalizeSession,
+      DEFAULT_MAX_SCRAM_ITERATIONS
     };
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/type-overrides.js
+// ../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/type-overrides.js
 var require_type_overrides = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/type-overrides.js"(exports2, module2) {
+  "../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/type-overrides.js"(exports2, module2) {
     "use strict";
     var types3 = require_pg_types();
     function TypeOverrides2(userTypes) {
@@ -6285,16 +6265,16 @@ var require_type_overrides = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg-connection-string@2.12.0/node_modules/pg-connection-string/index.js
+// ../../node_modules/.pnpm/pg-connection-string@2.14.0/node_modules/pg-connection-string/index.js
 var require_pg_connection_string = __commonJS({
-  "../../node_modules/.pnpm/pg-connection-string@2.12.0/node_modules/pg-connection-string/index.js"(exports2, module2) {
+  "../../node_modules/.pnpm/pg-connection-string@2.14.0/node_modules/pg-connection-string/index.js"(exports2, module2) {
     "use strict";
     function parse3(str, options = {}) {
       if (str.charAt(0) === "/") {
         const config3 = str.split(" ");
         return { host: config3[0], database: config3[1] };
       }
-      const config2 = {};
+      const config2 = /* @__PURE__ */ Object.create(null);
       let result;
       let dummyHost = false;
       if (/ |%[^a-f0-9]|%[a-f0-9][^a-f0-9]/i.test(str)) {
@@ -6342,15 +6322,18 @@ var require_pg_connection_string = __commonJS({
       if (config2.sslcert || config2.sslkey || config2.sslrootcert || config2.sslmode) {
         config2.ssl = {};
       }
-      const fs2 = config2.sslcert || config2.sslkey || config2.sslrootcert ? require("fs") : null;
+      if (config2.sslnegotiation === "direct" && config2.ssl === void 0) {
+        config2.ssl = true;
+      }
+      const fs3 = config2.sslcert || config2.sslkey || config2.sslrootcert ? require("fs") : null;
       if (config2.sslcert) {
-        config2.ssl.cert = fs2.readFileSync(config2.sslcert).toString();
+        config2.ssl.cert = fs3.readFileSync(config2.sslcert).toString();
       }
       if (config2.sslkey) {
-        config2.ssl.key = fs2.readFileSync(config2.sslkey).toString();
+        config2.ssl.key = fs3.readFileSync(config2.sslkey).toString();
       }
       if (config2.sslrootcert) {
-        config2.ssl.ca = fs2.readFileSync(config2.sslrootcert).toString();
+        config2.ssl.ca = fs3.readFileSync(config2.sslrootcert).toString();
       }
       if (options.useLibpqCompat && config2.uselibpqcompat) {
         throw new Error("Both useLibpqCompat and uselibpqcompat are set. Please use only one of them.");
@@ -6417,7 +6400,7 @@ var require_pg_connection_string = __commonJS({
           c[key] = value;
         }
         return c;
-      }, {});
+      }, /* @__PURE__ */ Object.create(null));
       return connectionOptions;
     }
     function toClientConfig(config2) {
@@ -6444,7 +6427,7 @@ var require_pg_connection_string = __commonJS({
           }
         }
         return c;
-      }, {});
+      }, /* @__PURE__ */ Object.create(null));
       return poolConfig;
     }
     function parseIntoClientConfig(str) {
@@ -6470,9 +6453,9 @@ See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode de
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/connection-parameters.js
+// ../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/connection-parameters.js
 var require_connection_parameters = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/connection-parameters.js"(exports2, module2) {
+  "../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/connection-parameters.js"(exports2, module2) {
     "use strict";
     var dns = require("dns");
     var defaults2 = require_defaults();
@@ -6547,6 +6530,15 @@ var require_connection_parameters = __commonJS({
             enumerable: false
           });
         }
+        this.sslnegotiation = val("sslnegotiation", config2, "PGSSLNEGOTIATION");
+        if (this.sslnegotiation !== void 0 && this.sslnegotiation !== "postgres" && this.sslnegotiation !== "direct") {
+          throw new Error(
+            `Invalid sslnegotiation value: "${this.sslnegotiation}". Valid values are "postgres" and "direct".`
+          );
+        }
+        if (this.sslnegotiation === "direct" && !this.ssl) {
+          throw new Error("sslnegotiation=direct requires SSL to be enabled");
+        }
         this.client_encoding = val("client_encoding", config2);
         this.replication = val("replication", config2);
         this.isDomainSocket = !(this.host || "").indexOf("/");
@@ -6585,6 +6577,7 @@ var require_connection_parameters = __commonJS({
         add(params, ssl, "sslkey");
         add(params, ssl, "sslcert");
         add(params, ssl, "sslrootcert");
+        add(params, this, "sslnegotiation");
         if (this.database) {
           params.push("dbname=" + quoteParamValue(this.database));
         }
@@ -6611,9 +6604,9 @@ var require_connection_parameters = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/result.js
+// ../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/result.js
 var require_result = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/result.js"(exports2, module2) {
+  "../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/result.js"(exports2, module2) {
     "use strict";
     var types3 = require_pg_types();
     var matchRegexp = /^([A-Za-z]+)(?: (\d+))?(?: (\d+))?/;
@@ -6685,7 +6678,7 @@ var require_result = __commonJS({
         if (this.fields.length) {
           this._parsers = new Array(fieldDescriptions.length);
         }
-        const row = {};
+        const row = /* @__PURE__ */ Object.create(null);
         for (let i = 0; i < fieldDescriptions.length; i++) {
           const desc2 = fieldDescriptions[i];
           row[desc2.name] = null;
@@ -6702,9 +6695,9 @@ var require_result = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/query.js
+// ../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/query.js
 var require_query = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/query.js"(exports2, module2) {
+  "../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/query.js"(exports2, module2) {
     "use strict";
     var { EventEmitter: EventEmitter2 } = require("events");
     var Result2 = require_result();
@@ -6880,6 +6873,8 @@ var require_query = __commonJS({
             valueMapper: utils.prepareValue
           });
         } catch (err) {
+          connection.close({ type: "S", name: this.name });
+          connection.sync();
           this.handleError(err, connection);
           return;
         }
@@ -6899,9 +6894,9 @@ var require_query = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/messages.js
+// ../../node_modules/.pnpm/pg-protocol@1.15.0/node_modules/pg-protocol/dist/messages.js
 var require_messages = __commonJS({
-  "../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/messages.js"(exports2) {
+  "../../node_modules/.pnpm/pg-protocol@1.15.0/node_modules/pg-protocol/dist/messages.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.NoticeMessage = exports2.DataRowMessage = exports2.CommandCompleteMessage = exports2.ReadyForQueryMessage = exports2.NotificationResponseMessage = exports2.BackendKeyDataMessage = exports2.AuthenticationMD5Password = exports2.ParameterStatusMessage = exports2.ParameterDescriptionMessage = exports2.RowDescriptionMessage = exports2.Field = exports2.CopyResponse = exports2.CopyDataMessage = exports2.DatabaseError = exports2.copyDone = exports2.emptyQuery = exports2.replicationStart = exports2.portalSuspended = exports2.noData = exports2.closeComplete = exports2.bindComplete = exports2.parseComplete = void 0;
@@ -7064,9 +7059,9 @@ var require_messages = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/buffer-writer.js
+// ../../node_modules/.pnpm/pg-protocol@1.15.0/node_modules/pg-protocol/dist/buffer-writer.js
 var require_buffer_writer = __commonJS({
-  "../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/buffer-writer.js"(exports2) {
+  "../../node_modules/.pnpm/pg-protocol@1.15.0/node_modules/pg-protocol/dist/buffer-writer.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.Writer = void 0;
@@ -7119,6 +7114,25 @@ var require_buffer_writer = __commonJS({
         this.offset += len;
         return this;
       }
+      // Write an Int32 byte-length prefix immediately followed by the string's UTF-8
+      // bytes. Postgres' Bind wire format prefixes every parameter with its length,
+      // and doing it in one method computes Buffer.byteLength ONCE — the previous
+      // `addInt32(Buffer.byteLength(s)).addString(s)` pairing scanned the string
+      // three times (byteLength for the prefix, byteLength again inside addString,
+      // then the encode), which is costly for large text parameters.
+      addInt32PrefixedString(string4) {
+        const len = Buffer.byteLength(string4);
+        this.ensure(4 + len);
+        const buffer = this.buffer;
+        let offset = this.offset;
+        buffer[offset++] = len >>> 24 & 255;
+        buffer[offset++] = len >>> 16 & 255;
+        buffer[offset++] = len >>> 8 & 255;
+        buffer[offset++] = len >>> 0 & 255;
+        buffer.write(string4, offset, "utf-8");
+        this.offset = offset + len;
+        return this;
+      }
       add(otherBuffer) {
         this.ensure(otherBuffer.length);
         otherBuffer.copy(this.buffer, this.offset);
@@ -7140,14 +7154,18 @@ var require_buffer_writer = __commonJS({
         this.buffer = Buffer.allocUnsafe(this.size);
         return result;
       }
+      clear() {
+        this.offset = 5;
+        this.headerPosition = 0;
+      }
     };
     exports2.Writer = Writer;
   }
 });
 
-// ../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/serializer.js
+// ../../node_modules/.pnpm/pg-protocol@1.15.0/node_modules/pg-protocol/dist/serializer.js
 var require_serializer = __commonJS({
-  "../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/serializer.js"(exports2) {
+  "../../node_modules/.pnpm/pg-protocol@1.15.0/node_modules/pg-protocol/dist/serializer.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.serialize = void 0;
@@ -7176,7 +7194,7 @@ var require_serializer = __commonJS({
       );
     };
     var sendSASLInitialResponseMessage = function(mechanism, initialResponse) {
-      writer.addCString(mechanism).addInt32(Buffer.byteLength(initialResponse)).addString(initialResponse);
+      writer.addCString(mechanism).addInt32PrefixedString(initialResponse);
       return writer.flush(
         112
         /* code.startup */
@@ -7235,8 +7253,7 @@ var require_serializer = __commonJS({
             0
             /* ParamType.STRING */
           );
-          paramWriter.addInt32(Buffer.byteLength(mappedVal));
-          paramWriter.addString(mappedVal);
+          paramWriter.addInt32PrefixedString(mappedVal);
         }
       }
     };
@@ -7248,7 +7265,13 @@ var require_serializer = __commonJS({
       const len = values.length;
       writer.addCString(portal).addCString(statement);
       writer.addInt16(len);
-      writeValues(values, config2.valueMapper);
+      try {
+        writeValues(values, config2.valueMapper);
+      } catch (err) {
+        writer.clear();
+        paramWriter.clear();
+        throw err;
+      }
       writer.addInt16(len);
       writer.add(paramWriter.flush());
       writer.addInt16(1);
@@ -7362,9 +7385,9 @@ var require_serializer = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/buffer-reader.js
+// ../../node_modules/.pnpm/pg-protocol@1.15.0/node_modules/pg-protocol/dist/buffer-reader.js
 var require_buffer_reader = __commonJS({
-  "../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/buffer-reader.js"(exports2) {
+  "../../node_modules/.pnpm/pg-protocol@1.15.0/node_modules/pg-protocol/dist/buffer-reader.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.BufferReader = void 0;
@@ -7406,7 +7429,7 @@ var require_buffer_reader = __commonJS({
       cstring() {
         const start = this.offset;
         let end = start;
-        while (this.buffer[end++] !== 0) {
+        while (this.buffer[end++]) {
         }
         this.offset = end;
         return this.buffer.toString(this.encoding, start, end - 1);
@@ -7421,9 +7444,9 @@ var require_buffer_reader = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/parser.js
+// ../../node_modules/.pnpm/pg-protocol@1.15.0/node_modules/pg-protocol/dist/parser.js
 var require_parser = __commonJS({
-  "../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/parser.js"(exports2) {
+  "../../node_modules/.pnpm/pg-protocol@1.15.0/node_modules/pg-protocol/dist/parser.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.Parser = void 0;
@@ -7728,12 +7751,13 @@ var require_parser = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/index.js
+// ../../node_modules/.pnpm/pg-protocol@1.15.0/node_modules/pg-protocol/dist/index.js
 var require_dist = __commonJS({
-  "../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/index.js"(exports2) {
+  "../../node_modules/.pnpm/pg-protocol@1.15.0/node_modules/pg-protocol/dist/index.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.DatabaseError = exports2.serialize = exports2.parse = void 0;
+    exports2.DatabaseError = exports2.serialize = void 0;
+    exports2.parse = parse3;
     var messages_1 = require_messages();
     Object.defineProperty(exports2, "DatabaseError", { enumerable: true, get: function() {
       return messages_1.DatabaseError;
@@ -7748,22 +7772,21 @@ var require_dist = __commonJS({
       stream.on("data", (buffer) => parser.parse(buffer, callback));
       return new Promise((resolve) => stream.on("end", () => resolve()));
     }
-    exports2.parse = parse3;
   }
 });
 
-// ../../node_modules/.pnpm/pg-cloudflare@1.3.0/node_modules/pg-cloudflare/dist/empty.js
+// ../../node_modules/.pnpm/pg-cloudflare@1.4.0/node_modules/pg-cloudflare/dist/empty.js
 var require_empty = __commonJS({
-  "../../node_modules/.pnpm/pg-cloudflare@1.3.0/node_modules/pg-cloudflare/dist/empty.js"(exports2) {
+  "../../node_modules/.pnpm/pg-cloudflare@1.4.0/node_modules/pg-cloudflare/dist/empty.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.default = {};
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/stream.js
+// ../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/stream.js
 var require_stream = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/stream.js"(exports2, module2) {
+  "../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/stream.js"(exports2, module2) {
     var { getStream, getSecureStream } = getStreamFuncs();
     module2.exports = {
       /**
@@ -7827,13 +7850,14 @@ var require_stream = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/connection.js
+// ../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/connection.js
 var require_connection = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/connection.js"(exports2, module2) {
+  "../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/connection.js"(exports2, module2) {
     "use strict";
     var EventEmitter2 = require("events").EventEmitter;
     var { parse: parse3, serialize } = require_dist();
-    var { getStream, getSecureStream } = require_stream();
+    var stream = require_stream();
+    var { getStream } = stream;
     var flushBuffer = serialize.flush();
     var syncBuffer = serialize.sync();
     var endBuffer = serialize.end();
@@ -7849,6 +7873,7 @@ var require_connection = __commonJS({
         this._keepAliveInitialDelayMillis = config2.keepAliveInitialDelayMillis;
         this.parsedStatements = {};
         this.ssl = config2.ssl || false;
+        this.sslNegotiation = config2.sslNegotiation || "postgres";
         this._ending = false;
         this._emitMessage = false;
         const self = this;
@@ -7882,6 +7907,11 @@ var require_connection = __commonJS({
         if (!this.ssl) {
           return this.attachListeners(this.stream);
         }
+        if (this.sslNegotiation === "direct") {
+          return this.stream.once("connect", function() {
+            self.upgradeToSSL(host, reportStreamError);
+          });
+        }
         this.stream.once("data", function(buffer) {
           const responseCode = buffer.toString("utf8");
           switch (responseCode) {
@@ -7894,31 +7924,38 @@ var require_connection = __commonJS({
               self.stream.end();
               return self.emit("error", new Error("There was an error establishing an SSL connection"));
           }
-          const options = {
-            socket: self.stream
-          };
-          if (self.ssl !== true) {
-            Object.assign(options, self.ssl);
-            if ("key" in self.ssl) {
-              options.key = self.ssl.key;
-            }
-          }
-          const net = require("net");
-          if (net.isIP && net.isIP(host) === 0) {
-            options.servername = host;
-          }
-          try {
-            self.stream = getSecureStream(options);
-          } catch (err) {
-            return self.emit("error", err);
-          }
-          self.attachListeners(self.stream);
-          self.stream.on("error", reportStreamError);
-          self.emit("sslconnect");
+          self.upgradeToSSL(host, reportStreamError);
         });
       }
-      attachListeners(stream) {
-        parse3(stream, (msg) => {
+      upgradeToSSL(host, reportStreamError) {
+        const self = this;
+        const options = {
+          socket: self.stream
+        };
+        if (self.ssl !== true) {
+          Object.assign(options, self.ssl);
+          if ("key" in self.ssl) {
+            options.key = self.ssl.key;
+          }
+        }
+        if (self.sslNegotiation === "direct") {
+          options.ALPNProtocols = ["postgresql"];
+        }
+        const net = require("net");
+        if (net.isIP && net.isIP(host) === 0) {
+          options.servername = host;
+        }
+        try {
+          self.stream = stream.getSecureStream(options);
+        } catch (err) {
+          return self.emit("error", err);
+        }
+        self.attachListeners(self.stream);
+        self.stream.on("error", reportStreamError);
+        self.emit("sslconnect");
+      }
+      attachListeners(stream2) {
+        parse3(stream2, (msg) => {
           const eventName = msg.name === "error" ? "errorMessage" : msg.name;
           if (this._emitMessage) {
             this.emit("message", msg);
@@ -8115,7 +8152,7 @@ var require_split2 = __commonJS({
 var require_helper = __commonJS({
   "../../node_modules/.pnpm/pgpass@1.0.5/node_modules/pgpass/lib/helper.js"(exports2, module2) {
     "use strict";
-    var path3 = require("path");
+    var path4 = require("path");
     var Stream2 = require("stream").Stream;
     var split = require_split2();
     var util2 = require("util");
@@ -8154,7 +8191,7 @@ var require_helper = __commonJS({
     };
     module2.exports.getFileName = function(rawEnv) {
       var env = rawEnv || process.env;
-      var file2 = env.PGPASSFILE || (isWin ? path3.join(env.APPDATA || "./", "postgresql", "pgpass.conf") : path3.join(env.HOME || "./", ".pgpass"));
+      var file2 = env.PGPASSFILE || (isWin ? path4.join(env.APPDATA || "./", "postgresql", "pgpass.conf") : path4.join(env.HOME || "./", ".pgpass"));
       return file2;
     };
     module2.exports.usePgPass = function(stats, fname) {
@@ -8286,16 +8323,16 @@ var require_helper = __commonJS({
 var require_lib = __commonJS({
   "../../node_modules/.pnpm/pgpass@1.0.5/node_modules/pgpass/lib/index.js"(exports2, module2) {
     "use strict";
-    var path3 = require("path");
-    var fs2 = require("fs");
+    var path4 = require("path");
+    var fs3 = require("fs");
     var helper = require_helper();
     module2.exports = function(connInfo, cb) {
       var file2 = helper.getFileName();
-      fs2.stat(file2, function(err, stat) {
+      fs3.stat(file2, function(err, stat) {
         if (err || !helper.usePgPass(stat, file2)) {
           return cb(void 0);
         }
-        var st = fs2.createReadStream(file2);
+        var st = fs3.createReadStream(file2);
         helper.getPassword(connInfo, st, cb);
       });
     };
@@ -8303,9 +8340,9 @@ var require_lib = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/client.js
+// ../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/client.js
 var require_client = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/client.js"(exports2, module2) {
+  "../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/client.js"(exports2, module2) {
     var EventEmitter2 = require("events").EventEmitter;
     var utils = require_utils();
     var nodeUtils = require("util");
@@ -8341,6 +8378,16 @@ var require_client = __commonJS({
       },
       "Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead."
     );
+    function coerceNumberOrDefault(value, defaultValue) {
+      if (typeof value === "number") {
+        return Number.isFinite(value) ? value : defaultValue;
+      }
+      if (typeof value === "string" && value.trim() !== "") {
+        const n = Number(value);
+        return Number.isFinite(n) ? n : defaultValue;
+      }
+      return defaultValue;
+    }
     var Client2 = class extends EventEmitter2 {
       constructor(config2) {
         super();
@@ -8369,10 +8416,13 @@ var require_client = __commonJS({
         this._connectionError = false;
         this._queryable = true;
         this._activeQuery = null;
+        this._txStatus = null;
         this.enableChannelBinding = Boolean(c.enableChannelBinding);
+        this.scramMaxIterations = coerceNumberOrDefault(c.scramMaxIterations, sasl.DEFAULT_MAX_SCRAM_ITERATIONS);
         this.connection = c.connection || new Connection2({
           stream: c.stream,
           ssl: this.connectionParameters.ssl,
+          sslNegotiation: this.connectionParameters.sslnegotiation,
           keepAlive: c.keepAlive || false,
           keepAliveInitialDelayMillis: c.keepAliveInitialDelayMillis || 0,
           encoding: this.connectionParameters.client_encoding || "utf8"
@@ -8382,6 +8432,7 @@ var require_client = __commonJS({
         this.processID = null;
         this.secretKey = null;
         this.ssl = this.connectionParameters.ssl || false;
+        this.sslNegotiation = this.connectionParameters.sslnegotiation || "postgres";
         if (this.ssl && this.ssl.key) {
           Object.defineProperty(this.ssl, "key", {
             enumerable: false
@@ -8442,7 +8493,9 @@ var require_client = __commonJS({
         }
         con.on("connect", function() {
           if (self.ssl) {
-            con.requestSsl();
+            if (self.sslNegotiation !== "direct") {
+              con.requestSsl();
+            }
           } else {
             con.startup(self.getStartupConf());
           }
@@ -8560,7 +8613,11 @@ var require_client = __commonJS({
       _handleAuthSASL(msg) {
         this._getPassword(() => {
           try {
-            this.saslSession = sasl.startSession(msg.mechanisms, this.enableChannelBinding && this.connection.stream);
+            this.saslSession = sasl.startSession(
+              msg.mechanisms,
+              this.enableChannelBinding && this.connection.stream,
+              this.scramMaxIterations
+            );
             this.connection.sendSASLInitialResponseMessage(this.saslSession.mechanism, this.saslSession.response);
           } catch (err) {
             this.connection.emit("error", err);
@@ -8605,6 +8662,7 @@ var require_client = __commonJS({
         }
         const activeQuery = this._getActiveQuery();
         this._activeQuery = null;
+        this._txStatus = msg?.status ?? null;
         this.readyForQuery = true;
         if (activeQuery) {
           activeQuery.handleReadyForQuery(this.connection);
@@ -8809,13 +8867,10 @@ var require_client = __commonJS({
       query(config2, values, callback) {
         let query;
         let result;
-        let readTimeout;
-        let readTimeoutTimer;
-        let queryCallback;
-        if (config2 === null || config2 === void 0) {
+        if (config2 == null) {
           throw new TypeError("Client was passed a null or undefined query");
-        } else if (typeof config2.submit === "function") {
-          readTimeout = config2.query_timeout || this.connectionParameters.query_timeout;
+        }
+        if (typeof config2.submit === "function") {
           result = query = config2;
           if (!query.callback) {
             if (typeof values === "function") {
@@ -8825,7 +8880,6 @@ var require_client = __commonJS({
             }
           }
         } else {
-          readTimeout = config2.query_timeout || this.connectionParameters.query_timeout;
           query = new Query2(config2, values, callback);
           if (!query.callback) {
             result = new this._Promise((resolve, reject) => {
@@ -8834,12 +8888,15 @@ var require_client = __commonJS({
               Error.captureStackTrace(err);
               throw err;
             });
+          } else if (typeof query.callback !== "function") {
+            throw new TypeError("callback is not a function");
           }
         }
+        const readTimeout = config2.query_timeout || this.connectionParameters.query_timeout;
         if (readTimeout) {
-          queryCallback = query.callback || (() => {
+          const queryCallback = query.callback || (() => {
           });
-          readTimeoutTimer = setTimeout(() => {
+          const readTimeoutTimer = setTimeout(() => {
             const error40 = new Error("Query read timeout");
             process.nextTick(() => {
               query.handleError(error40, this.connection);
@@ -8889,11 +8946,15 @@ var require_client = __commonJS({
       unref() {
         this.connection.unref();
       }
+      getTransactionStatus() {
+        return this._txStatus;
+      }
       end(cb) {
         this._ending = true;
         if (!this.connection._connecting || this._ended) {
           if (cb) {
             cb();
+            return;
           } else {
             return this._Promise.resolve();
           }
@@ -8921,9 +8982,9 @@ var require_client = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js
+// ../../node_modules/.pnpm/pg-pool@3.14.0_pg@8.22.0/node_modules/pg-pool/index.js
 var require_pg_pool = __commonJS({
-  "../../node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js"(exports2, module2) {
+  "../../node_modules/.pnpm/pg-pool@3.14.0_pg@8.22.0/node_modules/pg-pool/index.js"(exports2, module2) {
     "use strict";
     var EventEmitter2 = require("events").EventEmitter;
     var NOOP = function() {
@@ -9347,9 +9408,9 @@ var require_pg_pool = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/native/query.js
+// ../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/native/query.js
 var require_query2 = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/native/query.js"(exports2, module2) {
+  "../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/native/query.js"(exports2, module2) {
     "use strict";
     var EventEmitter2 = require("events").EventEmitter;
     var util2 = require("util");
@@ -9488,9 +9549,9 @@ var require_query2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/native/client.js
+// ../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/native/client.js
 var require_client2 = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/native/client.js"(exports2, module2) {
+  "../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/native/client.js"(exports2, module2) {
     var nodeUtils = require("util");
     var Native;
     try {
@@ -9674,8 +9735,11 @@ var require_client2 = __commonJS({
     Client2.prototype.end = function(cb) {
       const self = this;
       this._ending = true;
-      if (!this._connected) {
-        this.once("connect", this.end.bind(this, cb));
+      if (this._connecting && !this._connected) {
+        this.once("connect", () => {
+          this.end(() => {
+          });
+        });
       }
       let result;
       if (!cb) {
@@ -9738,20 +9802,23 @@ var require_client2 = __commonJS({
     Client2.prototype.isConnected = function() {
       return this._connected;
     };
+    Client2.prototype.getTransactionStatus = function() {
+      return this.native.getTransactionStatus();
+    };
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/native/index.js
+// ../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/native/index.js
 var require_native = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/native/index.js"(exports2, module2) {
+  "../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/native/index.js"(exports2, module2) {
     "use strict";
     module2.exports = require_client2();
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/index.js
+// ../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/index.js
 var require_lib2 = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/index.js"(exports2, module2) {
+  "../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/lib/index.js"(exports2, module2) {
     "use strict";
     var Client2 = require_client();
     var defaults2 = require_defaults();
@@ -11195,9 +11262,9 @@ var require_safer = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/lib/bom-handling.js
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/lib/bom-handling.js
 var require_bom_handling = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/lib/bom-handling.js"(exports2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/lib/bom-handling.js"(exports2) {
     "use strict";
     var BOMChar = "\uFEFF";
     exports2.PrependBOM = PrependBOMWrapper;
@@ -11241,9 +11308,9 @@ var require_bom_handling = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/lib/helpers/merge-exports.js
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/lib/helpers/merge-exports.js
 var require_merge_exports = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/lib/helpers/merge-exports.js"(exports2, module2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/lib/helpers/merge-exports.js"(exports2, module2) {
     "use strict";
     var hasOwn2 = typeof Object.hasOwn === "undefined" ? Function.call.bind(Object.prototype.hasOwnProperty) : Object.hasOwn;
     function mergeModules(target, module3) {
@@ -11257,9 +11324,9 @@ var require_merge_exports = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/internal.js
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/internal.js
 var require_internal = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/internal.js"(exports2, module2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/internal.js"(exports2, module2) {
     "use strict";
     var Buffer2 = require_safer().Buffer;
     module2.exports = {
@@ -11438,9 +11505,9 @@ var require_internal = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/utf32.js
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/utf32.js
 var require_utf32 = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/utf32.js"(exports2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/utf32.js"(exports2) {
     "use strict";
     var Buffer2 = require_safer().Buffer;
     exports2._utf32 = Utf32Codec;
@@ -11461,7 +11528,7 @@ var require_utf32 = __commonJS({
     }
     Utf32Encoder.prototype.write = function(str) {
       var src = Buffer2.from(str, "ucs2");
-      var dst = Buffer2.alloc(src.length * 2);
+      var dst = Buffer2.alloc(src.length * 2 + 4);
       var write32 = this.isLE ? dst.writeUInt32LE : dst.writeUInt32BE;
       var offset = 0;
       for (var i = 0; i < src.length; i += 2) {
@@ -11528,9 +11595,9 @@ var require_utf32 = __commonJS({
         }
         if (overflow.length === 4) {
           if (isLE) {
-            codepoint = overflow[i] | overflow[i + 1] << 8 | overflow[i + 2] << 16 | overflow[i + 3] << 24;
+            codepoint = overflow[0] | overflow[1] << 8 | overflow[2] << 16 | overflow[3] << 24;
           } else {
-            codepoint = overflow[i + 3] | overflow[i + 2] << 8 | overflow[i + 1] << 16 | overflow[i] << 24;
+            codepoint = overflow[3] | overflow[2] << 8 | overflow[1] << 16 | overflow[0] << 24;
           }
           overflow.length = 0;
           offset = _writeCodepoint(dst, offset, codepoint, badChar);
@@ -11565,7 +11632,11 @@ var require_utf32 = __commonJS({
       return offset;
     }
     Utf32Decoder.prototype.end = function() {
+      if (this.overflow.length === 0) {
+        return;
+      }
       this.overflow.length = 0;
+      return String.fromCharCode(this.badChar);
     };
     exports2.utf32 = Utf32AutoCodec;
     exports2.ucs4 = "utf32";
@@ -11669,9 +11740,9 @@ var require_utf32 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/utf16.js
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/utf16.js
 var require_utf16 = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/utf16.js"(exports2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/utf16.js"(exports2) {
     "use strict";
     var Buffer2 = require_safer().Buffer;
     exports2.utf16be = Utf16BECodec;
@@ -11812,9 +11883,9 @@ var require_utf16 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/utf7.js
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/utf7.js
 var require_utf7 = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/utf7.js"(exports2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/utf7.js"(exports2) {
     "use strict";
     var Buffer2 = require_safer().Buffer;
     exports2.utf7 = Utf7Codec;
@@ -12030,9 +12101,9 @@ var require_utf7 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/sbcs-codec.js
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/sbcs-codec.js
 var require_sbcs_codec = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/sbcs-codec.js"(exports2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/sbcs-codec.js"(exports2) {
     "use strict";
     var Buffer2 = require_safer().Buffer;
     exports2._sbcs = SBCSCodec;
@@ -12092,9 +12163,9 @@ var require_sbcs_codec = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/sbcs-data.js
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/sbcs-data.js
 var require_sbcs_data = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/sbcs-data.js"(exports2, module2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/sbcs-data.js"(exports2, module2) {
     "use strict";
     module2.exports = {
       // Not supported by iconv, not sure why.
@@ -12190,6 +12261,8 @@ var require_sbcs_data = __commonJS({
       elot928: "iso88597",
       hebrew: "iso88598",
       hebrew8: "iso88598",
+      iso88598i: "iso88598",
+      iso88598e: "iso88598",
       turkish: "iso88599",
       turkish8: "iso88599",
       thai: "iso885911",
@@ -12245,9 +12318,9 @@ var require_sbcs_data = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/sbcs-data-generated.js
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/sbcs-data-generated.js
 var require_sbcs_data_generated = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/sbcs-data-generated.js"(exports2, module2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/sbcs-data-generated.js"(exports2, module2) {
     "use strict";
     module2.exports = {
       "437": "cp437",
@@ -12700,9 +12773,9 @@ var require_sbcs_data_generated = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/dbcs-codec.js
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/dbcs-codec.js
 var require_dbcs_codec = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/dbcs-codec.js"(exports2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/dbcs-codec.js"(exports2) {
     "use strict";
     var Buffer2 = require_safer().Buffer;
     exports2._dbcs = DBCSCodec;
@@ -13160,9 +13233,9 @@ var require_dbcs_codec = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/tables/shiftjis.json
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/tables/shiftjis.json
 var require_shiftjis = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/tables/shiftjis.json"(exports2, module2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/tables/shiftjis.json"(exports2, module2) {
     module2.exports = [
       ["0", "\0", 128],
       ["a1", "\uFF61", 62],
@@ -13291,9 +13364,9 @@ var require_shiftjis = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/tables/eucjp.json
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/tables/eucjp.json
 var require_eucjp = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/tables/eucjp.json"(exports2, module2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/tables/eucjp.json"(exports2, module2) {
     module2.exports = [
       ["0", "\0", 127],
       ["8ea1", "\uFF61", 62],
@@ -13479,9 +13552,9 @@ var require_eucjp = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/tables/cp936.json
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/tables/cp936.json
 var require_cp936 = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/tables/cp936.json"(exports2, module2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/tables/cp936.json"(exports2, module2) {
     module2.exports = [
       ["0", "\0", 127, "\u20AC"],
       ["8140", "\u4E02\u4E04\u4E05\u4E06\u4E0F\u4E12\u4E17\u4E1F\u4E20\u4E21\u4E23\u4E26\u4E29\u4E2E\u4E2F\u4E31\u4E33\u4E35\u4E37\u4E3C\u4E40\u4E41\u4E42\u4E44\u4E46\u4E4A\u4E51\u4E55\u4E57\u4E5A\u4E5B\u4E62\u4E63\u4E64\u4E65\u4E67\u4E68\u4E6A", 5, "\u4E72\u4E74", 9, "\u4E7F", 6, "\u4E87\u4E8A"],
@@ -13749,9 +13822,9 @@ var require_cp936 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/tables/gbk-added.json
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/tables/gbk-added.json
 var require_gbk_added = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/tables/gbk-added.json"(exports2, module2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/tables/gbk-added.json"(exports2, module2) {
     module2.exports = [
       ["a140", "\uE4C6", 62],
       ["a180", "\uE505", 32],
@@ -13811,16 +13884,16 @@ var require_gbk_added = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/tables/gb18030-ranges.json
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/tables/gb18030-ranges.json
 var require_gb18030_ranges = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/tables/gb18030-ranges.json"(exports2, module2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/tables/gb18030-ranges.json"(exports2, module2) {
     module2.exports = { uChars: [128, 165, 169, 178, 184, 216, 226, 235, 238, 244, 248, 251, 253, 258, 276, 284, 300, 325, 329, 334, 364, 463, 465, 467, 469, 471, 473, 475, 477, 506, 594, 610, 712, 716, 730, 930, 938, 962, 970, 1026, 1104, 1106, 8209, 8215, 8218, 8222, 8231, 8241, 8244, 8246, 8252, 8365, 8452, 8454, 8458, 8471, 8482, 8556, 8570, 8596, 8602, 8713, 8720, 8722, 8726, 8731, 8737, 8740, 8742, 8748, 8751, 8760, 8766, 8777, 8781, 8787, 8802, 8808, 8816, 8854, 8858, 8870, 8896, 8979, 9322, 9372, 9548, 9588, 9616, 9622, 9634, 9652, 9662, 9672, 9676, 9680, 9702, 9735, 9738, 9793, 9795, 11906, 11909, 11913, 11917, 11928, 11944, 11947, 11951, 11956, 11960, 11964, 11979, 12284, 12292, 12312, 12319, 12330, 12351, 12436, 12447, 12535, 12543, 12586, 12842, 12850, 12964, 13200, 13215, 13218, 13253, 13263, 13267, 13270, 13384, 13428, 13727, 13839, 13851, 14617, 14703, 14801, 14816, 14964, 15183, 15471, 15585, 16471, 16736, 17208, 17325, 17330, 17374, 17623, 17997, 18018, 18212, 18218, 18301, 18318, 18760, 18811, 18814, 18820, 18823, 18844, 18848, 18872, 19576, 19620, 19738, 19887, 40870, 59244, 59336, 59367, 59413, 59417, 59423, 59431, 59437, 59443, 59452, 59460, 59478, 59493, 63789, 63866, 63894, 63976, 63986, 64016, 64018, 64021, 64025, 64034, 64037, 64042, 65074, 65093, 65107, 65112, 65127, 65132, 65375, 65510, 65536], gbChars: [0, 36, 38, 45, 50, 81, 89, 95, 96, 100, 103, 104, 105, 109, 126, 133, 148, 172, 175, 179, 208, 306, 307, 308, 309, 310, 311, 312, 313, 341, 428, 443, 544, 545, 558, 741, 742, 749, 750, 805, 819, 820, 7922, 7924, 7925, 7927, 7934, 7943, 7944, 7945, 7950, 8062, 8148, 8149, 8152, 8164, 8174, 8236, 8240, 8262, 8264, 8374, 8380, 8381, 8384, 8388, 8390, 8392, 8393, 8394, 8396, 8401, 8406, 8416, 8419, 8424, 8437, 8439, 8445, 8482, 8485, 8496, 8521, 8603, 8936, 8946, 9046, 9050, 9063, 9066, 9076, 9092, 9100, 9108, 9111, 9113, 9131, 9162, 9164, 9218, 9219, 11329, 11331, 11334, 11336, 11346, 11361, 11363, 11366, 11370, 11372, 11375, 11389, 11682, 11686, 11687, 11692, 11694, 11714, 11716, 11723, 11725, 11730, 11736, 11982, 11989, 12102, 12336, 12348, 12350, 12384, 12393, 12395, 12397, 12510, 12553, 12851, 12962, 12973, 13738, 13823, 13919, 13933, 14080, 14298, 14585, 14698, 15583, 15847, 16318, 16434, 16438, 16481, 16729, 17102, 17122, 17315, 17320, 17402, 17418, 17859, 17909, 17911, 17915, 17916, 17936, 17939, 17961, 18664, 18703, 18814, 18962, 19043, 33469, 33470, 33471, 33484, 33485, 33490, 33497, 33501, 33505, 33513, 33520, 33536, 33550, 37845, 37921, 37948, 38029, 38038, 38064, 38065, 38066, 38069, 38075, 38076, 38078, 39108, 39109, 39113, 39114, 39115, 39116, 39265, 39394, 189e3] };
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/tables/cp949.json
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/tables/cp949.json
 var require_cp949 = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/tables/cp949.json"(exports2, module2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/tables/cp949.json"(exports2, module2) {
     module2.exports = [
       ["0", "\0", 127],
       ["8141", "\uAC02\uAC03\uAC05\uAC06\uAC0B", 4, "\uAC18\uAC1E\uAC1F\uAC21\uAC22\uAC23\uAC25", 6, "\uAC2E\uAC32\uAC33\uAC34"],
@@ -14097,9 +14170,9 @@ var require_cp949 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/tables/cp950.json
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/tables/cp950.json
 var require_cp950 = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/tables/cp950.json"(exports2, module2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/tables/cp950.json"(exports2, module2) {
     module2.exports = [
       ["0", "\0", 127],
       ["a140", "\u3000\uFF0C\u3001\u3002\uFF0E\u2027\uFF1B\uFF1A\uFF1F\uFF01\uFE30\u2026\u2025\uFE50\uFE51\uFE52\xB7\uFE54\uFE55\uFE56\uFE57\uFF5C\u2013\uFE31\u2014\uFE33\u2574\uFE34\uFE4F\uFF08\uFF09\uFE35\uFE36\uFF5B\uFF5D\uFE37\uFE38\u3014\u3015\uFE39\uFE3A\u3010\u3011\uFE3B\uFE3C\u300A\u300B\uFE3D\uFE3E\u3008\u3009\uFE3F\uFE40\u300C\u300D\uFE41\uFE42\u300E\u300F\uFE43\uFE44\uFE59\uFE5A"],
@@ -14280,9 +14353,9 @@ var require_cp950 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/tables/big5-added.json
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/tables/big5-added.json
 var require_big5_added = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/tables/big5-added.json"(exports2, module2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/tables/big5-added.json"(exports2, module2) {
     module2.exports = [
       ["8740", "\u43F0\u4C32\u4603\u45A6\u4578\u{27267}\u4D77\u45B3\u{27CB1}\u4CE2\u{27CC5}\u3B95\u4736\u4744\u4C47\u4C40\u{242BF}\u{23617}\u{27352}\u{26E8B}\u{270D2}\u4C57\u{2A351}\u474F\u45DA\u4C85\u{27C6C}\u4D07\u4AA4\u46A1\u{26B23}\u7225\u{25A54}\u{21A63}\u{23E06}\u{23F61}\u664D\u56FB"],
       ["8767", "\u7D95\u591D\u{28BB9}\u3DF4\u9734\u{27BEF}\u5BDB\u{21D5E}\u5AA4\u3625\u{29EB0}\u5AD1\u5BB7\u5CFC\u676E\u8593\u{29945}\u7461\u749D\u3875\u{21D53}\u{2369E}\u{26021}\u3EEC"],
@@ -14408,9 +14481,9 @@ var require_big5_added = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/dbcs-data.js
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/dbcs-data.js
 var require_dbcs_data = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/dbcs-data.js"(exports2, module2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/dbcs-data.js"(exports2, module2) {
     "use strict";
     module2.exports = {
       // == Japanese/ShiftJIS ====================================================
@@ -14655,9 +14728,9 @@ var require_dbcs_data = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/index.js
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/index.js
 var require_encodings = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/encodings/index.js"(exports2, module2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/encodings/index.js"(exports2, module2) {
     "use strict";
     var mergeModules = require_merge_exports();
     var modules = [
@@ -14680,9 +14753,9 @@ var require_encodings = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/lib/streams.js
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/lib/streams.js
 var require_streams = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/lib/streams.js"(exports2, module2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/lib/streams.js"(exports2, module2) {
     "use strict";
     var Buffer2 = require_safer().Buffer;
     module2.exports = function(streamModule) {
@@ -14777,9 +14850,9 @@ var require_streams = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/lib/index.js
+// ../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/lib/index.js
 var require_lib3 = __commonJS({
-  "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/lib/index.js"(exports2, module2) {
+  "../../node_modules/.pnpm/iconv-lite@0.7.3/node_modules/iconv-lite/lib/index.js"(exports2, module2) {
     "use strict";
     var Buffer2 = require_safer().Buffer;
     var bomHandling = require_bom_handling();
@@ -15296,106 +15369,133 @@ var require_on_finished = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/content-type@1.0.5/node_modules/content-type/index.js
-var require_content_type = __commonJS({
-  "../../node_modules/.pnpm/content-type@1.0.5/node_modules/content-type/index.js"(exports2) {
+// ../../node_modules/.pnpm/content-type@2.0.0/node_modules/content-type/dist/index.js
+var require_dist2 = __commonJS({
+  "../../node_modules/.pnpm/content-type@2.0.0/node_modules/content-type/dist/index.js"(exports2) {
     "use strict";
-    var PARAM_REGEXP = /; *([!#$%&'*+.^_`|~0-9A-Za-z-]+) *= *("(?:[\u000b\u0020\u0021\u0023-\u005b\u005d-\u007e\u0080-\u00ff]|\\[\u000b\u0020-\u00ff])*"|[!#$%&'*+.^_`|~0-9A-Za-z-]+) */g;
-    var TEXT_REGEXP = /^[\u000b\u0020-\u007e\u0080-\u00ff]+$/;
-    var TOKEN_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
-    var QESC_REGEXP = /\\([\u000b\u0020-\u00ff])/g;
-    var QUOTE_REGEXP = /([\\"])/g;
-    var TYPE_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+\/[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+    Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.format = format;
     exports2.parse = parse3;
+    var TEXT_REGEXP = /^[\u0009\u0020-\u007e\u0080-\u00ff]*$/;
+    var TOKEN_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+    var QUOTE_REGEXP = /[\\"]/g;
+    var TYPE_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+\/[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+    var NullObject = /* @__PURE__ */ (() => {
+      const C = function() {
+      };
+      C.prototype = /* @__PURE__ */ Object.create(null);
+      return C;
+    })();
     function format(obj) {
-      if (!obj || typeof obj !== "object") {
-        throw new TypeError("argument obj is required");
-      }
-      var parameters = obj.parameters;
-      var type = obj.type;
+      const { type, parameters } = obj;
       if (!type || !TYPE_REGEXP.test(type)) {
-        throw new TypeError("invalid type");
+        throw new TypeError(`Invalid type: ${type}`);
       }
-      var string4 = type;
-      if (parameters && typeof parameters === "object") {
-        var param;
-        var params = Object.keys(parameters).sort();
-        for (var i = 0; i < params.length; i++) {
-          param = params[i];
+      let result = type;
+      if (parameters) {
+        for (const param of Object.keys(parameters)) {
           if (!TOKEN_REGEXP.test(param)) {
-            throw new TypeError("invalid parameter name");
+            throw new TypeError(`Invalid parameter name: ${param}`);
           }
-          string4 += "; " + param + "=" + qstring(parameters[param]);
+          result += `; ${param}=${qstring(parameters[param])}`;
         }
       }
-      return string4;
+      return result;
     }
-    function parse3(string4) {
-      if (!string4) {
-        throw new TypeError("argument string is required");
-      }
-      var header = typeof string4 === "object" ? getcontenttype(string4) : string4;
-      if (typeof header !== "string") {
-        throw new TypeError("argument string is required to be a string");
-      }
-      var index = header.indexOf(";");
-      var type = index !== -1 ? header.slice(0, index).trim() : header.trim();
-      if (!TYPE_REGEXP.test(type)) {
-        throw new TypeError("invalid media type");
-      }
-      var obj = new ContentType(type.toLowerCase());
-      if (index !== -1) {
-        var key;
-        var match;
-        var value;
-        PARAM_REGEXP.lastIndex = index;
-        while (match = PARAM_REGEXP.exec(header)) {
-          if (match.index !== index) {
-            throw new TypeError("invalid parameter format");
-          }
-          index += match[0].length;
-          key = match[1].toLowerCase();
-          value = match[2];
-          if (value.charCodeAt(0) === 34) {
-            value = value.slice(1, -1);
-            if (value.indexOf("\\") !== -1) {
-              value = value.replace(QESC_REGEXP, "$1");
+    function parse3(header, options) {
+      const len = header.length;
+      let index = skipOWS(header, 0, len);
+      const valueStart = index;
+      index = skipValue(header, index, len);
+      const valueEnd = trailingOWS(header, valueStart, index);
+      const type = header.slice(valueStart, valueEnd).toLowerCase();
+      const parameters = options?.parameters === false ? new NullObject() : parseParameters(header, index, len);
+      return { type, parameters };
+    }
+    var SP = 32;
+    var HTAB = 9;
+    var SEMI = 59;
+    var EQ = 61;
+    var DQUOTE = 34;
+    var BSLASH = 92;
+    function parseParameters(header, index, len) {
+      const parameters = new NullObject();
+      parameter: while (index < len) {
+        index = skipOWS(header, index + 1, len);
+        const keyStart = index;
+        while (index < len) {
+          const code = header.charCodeAt(index);
+          if (code === SEMI)
+            continue parameter;
+          if (code === EQ) {
+            const keyEnd = trailingOWS(header, keyStart, index);
+            const key = header.slice(keyStart, keyEnd).toLowerCase();
+            index = skipOWS(header, index + 1, len);
+            if (index < len && header.charCodeAt(index) === DQUOTE) {
+              index++;
+              let value = "";
+              while (index < len) {
+                const code2 = header.charCodeAt(index++);
+                if (code2 === DQUOTE) {
+                  index = skipValue(header, index, len);
+                  if (parameters[key] === void 0)
+                    parameters[key] = value;
+                  break;
+                }
+                if (code2 === BSLASH && index < len) {
+                  value += header[index++];
+                  continue;
+                }
+                value += String.fromCharCode(code2);
+              }
+              continue parameter;
             }
+            const valueStart = index;
+            index = skipValue(header, index, len);
+            if (parameters[key] === void 0) {
+              const valueEnd = trailingOWS(header, valueStart, index);
+              parameters[key] = header.slice(valueStart, valueEnd);
+            }
+            continue parameter;
           }
-          obj.parameters[key] = value;
-        }
-        if (index !== header.length) {
-          throw new TypeError("invalid parameter format");
+          index++;
         }
       }
-      return obj;
+      return parameters;
     }
-    function getcontenttype(obj) {
-      var header;
-      if (typeof obj.getHeader === "function") {
-        header = obj.getHeader("content-type");
-      } else if (typeof obj.headers === "object") {
-        header = obj.headers && obj.headers["content-type"];
+    function skipValue(str, index, len) {
+      while (index < len) {
+        const char2 = str.charCodeAt(index);
+        if (char2 === SEMI)
+          break;
+        index++;
       }
-      if (typeof header !== "string") {
-        throw new TypeError("content-type header is missing from object");
-      }
-      return header;
+      return index;
     }
-    function qstring(val) {
-      var str = String(val);
-      if (TOKEN_REGEXP.test(str)) {
+    function skipOWS(header, index, len) {
+      while (index < len) {
+        const char2 = header.charCodeAt(index);
+        if (char2 !== SP && char2 !== HTAB)
+          break;
+        index++;
+      }
+      return index;
+    }
+    function trailingOWS(header, start, end) {
+      while (end > start) {
+        const char2 = header.charCodeAt(end - 1);
+        if (char2 !== SP && char2 !== HTAB)
+          break;
+        end--;
+      }
+      return end;
+    }
+    function qstring(str) {
+      if (TOKEN_REGEXP.test(str))
         return str;
-      }
-      if (str.length > 0 && !TEXT_REGEXP.test(str)) {
-        throw new TypeError("invalid parameter value");
-      }
-      return '"' + str.replace(QUOTE_REGEXP, "\\$1") + '"';
-    }
-    function ContentType(type) {
-      this.parameters = /* @__PURE__ */ Object.create(null);
-      this.type = type;
+      if (TEXT_REGEXP.test(str))
+        return `"${str.replace(QUOTE_REGEXP, "\\$&")}"`;
+      throw new TypeError(`Invalid parameter value: ${str}`);
     }
   }
 });
@@ -24856,11 +24956,11 @@ var require_mime_types = __commonJS({
       }
       return exts[0];
     }
-    function lookup(path3) {
-      if (!path3 || typeof path3 !== "string") {
+    function lookup(path4) {
+      if (!path4 || typeof path4 !== "string") {
         return false;
       }
-      var extension2 = extname("x." + path3).toLowerCase().slice(1);
+      var extension2 = extname("x." + path4).toLowerCase().slice(1);
       if (!extension2) {
         return false;
       }
@@ -24905,9 +25005,9 @@ var require_mime_types = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/media-typer@1.1.0/node_modules/media-typer/index.js
+// ../../node_modules/.pnpm/media-typer@1.1.1/node_modules/media-typer/index.js
 var require_media_typer = __commonJS({
-  "../../node_modules/.pnpm/media-typer@1.1.0/node_modules/media-typer/index.js"(exports2) {
+  "../../node_modules/.pnpm/media-typer@1.1.1/node_modules/media-typer/index.js"(exports2) {
     "use strict";
     var SUBTYPE_NAME_REGEXP = /^[A-Za-z0-9][A-Za-z0-9!#$&^_.-]{0,126}$/;
     var TYPE_NAME_REGEXP = /^[A-Za-z0-9][A-Za-z0-9!#$&^_-]{0,126}$/;
@@ -24938,18 +25038,12 @@ var require_media_typer = __commonJS({
       return string4;
     }
     function test(string4) {
-      if (!string4) {
-        throw new TypeError("argument string is required");
-      }
       if (typeof string4 !== "string") {
         throw new TypeError("argument string is required to be a string");
       }
       return TYPE_REGEXP.test(string4.toLowerCase());
     }
     function parse3(string4) {
-      if (!string4) {
-        throw new TypeError("argument string is required");
-      }
       if (typeof string4 !== "string") {
         throw new TypeError("argument string is required to be a string");
       }
@@ -24975,11 +25069,11 @@ var require_media_typer = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/type-is@2.0.1/node_modules/type-is/index.js
+// ../../node_modules/.pnpm/type-is@2.1.0/node_modules/type-is/index.js
 var require_type_is = __commonJS({
-  "../../node_modules/.pnpm/type-is@2.0.1/node_modules/type-is/index.js"(exports2, module2) {
+  "../../node_modules/.pnpm/type-is@2.1.0/node_modules/type-is/index.js"(exports2, module2) {
     "use strict";
-    var contentType = require_content_type();
+    var contentType = require_dist2();
     var mime = require_mime_types();
     var typer = require_media_typer();
     module2.exports = typeofrequest;
@@ -24988,9 +25082,12 @@ var require_type_is = __commonJS({
     module2.exports.normalize = normalize;
     module2.exports.match = mimeMatch;
     function typeis(value, types_) {
+      if (value && typeof value === "object") {
+        value = value.headers["content-type"];
+      }
       var i;
       var types3 = types_;
-      var val = tryNormalizeType(value);
+      var val = normalizeType(value);
       if (!val) {
         return false;
       }
@@ -25056,25 +25153,19 @@ var require_type_is = __commonJS({
       return true;
     }
     function normalizeType(value) {
-      var type = contentType.parse(value).type;
+      if (!value) return null;
+      var type = contentType.parse(value, { parameters: false }).type;
       return typer.test(type) ? type : null;
-    }
-    function tryNormalizeType(value) {
-      try {
-        return value ? normalizeType(value) : null;
-      } catch (err) {
-        return null;
-      }
     }
   }
 });
 
-// ../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/utils.js
+// ../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/utils.js
 var require_utils3 = __commonJS({
-  "../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/utils.js"(exports2, module2) {
+  "../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/utils.js"(exports2, module2) {
     "use strict";
     var bytes = require_bytes();
-    var contentType = require_content_type();
+    var contentType = require_dist2();
     var typeis = require_type_is();
     module2.exports = {
       getCharset,
@@ -25082,11 +25173,9 @@ var require_utils3 = __commonJS({
       passthrough
     };
     function getCharset(req) {
-      try {
-        return (contentType.parse(req).parameters.charset || "").toLowerCase();
-      } catch {
-        return void 0;
-      }
+      const header = req.headers["content-type"];
+      if (!header) return void 0;
+      return contentType.parse(header).parameters.charset?.toLowerCase();
     }
     function typeChecker(type) {
       return function checkType(req) {
@@ -25097,15 +25186,18 @@ var require_utils3 = __commonJS({
       if (!defaultType) {
         throw new TypeError("defaultType must be provided");
       }
-      var inflate = options?.inflate !== false;
-      var limit = typeof options?.limit !== "number" ? bytes.parse(options?.limit || "100kb") : options?.limit;
-      var type = options?.type || defaultType;
-      var verify = options?.verify || false;
-      var defaultCharset = options?.defaultCharset || "utf-8";
+      const inflate = options?.inflate !== false;
+      const limit = typeof options?.limit === "undefined" || options?.limit === null ? 102400 : bytes.parse(options.limit);
+      const type = options?.type || defaultType;
+      const verify = options?.verify || false;
+      const defaultCharset = options?.defaultCharset || "utf-8";
+      if (limit === null) {
+        throw new TypeError(`option limit "${String(options.limit)}" is invalid`);
+      }
       if (verify !== false && typeof verify !== "function") {
         throw new TypeError("option verify must be function");
       }
-      var shouldParse = typeof type !== "function" ? typeChecker(type) : type;
+      const shouldParse = typeof type !== "function" ? typeChecker(type) : type;
       return {
         inflate,
         limit,
@@ -25120,9 +25212,9 @@ var require_utils3 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/read.js
+// ../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/read.js
 var require_read = __commonJS({
-  "../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/read.js"(exports2, module2) {
+  "../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/read.js"(exports2, module2) {
     "use strict";
     var createError = require_http_errors();
     var getBody = require_raw_body();
@@ -25152,7 +25244,7 @@ var require_read = __commonJS({
         next();
         return;
       }
-      var encoding = null;
+      let encoding = null;
       if (options?.skipCharset !== true) {
         encoding = getCharset(req) || options.defaultCharset;
         if (!!options?.isValidCharset && !options.isValidCharset(encoding)) {
@@ -25164,10 +25256,10 @@ var require_read = __commonJS({
           return;
         }
       }
-      var length;
-      var opts = options;
-      var stream;
-      var verify = opts.verify;
+      let length;
+      const opts = options;
+      let stream;
+      const verify = opts.verify;
       try {
         stream = contentstream(req, debug, opts.inflate);
         length = stream.length;
@@ -25186,7 +25278,7 @@ var require_read = __commonJS({
       debug("read body");
       getBody(stream, opts, function(error40, body) {
         if (error40) {
-          var _error;
+          let _error;
           if (error40.type === "encoding.unsupported") {
             _error = createError(415, 'unsupported charset "' + encoding.toUpperCase() + '"', {
               charset: encoding.toLowerCase(),
@@ -25216,7 +25308,7 @@ var require_read = __commonJS({
             return;
           }
         }
-        var str = body;
+        let str = body;
         try {
           debug("parse body");
           str = typeof body !== "string" && encoding !== null ? iconv.decode(body, encoding) : body;
@@ -25232,8 +25324,8 @@ var require_read = __commonJS({
       });
     }
     function contentstream(req, debug, inflate) {
-      var encoding = (req.headers["content-encoding"] || "identity").toLowerCase();
-      var length = req.headers["content-length"];
+      const encoding = (req.headers["content-encoding"] || "identity").toLowerCase();
+      const length = req.headers["content-length"];
       debug('content-encoding "%s"', encoding);
       if (inflate === false && encoding !== "identity") {
         throw createError(415, "content encoding unsupported", {
@@ -25245,7 +25337,7 @@ var require_read = __commonJS({
         req.length = length;
         return req;
       }
-      var stream = createDecompressionStream(encoding, debug);
+      const stream = createDecompressionStream(encoding, debug);
       req.pipe(stream);
       return stream;
     }
@@ -25278,9 +25370,9 @@ var require_read = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/types/json.js
+// ../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/types/json.js
 var require_json = __commonJS({
-  "../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/types/json.js"(exports2, module2) {
+  "../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/types/json.js"(exports2, module2) {
     "use strict";
     var debug = require_src()("body-parser:json");
     var read = require_read();
@@ -25291,18 +25383,43 @@ var require_json = __commonJS({
     var JSON_SYNTAX_REGEXP = /#+/g;
     function json4(options) {
       const normalizedOptions = normalizeOptions(options, "application/json");
-      var reviver = options?.reviver;
-      var strict = options?.strict !== false;
-      function parse3(body) {
-        if (body.length === 0) {
-          return {};
-        }
-        if (strict) {
-          var first = firstchar(body);
+      const parse3 = createJsonParser(options);
+      const readOptions = {
+        ...normalizedOptions,
+        // assert charset per RFC 7159 sec 8.1
+        isValidCharset: (charset) => charset.slice(0, 4) === "utf-"
+      };
+      return function jsonParser(req, res, next) {
+        read(req, res, next, parse3, debug, readOptions);
+      };
+    }
+    function createJsonParser(options) {
+      const reviver = options?.reviver;
+      const strict = options?.strict !== false;
+      if (strict) {
+        return function parse3(body) {
+          if (body.length === 0) {
+            return {};
+          }
+          const first = firstchar(body);
           if (first !== "{" && first !== "[") {
             debug("strict violation");
             throw createStrictSyntaxError(body, first);
           }
+          try {
+            debug("parse json");
+            return JSON.parse(body, reviver);
+          } catch (e) {
+            throw normalizeJsonSyntaxError(e, {
+              message: e.message,
+              stack: e.stack
+            });
+          }
+        };
+      }
+      return function parse3(body) {
+        if (body.length === 0) {
+          return {};
         }
         try {
           debug("parse json");
@@ -25313,19 +25430,11 @@ var require_json = __commonJS({
             stack: e.stack
           });
         }
-      }
-      const readOptions = {
-        ...normalizedOptions,
-        // assert charset per RFC 7159 sec 8.1
-        isValidCharset: (charset) => charset.slice(0, 4) === "utf-"
-      };
-      return function jsonParser(req, res, next) {
-        read(req, res, next, parse3, debug, readOptions);
       };
     }
     function createStrictSyntaxError(str, char2) {
-      var index = str.indexOf(char2);
-      var partial2 = "";
+      const index = str.indexOf(char2);
+      let partial2 = "";
       if (index !== -1) {
         partial2 = str.substring(0, index) + JSON_SYNTAX_CHAR.repeat(str.length - index);
       }
@@ -25342,13 +25451,13 @@ var require_json = __commonJS({
       }
     }
     function firstchar(str) {
-      var match = FIRST_CHAR_REGEXP.exec(str);
+      const match = FIRST_CHAR_REGEXP.exec(str);
       return match ? match[1] : void 0;
     }
     function normalizeJsonSyntaxError(error40, obj) {
-      var keys = Object.getOwnPropertyNames(error40);
-      for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
+      const keys = Object.getOwnPropertyNames(error40);
+      for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
         if (key !== "stack" && key !== "message") {
           delete error40[key];
         }
@@ -25360,9 +25469,9 @@ var require_json = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/types/raw.js
+// ../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/types/raw.js
 var require_raw = __commonJS({
-  "../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/types/raw.js"(exports2, module2) {
+  "../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/types/raw.js"(exports2, module2) {
     "use strict";
     var debug = require_src()("body-parser:raw");
     var read = require_read();
@@ -25382,9 +25491,9 @@ var require_raw = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/types/text.js
+// ../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/types/text.js
 var require_text = __commonJS({
-  "../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/types/text.js"(exports2, module2) {
+  "../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/types/text.js"(exports2, module2) {
     "use strict";
     var debug = require_src()("body-parser:text");
     var read = require_read();
@@ -26038,9 +26147,9 @@ var require_side_channel_list = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/es-object-atoms@1.1.1/node_modules/es-object-atoms/index.js
+// ../../node_modules/.pnpm/es-object-atoms@1.1.2/node_modules/es-object-atoms/index.js
 var require_es_object_atoms = __commonJS({
-  "../../node_modules/.pnpm/es-object-atoms@1.1.1/node_modules/es-object-atoms/index.js"(exports2, module2) {
+  "../../node_modules/.pnpm/es-object-atoms@1.1.2/node_modules/es-object-atoms/index.js"(exports2, module2) {
     "use strict";
     module2.exports = Object;
   }
@@ -26491,9 +26600,9 @@ var require_get_proto = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/hasown@2.0.3/node_modules/hasown/index.js
+// ../../node_modules/.pnpm/hasown@2.0.4/node_modules/hasown/index.js
 var require_hasown = __commonJS({
-  "../../node_modules/.pnpm/hasown@2.0.3/node_modules/hasown/index.js"(exports2, module2) {
+  "../../node_modules/.pnpm/hasown@2.0.4/node_modules/hasown/index.js"(exports2, module2) {
     "use strict";
     var call = Function.prototype.call;
     var $hasOwn = Object.prototype.hasOwnProperty;
@@ -26985,9 +27094,9 @@ var require_side_channel_weakmap = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/side-channel@1.1.0/node_modules/side-channel/index.js
+// ../../node_modules/.pnpm/side-channel@1.1.1/node_modules/side-channel/index.js
 var require_side_channel = __commonJS({
-  "../../node_modules/.pnpm/side-channel@1.1.0/node_modules/side-channel/index.js"(exports2, module2) {
+  "../../node_modules/.pnpm/side-channel@1.1.1/node_modules/side-channel/index.js"(exports2, module2) {
     "use strict";
     var $TypeError = require_type();
     var inspect = require_object_inspect();
@@ -27000,7 +27109,8 @@ var require_side_channel = __commonJS({
       var channel = {
         assert: function(key) {
           if (!channel.has(key)) {
-            throw new $TypeError("Side channel does not contain " + inspect(key));
+            var keyDesc = key && Object(key) === key ? "the given object key" : inspect(key);
+            throw new $TypeError("Side channel does not contain " + keyDesc);
           }
         },
         "delete": function(key) {
@@ -27024,9 +27134,9 @@ var require_side_channel = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/qs@6.15.1/node_modules/qs/lib/formats.js
+// ../../node_modules/.pnpm/qs@6.15.3/node_modules/qs/lib/formats.js
 var require_formats = __commonJS({
-  "../../node_modules/.pnpm/qs@6.15.1/node_modules/qs/lib/formats.js"(exports2, module2) {
+  "../../node_modules/.pnpm/qs@6.15.3/node_modules/qs/lib/formats.js"(exports2, module2) {
     "use strict";
     var replace = String.prototype.replace;
     var percentTwenties = /%20/g;
@@ -27050,12 +27160,13 @@ var require_formats = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/qs@6.15.1/node_modules/qs/lib/utils.js
+// ../../node_modules/.pnpm/qs@6.15.3/node_modules/qs/lib/utils.js
 var require_utils4 = __commonJS({
-  "../../node_modules/.pnpm/qs@6.15.1/node_modules/qs/lib/utils.js"(exports2, module2) {
+  "../../node_modules/.pnpm/qs@6.15.3/node_modules/qs/lib/utils.js"(exports2, module2) {
     "use strict";
     var formats = require_formats();
     var getSideChannel = require_side_channel();
+    var defineProperty = require_es_define_property();
     var has = Object.prototype.hasOwnProperty;
     var isArray2 = Array.isArray;
     var overflowChannel = getSideChannel();
@@ -27103,6 +27214,18 @@ var require_utils4 = __commonJS({
       }
       return obj;
     };
+    var setProperty = function setProperty2(obj, key, value) {
+      if (key === "__proto__" && defineProperty) {
+        defineProperty(obj, key, {
+          configurable: true,
+          enumerable: true,
+          value,
+          writable: true
+        });
+      } else {
+        obj[key] = value;
+      }
+    };
     var merge2 = function merge3(target, source, options) {
       if (!source) {
         return target;
@@ -27110,7 +27233,10 @@ var require_utils4 = __commonJS({
       if (typeof source !== "object" && typeof source !== "function") {
         if (isArray2(target)) {
           var nextIndex = target.length;
-          if (options && typeof options.arrayLimit === "number" && nextIndex > options.arrayLimit) {
+          if (options && typeof options.arrayLimit === "number" && nextIndex >= options.arrayLimit) {
+            if (options.throwOnLimitExceeded) {
+              throw new RangeError("Array limit exceeded. Only " + options.arrayLimit + " element" + (options.arrayLimit === 1 ? "" : "s") + " allowed in an array.");
+            }
             return markOverflow(arrayToObject(target.concat(source), options), nextIndex);
           }
           target[nextIndex] = source;
@@ -27141,6 +27267,9 @@ var require_utils4 = __commonJS({
         }
         var combined = [target].concat(source);
         if (options && typeof options.arrayLimit === "number" && combined.length > options.arrayLimit) {
+          if (options.throwOnLimitExceeded) {
+            throw new RangeError("Array limit exceeded. Only " + options.arrayLimit + " element" + (options.arrayLimit === 1 ? "" : "s") + " allowed in an array.");
+          }
           return markOverflow(arrayToObject(combined, options), combined.length - 1);
         }
         return combined;
@@ -27162,14 +27291,20 @@ var require_utils4 = __commonJS({
             target[i] = item;
           }
         });
+        if (options && typeof options.arrayLimit === "number" && target.length > options.arrayLimit) {
+          if (options.throwOnLimitExceeded) {
+            throw new RangeError("Array limit exceeded. Only " + options.arrayLimit + " element" + (options.arrayLimit === 1 ? "" : "s") + " allowed in an array.");
+          }
+          return markOverflow(arrayToObject(target, options), target.length - 1);
+        }
         return target;
       }
       return Object.keys(source).reduce(function(acc, key) {
         var value = source[key];
         if (has.call(acc, key)) {
-          acc[key] = merge3(acc[key], value, options);
+          setProperty(acc, key, merge3(acc[key], value, options));
         } else {
-          acc[key] = value;
+          setProperty(acc, key, value);
         }
         if (isOverflow(source) && !isOverflow(acc)) {
           markOverflow(acc, getMaxIndex(source));
@@ -27185,7 +27320,7 @@ var require_utils4 = __commonJS({
     };
     var assign = function assignSingleSource(target, source) {
       return Object.keys(source).reduce(function(acc, key) {
-        acc[key] = source[key];
+        setProperty(acc, key, source[key]);
         return acc;
       }, target);
     };
@@ -27219,6 +27354,13 @@ var require_utils4 = __commonJS({
       var out = "";
       for (var j = 0; j < string4.length; j += limit) {
         var segment = string4.length >= limit ? string4.slice(j, j + limit) : string4;
+        if (j + limit < string4.length) {
+          var last = segment.charCodeAt(segment.length - 1);
+          if (last >= 55296 && last <= 56319) {
+            segment = segment.slice(0, -1);
+            j -= 1;
+          }
+        }
         var arr = [];
         for (var i = 0; i < segment.length; ++i) {
           var c = segment.charCodeAt(i);
@@ -27248,7 +27390,7 @@ var require_utils4 = __commonJS({
     };
     var compact = function compact2(value) {
       var queue = [{ obj: { o: value }, prop: "o" }];
-      var refs = [];
+      var refs = getSideChannel();
       for (var i = 0; i < queue.length; ++i) {
         var item = queue[i];
         var obj = item.obj[item.prop];
@@ -27256,9 +27398,9 @@ var require_utils4 = __commonJS({
         for (var j = 0; j < keys.length; ++j) {
           var key = keys[j];
           var val = obj[key];
-          if (typeof val === "object" && val !== null && refs.indexOf(val) === -1) {
+          if (typeof val === "object" && val !== null && !refs.has(val)) {
             queue[queue.length] = { obj, prop: key };
-            refs[refs.length] = val;
+            refs.set(val, true);
           }
         }
       }
@@ -27274,8 +27416,11 @@ var require_utils4 = __commonJS({
       }
       return !!(obj.constructor && obj.constructor.isBuffer && obj.constructor.isBuffer(obj));
     };
-    var combine = function combine2(a, b, arrayLimit, plainObjects) {
+    var combine = function combine2(a, b, arrayLimit, plainObjects, throwOnLimitExceeded) {
       if (isOverflow(a)) {
+        if (throwOnLimitExceeded) {
+          throw new RangeError("Array limit exceeded. Only " + arrayLimit + " element" + (arrayLimit === 1 ? "" : "s") + " allowed in an array.");
+        }
         var newIndex = getMaxIndex(a) + 1;
         a[newIndex] = b;
         setMaxIndex(a, newIndex);
@@ -27283,6 +27428,9 @@ var require_utils4 = __commonJS({
       }
       var result = [].concat(a, b);
       if (result.length > arrayLimit) {
+        if (throwOnLimitExceeded) {
+          throw new RangeError("Array limit exceeded. Only " + arrayLimit + " element" + (arrayLimit === 1 ? "" : "s") + " allowed in an array.");
+        }
         return markOverflow(arrayToObject(result, { plainObjects }), result.length - 1);
       }
       return result;
@@ -27314,9 +27462,9 @@ var require_utils4 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/qs@6.15.1/node_modules/qs/lib/stringify.js
+// ../../node_modules/.pnpm/qs@6.15.3/node_modules/qs/lib/stringify.js
 var require_stringify = __commonJS({
-  "../../node_modules/.pnpm/qs@6.15.1/node_modules/qs/lib/stringify.js"(exports2, module2) {
+  "../../node_modules/.pnpm/qs@6.15.3/node_modules/qs/lib/stringify.js"(exports2, module2) {
     "use strict";
     var getSideChannel = require_side_channel();
     var utils = require_utils4();
@@ -27402,7 +27550,7 @@ var require_stringify = __commonJS({
       }
       if (obj === null) {
         if (strictNullHandling) {
-          return encoder && !encodeValuesOnly ? encoder(prefix, defaults2.encoder, charset, "key", format) : prefix;
+          return formatter(encoder && !encodeValuesOnly ? encoder(prefix, defaults2.encoder, charset, "key", format) : prefix);
         }
         obj = "";
       }
@@ -27420,7 +27568,9 @@ var require_stringify = __commonJS({
       var objKeys;
       if (generateArrayPrefix === "comma" && isArray2(obj)) {
         if (encodeValuesOnly && encoder) {
-          obj = utils.maybeMap(obj, encoder);
+          obj = utils.maybeMap(obj, function(v) {
+            return v == null ? v : encoder(v);
+          });
         }
         objKeys = [{ value: obj.length > 0 ? obj.join(",") || null : void 0 }];
       } else if (isArray2(filter)) {
@@ -27558,6 +27708,9 @@ var require_stringify = __commonJS({
       var sideChannel = getSideChannel();
       for (var i = 0; i < objKeys.length; ++i) {
         var key = objKeys[i];
+        if (typeof key === "undefined" || key === null) {
+          continue;
+        }
         var value = obj[key];
         if (options.skipNulls && value === null) {
           continue;
@@ -27587,9 +27740,9 @@ var require_stringify = __commonJS({
       var prefix = options.addQueryPrefix === true ? "?" : "";
       if (options.charsetSentinel) {
         if (options.charset === "iso-8859-1") {
-          prefix += "utf8=%26%2310003%3B&";
+          prefix += "utf8=%26%2310003%3B" + options.delimiter;
         } else {
-          prefix += "utf8=%E2%9C%93&";
+          prefix += "utf8=%E2%9C%93" + options.delimiter;
         }
       }
       return joined.length > 0 ? prefix + joined : "";
@@ -27597,9 +27750,9 @@ var require_stringify = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/qs@6.15.1/node_modules/qs/lib/parse.js
+// ../../node_modules/.pnpm/qs@6.15.3/node_modules/qs/lib/parse.js
 var require_parse2 = __commonJS({
-  "../../node_modules/.pnpm/qs@6.15.1/node_modules/qs/lib/parse.js"(exports2, module2) {
+  "../../node_modules/.pnpm/qs@6.15.3/node_modules/qs/lib/parse.js"(exports2, module2) {
     "use strict";
     var utils = require_utils4();
     var has = Object.prototype.hasOwnProperty;
@@ -27633,8 +27786,19 @@ var require_parse2 = __commonJS({
         return String.fromCharCode(parseInt(numberStr, 10));
       });
     };
-    var parseArrayValue = function(val, options, currentArrayLength) {
+    var parseArrayValue = function(val, options, currentArrayLength, isFlatArrayValue) {
       if (val && typeof val === "string" && options.comma && val.indexOf(",") > -1) {
+        if (isFlatArrayValue && options.throwOnLimitExceeded) {
+          var commaCount = 0;
+          var commaIndex = val.indexOf(",");
+          while (commaIndex > -1) {
+            commaCount += 1;
+            if (commaCount >= options.arrayLimit) {
+              throw new RangeError("Array limit exceeded. Only " + options.arrayLimit + " element" + (options.arrayLimit === 1 ? "" : "s") + " allowed in an array.");
+            }
+            commaIndex = val.indexOf(",", commaIndex + 1);
+          }
+        }
         return val.split(",");
       }
       if (options.throwOnLimitExceeded && currentArrayLength >= options.arrayLimit) {
@@ -27691,7 +27855,8 @@ var require_parse2 = __commonJS({
               parseArrayValue(
                 part.slice(pos + 1),
                 options,
-                isArray2(obj[key]) ? obj[key].length : 0
+                isArray2(obj[key]) ? obj[key].length : 0,
+                part.indexOf("[]=") === -1
               ),
               function(encodedVal) {
                 return options.decoder(encodedVal, defaults2.decoder, charset, "value");
@@ -27706,10 +27871,7 @@ var require_parse2 = __commonJS({
           val = isArray2(val) ? [val] : val;
         }
         if (options.comma && isArray2(val) && val.length > options.arrayLimit) {
-          if (options.throwOnLimitExceeded) {
-            throw new RangeError("Array limit exceeded. Only " + options.arrayLimit + " element" + (options.arrayLimit === 1 ? "" : "s") + " allowed in an array.");
-          }
-          val = utils.combine([], val, options.arrayLimit, options.plainObjects);
+          val = utils.combine([], val, options.arrayLimit, options.plainObjects, options.throwOnLimitExceeded);
         }
         if (key !== null) {
           var existing = has.call(obj, key);
@@ -27718,7 +27880,8 @@ var require_parse2 = __commonJS({
               obj[key],
               val,
               options.arrayLimit,
-              options.plainObjects
+              options.plainObjects,
+              options.throwOnLimitExceeded
             );
           } else if (!existing || options.duplicates === "last") {
             obj[key] = val;
@@ -27745,7 +27908,8 @@ var require_parse2 = __commonJS({
               [],
               leaf,
               options.arrayLimit,
-              options.plainObjects
+              options.plainObjects,
+              options.throwOnLimitExceeded
             );
           }
         } else {
@@ -27772,8 +27936,8 @@ var require_parse2 = __commonJS({
       }
       return leaf;
     };
-    var splitKeyIntoSegments = function splitKeyIntoSegments2(givenKey, options) {
-      var key = options.allowDots ? givenKey.replace(/\.([^.[]+)/g, "[$1]") : givenKey;
+    var splitKeyIntoSegments = function splitKeyIntoSegments2(originalKey, options) {
+      var key = options.allowDots ? originalKey.replace(/\.([^.[]+)/g, "[$1]") : originalKey;
       if (options.depth <= 0) {
         if (!options.plainObjects && has.call(Object.prototype, key)) {
           if (!options.allowPrototypes) {
@@ -27782,37 +27946,56 @@ var require_parse2 = __commonJS({
         }
         return [key];
       }
-      var brackets = /(\[[^[\]]*])/;
-      var child = /(\[[^[\]]*])/g;
-      var segment = brackets.exec(key);
-      var parent = segment ? key.slice(0, segment.index) : key;
-      var keys = [];
+      var segments = [];
+      var first = key.indexOf("[");
+      var parent = first >= 0 ? key.slice(0, first) : key;
       if (parent) {
         if (!options.plainObjects && has.call(Object.prototype, parent)) {
           if (!options.allowPrototypes) {
             return;
           }
         }
-        keys[keys.length] = parent;
+        segments[segments.length] = parent;
       }
-      var i = 0;
-      while ((segment = child.exec(key)) !== null && i < options.depth) {
-        i += 1;
-        var segmentContent = segment[1].slice(1, -1);
-        if (!options.plainObjects && has.call(Object.prototype, segmentContent)) {
-          if (!options.allowPrototypes) {
-            return;
+      var n = key.length;
+      var open = first;
+      var collected = 0;
+      while (open >= 0 && collected < options.depth) {
+        var level = 1;
+        var i = open + 1;
+        var close = -1;
+        while (i < n && close < 0) {
+          var cu = key.charCodeAt(i);
+          if (cu === 91) {
+            level += 1;
+          } else if (cu === 93) {
+            level -= 1;
+            if (level === 0) {
+              close = i;
+            }
           }
+          i += 1;
         }
-        keys[keys.length] = segment[1];
+        if (close < 0) {
+          segments[segments.length] = "[" + key.slice(open) + "]";
+          return segments;
+        }
+        var seg = key.slice(open, close + 1);
+        var content = seg.slice(1, -1);
+        if (!options.plainObjects && has.call(Object.prototype, content) && !options.allowPrototypes) {
+          return;
+        }
+        segments[segments.length] = seg;
+        collected += 1;
+        open = key.indexOf("[", close + 1);
       }
-      if (segment) {
+      if (open >= 0) {
         if (options.strictDepth === true) {
           throw new RangeError("Input depth exceeded depth option of " + options.depth + " and strictDepth is true");
         }
-        keys[keys.length] = "[" + key.slice(segment.index) + "]";
+        segments[segments.length] = "[" + key.slice(open) + "]";
       }
-      return keys;
+      return segments;
     };
     var parseKeys = function parseQueryStringKeys(givenKey, val, options, valuesParsed) {
       if (!givenKey) {
@@ -27896,9 +28079,9 @@ var require_parse2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/qs@6.15.1/node_modules/qs/lib/index.js
+// ../../node_modules/.pnpm/qs@6.15.3/node_modules/qs/lib/index.js
 var require_lib4 = __commonJS({
-  "../../node_modules/.pnpm/qs@6.15.1/node_modules/qs/lib/index.js"(exports2, module2) {
+  "../../node_modules/.pnpm/qs@6.15.3/node_modules/qs/lib/index.js"(exports2, module2) {
     "use strict";
     var stringify = require_stringify();
     var parse3 = require_parse2();
@@ -27911,9 +28094,9 @@ var require_lib4 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/types/urlencoded.js
+// ../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/types/urlencoded.js
 var require_urlencoded = __commonJS({
-  "../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/types/urlencoded.js"(exports2, module2) {
+  "../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/types/urlencoded.js"(exports2, module2) {
     "use strict";
     var createError = require_http_errors();
     var debug = require_src()("body-parser:urlencoded");
@@ -27926,10 +28109,7 @@ var require_urlencoded = __commonJS({
       if (normalizedOptions.defaultCharset !== "utf-8" && normalizedOptions.defaultCharset !== "iso-8859-1") {
         throw new TypeError("option defaultCharset must be either utf-8 or iso-8859-1");
       }
-      var queryparse = createQueryParser(options);
-      function parse3(body, encoding) {
-        return body.length ? queryparse(body, encoding) : {};
-      }
+      const parse3 = createQueryParser(options);
       const readOptions = {
         ...normalizedOptions,
         // assert charset
@@ -27940,11 +28120,11 @@ var require_urlencoded = __commonJS({
       };
     }
     function createQueryParser(options) {
-      var extended = Boolean(options?.extended);
-      var parameterLimit = options?.parameterLimit !== void 0 ? options?.parameterLimit : 1e3;
-      var charsetSentinel = options?.charsetSentinel;
-      var interpretNumericEntities = options?.interpretNumericEntities;
-      var depth = extended ? options?.depth !== void 0 ? options?.depth : 32 : 0;
+      const extended = Boolean(options?.extended);
+      let parameterLimit = options?.parameterLimit !== void 0 ? options?.parameterLimit : 1e3;
+      const charsetSentinel = options?.charsetSentinel;
+      const interpretNumericEntities = options?.interpretNumericEntities;
+      const depth = extended ? options?.depth !== void 0 ? options?.depth : 32 : 0;
       if (isNaN(parameterLimit) || parameterLimit < 1) {
         throw new TypeError("option parameterLimit must be a positive number");
       }
@@ -27954,15 +28134,16 @@ var require_urlencoded = __commonJS({
       if (isFinite(parameterLimit)) {
         parameterLimit = parameterLimit | 0;
       }
-      return function queryparse(body, encoding) {
-        var paramCount = parameterCount(body, parameterLimit);
+      return function parse3(body, encoding) {
+        if (!body.length) return {};
+        const paramCount = parameterCount(body, parameterLimit);
         if (paramCount === void 0) {
           debug("too many parameters");
           throw createError(413, "too many parameters", {
             type: "parameters.too.many"
           });
         }
-        var arrayLimit = extended ? Math.max(100, paramCount) : paramCount;
+        const arrayLimit = extended ? Math.max(100, paramCount) : paramCount;
         debug("parse " + (extended ? "extended " : "") + "urlencoding");
         try {
           return qs.parse(body, {
@@ -27999,31 +28180,15 @@ var require_urlencoded = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/index.js
+// ../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/index.js
 var require_body_parser = __commonJS({
-  "../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/index.js"(exports2, module2) {
+  "../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/index.js"(exports2, module2) {
     "use strict";
     exports2 = module2.exports = bodyParser;
-    Object.defineProperty(exports2, "json", {
-      configurable: true,
-      enumerable: true,
-      get: () => require_json()
-    });
-    Object.defineProperty(exports2, "raw", {
-      configurable: true,
-      enumerable: true,
-      get: () => require_raw()
-    });
-    Object.defineProperty(exports2, "text", {
-      configurable: true,
-      enumerable: true,
-      get: () => require_text()
-    });
-    Object.defineProperty(exports2, "urlencoded", {
-      configurable: true,
-      enumerable: true,
-      get: () => require_urlencoded()
-    });
+    exports2.json = require_json();
+    exports2.raw = require_raw();
+    exports2.text = require_text();
+    exports2.urlencoded = require_urlencoded();
     function bodyParser() {
       throw new Error("The bodyParser() generic has been split into individual middleware to use instead.");
     }
@@ -28331,13 +28496,13 @@ var require_view = __commonJS({
   "../../node_modules/.pnpm/express@5.2.1/node_modules/express/lib/view.js"(exports2, module2) {
     "use strict";
     var debug = require_src()("express:view");
-    var path3 = require("node:path");
-    var fs2 = require("node:fs");
-    var dirname = path3.dirname;
-    var basename = path3.basename;
-    var extname = path3.extname;
-    var join = path3.join;
-    var resolve = path3.resolve;
+    var path4 = require("node:path");
+    var fs3 = require("node:fs");
+    var dirname2 = path4.dirname;
+    var basename = path4.basename;
+    var extname = path4.extname;
+    var join2 = path4.join;
+    var resolve = path4.resolve;
     module2.exports = View2;
     function View2(name, options) {
       var opts = options || {};
@@ -28366,17 +28531,17 @@ var require_view = __commonJS({
       this.path = this.lookup(fileName);
     }
     View2.prototype.lookup = function lookup(name) {
-      var path4;
+      var path5;
       var roots = [].concat(this.root);
       debug('lookup "%s"', name);
-      for (var i = 0; i < roots.length && !path4; i++) {
+      for (var i = 0; i < roots.length && !path5; i++) {
         var root = roots[i];
         var loc = resolve(root, name);
-        var dir = dirname(loc);
+        var dir = dirname2(loc);
         var file2 = basename(loc);
-        path4 = this.resolve(dir, file2);
+        path5 = this.resolve(dir, file2);
       }
-      return path4;
+      return path5;
     };
     View2.prototype.render = function render(options, callback) {
       var sync = true;
@@ -28398,24 +28563,128 @@ var require_view = __commonJS({
     };
     View2.prototype.resolve = function resolve2(dir, file2) {
       var ext = this.ext;
-      var path4 = join(dir, file2);
-      var stat = tryStat(path4);
+      var path5 = join2(dir, file2);
+      var stat = tryStat(path5);
       if (stat && stat.isFile()) {
-        return path4;
+        return path5;
       }
-      path4 = join(dir, basename(file2, ext), "index" + ext);
-      stat = tryStat(path4);
+      path5 = join2(dir, basename(file2, ext), "index" + ext);
+      stat = tryStat(path5);
       if (stat && stat.isFile()) {
-        return path4;
+        return path5;
       }
     };
-    function tryStat(path4) {
-      debug('stat "%s"', path4);
+    function tryStat(path5) {
+      debug('stat "%s"', path5);
       try {
-        return fs2.statSync(path4);
+        return fs3.statSync(path5);
       } catch (e) {
         return void 0;
       }
+    }
+  }
+});
+
+// ../../node_modules/.pnpm/content-type@1.0.5/node_modules/content-type/index.js
+var require_content_type = __commonJS({
+  "../../node_modules/.pnpm/content-type@1.0.5/node_modules/content-type/index.js"(exports2) {
+    "use strict";
+    var PARAM_REGEXP = /; *([!#$%&'*+.^_`|~0-9A-Za-z-]+) *= *("(?:[\u000b\u0020\u0021\u0023-\u005b\u005d-\u007e\u0080-\u00ff]|\\[\u000b\u0020-\u00ff])*"|[!#$%&'*+.^_`|~0-9A-Za-z-]+) */g;
+    var TEXT_REGEXP = /^[\u000b\u0020-\u007e\u0080-\u00ff]+$/;
+    var TOKEN_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+    var QESC_REGEXP = /\\([\u000b\u0020-\u00ff])/g;
+    var QUOTE_REGEXP = /([\\"])/g;
+    var TYPE_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+\/[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+    exports2.format = format;
+    exports2.parse = parse3;
+    function format(obj) {
+      if (!obj || typeof obj !== "object") {
+        throw new TypeError("argument obj is required");
+      }
+      var parameters = obj.parameters;
+      var type = obj.type;
+      if (!type || !TYPE_REGEXP.test(type)) {
+        throw new TypeError("invalid type");
+      }
+      var string4 = type;
+      if (parameters && typeof parameters === "object") {
+        var param;
+        var params = Object.keys(parameters).sort();
+        for (var i = 0; i < params.length; i++) {
+          param = params[i];
+          if (!TOKEN_REGEXP.test(param)) {
+            throw new TypeError("invalid parameter name");
+          }
+          string4 += "; " + param + "=" + qstring(parameters[param]);
+        }
+      }
+      return string4;
+    }
+    function parse3(string4) {
+      if (!string4) {
+        throw new TypeError("argument string is required");
+      }
+      var header = typeof string4 === "object" ? getcontenttype(string4) : string4;
+      if (typeof header !== "string") {
+        throw new TypeError("argument string is required to be a string");
+      }
+      var index = header.indexOf(";");
+      var type = index !== -1 ? header.slice(0, index).trim() : header.trim();
+      if (!TYPE_REGEXP.test(type)) {
+        throw new TypeError("invalid media type");
+      }
+      var obj = new ContentType(type.toLowerCase());
+      if (index !== -1) {
+        var key;
+        var match;
+        var value;
+        PARAM_REGEXP.lastIndex = index;
+        while (match = PARAM_REGEXP.exec(header)) {
+          if (match.index !== index) {
+            throw new TypeError("invalid parameter format");
+          }
+          index += match[0].length;
+          key = match[1].toLowerCase();
+          value = match[2];
+          if (value.charCodeAt(0) === 34) {
+            value = value.slice(1, -1);
+            if (value.indexOf("\\") !== -1) {
+              value = value.replace(QESC_REGEXP, "$1");
+            }
+          }
+          obj.parameters[key] = value;
+        }
+        if (index !== header.length) {
+          throw new TypeError("invalid parameter format");
+        }
+      }
+      return obj;
+    }
+    function getcontenttype(obj) {
+      var header;
+      if (typeof obj.getHeader === "function") {
+        header = obj.getHeader("content-type");
+      } else if (typeof obj.headers === "object") {
+        header = obj.headers && obj.headers["content-type"];
+      }
+      if (typeof header !== "string") {
+        throw new TypeError("content-type header is missing from object");
+      }
+      return header;
+    }
+    function qstring(val) {
+      var str = String(val);
+      if (TOKEN_REGEXP.test(str)) {
+        return str;
+      }
+      if (str.length > 0 && !TEXT_REGEXP.test(str)) {
+        throw new TypeError("invalid parameter value");
+      }
+      return '"' + str.replace(QUOTE_REGEXP, "\\$1") + '"';
+    }
+    function ContentType(type) {
+      this.parameters = /* @__PURE__ */ Object.create(null);
+      this.type = type;
     }
   }
 });
@@ -29503,7 +29772,7 @@ var require_is_promise = __commonJS({
 });
 
 // ../../node_modules/.pnpm/path-to-regexp@8.4.2/node_modules/path-to-regexp/dist/index.js
-var require_dist2 = __commonJS({
+var require_dist3 = __commonJS({
   "../../node_modules/.pnpm/path-to-regexp@8.4.2/node_modules/path-to-regexp/dist/index.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
@@ -29548,15 +29817,15 @@ var require_dist2 = __commonJS({
       let index = 0;
       function consumeUntil(end) {
         const output = [];
-        let path3 = "";
+        let path4 = "";
         function writePath() {
-          if (!path3)
+          if (!path4)
             return;
           output.push({
             type: "text",
-            value: encodePath(path3)
+            value: encodePath(path4)
           });
-          path3 = "";
+          path4 = "";
         }
         while (index < chars.length) {
           const value = chars[index++];
@@ -29568,7 +29837,7 @@ var require_dist2 = __commonJS({
             if (index === chars.length) {
               throw new PathError(`Unexpected end after \\ at index ${index}`, str);
             }
-            path3 += chars[index++];
+            path4 += chars[index++];
             continue;
           }
           if (value === ":" || value === "*") {
@@ -29612,7 +29881,7 @@ var require_dist2 = __commonJS({
           if (value === "}" || value === "(" || value === ")" || value === "[" || value === "]" || value === "+" || value === "?" || value === "!") {
             throw new PathError(`Unexpected ${value} at index ${index - 1}`, str);
           }
-          path3 += value;
+          path4 += value;
         }
         if (end) {
           throw new PathError(`Unexpected end at index ${index}, expected ${end}`, str);
@@ -29622,17 +29891,17 @@ var require_dist2 = __commonJS({
       }
       return new TokenData(consumeUntil(""), str);
     }
-    function compile(path3, options = {}) {
+    function compile(path4, options = {}) {
       const { encode = encodeURIComponent, delimiter = DEFAULT_DELIMITER } = options;
-      const data = typeof path3 === "object" ? path3 : parse3(path3, options);
+      const data = typeof path4 === "object" ? path4 : parse3(path4, options);
       const fn = tokensToFunction(data.tokens, delimiter, encode);
-      return function path4(params = {}) {
+      return function path5(params = {}) {
         const missing = [];
-        const path5 = fn(params, missing);
+        const path6 = fn(params, missing);
         if (missing.length) {
           throw new TypeError(`Missing parameters: ${missing.join(", ")}`);
         }
-        return path5;
+        return path6;
       };
     }
     function tokensToFunction(tokens, delimiter, encode) {
@@ -29694,9 +29963,9 @@ var require_dist2 = __commonJS({
         return encodeValue(value);
       };
     }
-    function match(path3, options = {}) {
+    function match(path4, options = {}) {
       const { decode = decodeURIComponent, delimiter = DEFAULT_DELIMITER } = options;
-      const { regexp, keys } = pathToRegexp(path3, options);
+      const { regexp, keys } = pathToRegexp(path4, options);
       const decoders = keys.map((key) => {
         if (decode === false)
           return NOOP_VALUE;
@@ -29708,7 +29977,7 @@ var require_dist2 = __commonJS({
         const m = regexp.exec(input);
         if (!m)
           return false;
-        const path4 = m[0];
+        const path5 = m[0];
         const params = /* @__PURE__ */ Object.create(null);
         for (let i = 1; i < m.length; i++) {
           if (m[i] === void 0)
@@ -29717,21 +29986,21 @@ var require_dist2 = __commonJS({
           const decoder = decoders[i - 1];
           params[key.name] = decoder(m[i]);
         }
-        return { path: path4, params };
+        return { path: path5, params };
       };
     }
-    function pathToRegexp(path3, options = {}) {
+    function pathToRegexp(path4, options = {}) {
       const { delimiter = DEFAULT_DELIMITER, end = true, sensitive = false, trailing = true } = options;
       const keys = [];
       let source = "";
       let combinations = 0;
-      function process2(path4) {
-        if (Array.isArray(path4)) {
-          for (const p of path4)
+      function process2(path5) {
+        if (Array.isArray(path5)) {
+          for (const p of path5)
             process2(p);
           return;
         }
-        const data = typeof path4 === "object" ? path4 : parse3(path4, options);
+        const data = typeof path5 === "object" ? path5 : parse3(path5, options);
         flatten(data.tokens, 0, [], (tokens) => {
           if (combinations >= 256) {
             throw new PathError("Too many path combinations", data.originalPath);
@@ -29742,7 +30011,7 @@ var require_dist2 = __commonJS({
           combinations++;
         });
       }
-      process2(path3);
+      process2(path4);
       let pattern = `^(?:${source})`;
       if (trailing)
         pattern += "(?:" + escape2(delimiter) + "$)?";
@@ -29876,24 +30145,24 @@ var require_layer = __commonJS({
   "../../node_modules/.pnpm/router@2.2.0/node_modules/router/lib/layer.js"(exports2, module2) {
     "use strict";
     var isPromise = require_is_promise();
-    var pathRegexp = require_dist2();
+    var pathRegexp = require_dist3();
     var debug = require_src()("router:layer");
     var deprecate = require_depd()("router");
     var TRAILING_SLASH_REGEXP = /\/+$/;
     var MATCHING_GROUP_REGEXP = /\((?:\?<(.*?)>)?(?!\?)/g;
     module2.exports = Layer;
-    function Layer(path3, options, fn) {
+    function Layer(path4, options, fn) {
       if (!(this instanceof Layer)) {
-        return new Layer(path3, options, fn);
+        return new Layer(path4, options, fn);
       }
-      debug("new %o", path3);
+      debug("new %o", path4);
       const opts = options || {};
       this.handle = fn;
       this.keys = [];
       this.name = fn.name || "<anonymous>";
       this.params = void 0;
       this.path = void 0;
-      this.slash = path3 === "/" && opts.end === false;
+      this.slash = path4 === "/" && opts.end === false;
       function matcher(_path) {
         if (_path instanceof RegExp) {
           const keys = [];
@@ -29932,7 +30201,7 @@ var require_layer = __commonJS({
           decode: decodeParam
         });
       }
-      this.matchers = Array.isArray(path3) ? path3.map(matcher) : [matcher(path3)];
+      this.matchers = Array.isArray(path4) ? path4.map(matcher) : [matcher(path4)];
     }
     Layer.prototype.handleError = function handleError(error40, req, res, next) {
       const fn = this.handle;
@@ -29972,9 +30241,9 @@ var require_layer = __commonJS({
         next(err);
       }
     };
-    Layer.prototype.match = function match(path3) {
+    Layer.prototype.match = function match(path4) {
       let match2;
-      if (path3 != null) {
+      if (path4 != null) {
         if (this.slash) {
           this.params = {};
           this.path = "";
@@ -29982,7 +30251,7 @@ var require_layer = __commonJS({
         }
         let i = 0;
         while (!match2 && i < this.matchers.length) {
-          match2 = this.matchers[i](path3);
+          match2 = this.matchers[i](path4);
           i++;
         }
       }
@@ -30010,13 +30279,13 @@ var require_layer = __commonJS({
         throw err;
       }
     }
-    function loosen(path3) {
-      if (path3 instanceof RegExp || path3 === "/") {
-        return path3;
+    function loosen(path4) {
+      if (path4 instanceof RegExp || path4 === "/") {
+        return path4;
       }
-      return Array.isArray(path3) ? path3.map(function(p) {
+      return Array.isArray(path4) ? path4.map(function(p) {
         return loosen(p);
-      }) : String(path3).replace(TRAILING_SLASH_REGEXP, "");
+      }) : String(path4).replace(TRAILING_SLASH_REGEXP, "");
     }
   }
 });
@@ -30032,9 +30301,9 @@ var require_route = __commonJS({
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
     module2.exports = Route;
-    function Route(path3) {
-      debug("new %o", path3);
-      this.path = path3;
+    function Route(path4) {
+      debug("new %o", path4);
+      this.path = path4;
       this.stack = [];
       this.methods = /* @__PURE__ */ Object.create(null);
     }
@@ -30242,8 +30511,8 @@ var require_router = __commonJS({
         if (++sync > 100) {
           return setImmediate(next, err);
         }
-        const path3 = getPathname(req);
-        if (path3 == null) {
+        const path4 = getPathname(req);
+        if (path4 == null) {
           return done(layerError);
         }
         let layer;
@@ -30251,7 +30520,7 @@ var require_router = __commonJS({
         let route;
         while (match !== true && idx < stack.length) {
           layer = stack[idx++];
-          match = matchLayer(layer, path3);
+          match = matchLayer(layer, path4);
           route = layer.route;
           if (typeof match !== "boolean") {
             layerError = layerError || match;
@@ -30289,18 +30558,18 @@ var require_router = __commonJS({
           } else if (route) {
             layer.handleRequest(req, res, next);
           } else {
-            trimPrefix(layer, layerError, layerPath, path3);
+            trimPrefix(layer, layerError, layerPath, path4);
           }
           sync = 0;
         });
       }
-      function trimPrefix(layer, layerError, layerPath, path3) {
+      function trimPrefix(layer, layerError, layerPath, path4) {
         if (layerPath.length !== 0) {
-          if (layerPath !== path3.substring(0, layerPath.length)) {
+          if (layerPath !== path4.substring(0, layerPath.length)) {
             next(layerError);
             return;
           }
-          const c = path3[layerPath.length];
+          const c = path4[layerPath.length];
           if (c && c !== "/") {
             next(layerError);
             return;
@@ -30324,7 +30593,7 @@ var require_router = __commonJS({
     };
     Router15.prototype.use = function use(handler2) {
       let offset = 0;
-      let path3 = "/";
+      let path4 = "/";
       if (typeof handler2 !== "function") {
         let arg = handler2;
         while (Array.isArray(arg) && arg.length !== 0) {
@@ -30332,7 +30601,7 @@ var require_router = __commonJS({
         }
         if (typeof arg !== "function") {
           offset = 1;
-          path3 = handler2;
+          path4 = handler2;
         }
       }
       const callbacks = flatten.call(slice.call(arguments, offset), Infinity);
@@ -30344,8 +30613,8 @@ var require_router = __commonJS({
         if (typeof fn !== "function") {
           throw new TypeError("argument handler must be a function");
         }
-        debug("use %o %s", path3, fn.name || "<anonymous>");
-        const layer = new Layer(path3, {
+        debug("use %o %s", path4, fn.name || "<anonymous>");
+        const layer = new Layer(path4, {
           sensitive: this.caseSensitive,
           strict: false,
           end: false
@@ -30355,9 +30624,9 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router15.prototype.route = function route(path3) {
-      const route2 = new Route(path3);
-      const layer = new Layer(path3, {
+    Router15.prototype.route = function route(path4) {
+      const route2 = new Route(path4);
+      const layer = new Layer(path4, {
         sensitive: this.caseSensitive,
         strict: this.strict,
         end: true
@@ -30370,8 +30639,8 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router15.prototype[method] = function(path3) {
-        const route = this.route(path3);
+      Router15.prototype[method] = function(path4) {
+        const route = this.route(path4);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
       };
@@ -30400,9 +30669,9 @@ var require_router = __commonJS({
       const fqdnIndex = url2.substring(0, pathLength).indexOf("://");
       return fqdnIndex !== -1 ? url2.substring(0, url2.indexOf("/", 3 + fqdnIndex)) : void 0;
     }
-    function matchLayer(layer, path3) {
+    function matchLayer(layer, path4) {
       try {
-        return layer.match(path3);
+        return layer.match(path4);
       } catch (err) {
         return err;
       }
@@ -30630,7 +30899,7 @@ var require_application = __commonJS({
     };
     app2.use = function use(fn) {
       var offset = 0;
-      var path3 = "/";
+      var path4 = "/";
       if (typeof fn !== "function") {
         var arg = fn;
         while (Array.isArray(arg) && arg.length !== 0) {
@@ -30638,7 +30907,7 @@ var require_application = __commonJS({
         }
         if (typeof arg !== "function") {
           offset = 1;
-          path3 = fn;
+          path4 = fn;
         }
       }
       var fns = flatten.call(slice.call(arguments, offset), Infinity);
@@ -30648,12 +30917,12 @@ var require_application = __commonJS({
       var router15 = this.router;
       fns.forEach(function(fn2) {
         if (!fn2 || !fn2.handle || !fn2.set) {
-          return router15.use(path3, fn2);
+          return router15.use(path4, fn2);
         }
-        debug(".use app under %s", path3);
-        fn2.mountpath = path3;
+        debug(".use app under %s", path4);
+        fn2.mountpath = path4;
         fn2.parent = this;
-        router15.use(path3, function mounted_app(req, res, next) {
+        router15.use(path4, function mounted_app(req, res, next) {
           var orig = req.app;
           fn2.handle(req, res, function(err) {
             Object.setPrototypeOf(req, orig.request);
@@ -30665,8 +30934,8 @@ var require_application = __commonJS({
       }, this);
       return this;
     };
-    app2.route = function route(path3) {
-      return this.router.route(path3);
+    app2.route = function route(path4) {
+      return this.router.route(path4);
     };
     app2.engine = function engine(ext, fn) {
       if (typeof fn !== "function") {
@@ -30709,7 +30978,7 @@ var require_application = __commonJS({
       }
       return this;
     };
-    app2.path = function path3() {
+    app2.path = function path4() {
       return this.parent ? this.parent.path() + this.mountpath : "";
     };
     app2.enabled = function enabled(setting) {
@@ -30725,17 +30994,17 @@ var require_application = __commonJS({
       return this.set(setting, false);
     };
     methods.forEach(function(method) {
-      app2[method] = function(path3) {
+      app2[method] = function(path4) {
         if (method === "get" && arguments.length === 1) {
-          return this.set(path3);
+          return this.set(path4);
         }
-        var route = this.route(path3);
+        var route = this.route(path4);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
       };
     });
-    app2.all = function all(path3) {
-      var route = this.route(path3);
+    app2.all = function all(path4) {
+      var route = this.route(path4);
       var args = slice.call(arguments, 1);
       for (var i = 0; i < methods.length; i++) {
         route[methods[i]].apply(route, args);
@@ -31466,9 +31735,9 @@ var require_fresh = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/range-parser@1.2.1/node_modules/range-parser/index.js
+// ../../node_modules/.pnpm/range-parser@1.3.0/node_modules/range-parser/index.js
 var require_range_parser = __commonJS({
-  "../../node_modules/.pnpm/range-parser@1.2.1/node_modules/range-parser/index.js"(exports2, module2) {
+  "../../node_modules/.pnpm/range-parser@1.3.0/node_modules/range-parser/index.js"(exports2, module2) {
     "use strict";
     module2.exports = rangeParser;
     function rangeParser(size, str, options) {
@@ -31483,19 +31752,27 @@ var require_range_parser = __commonJS({
       var ranges = [];
       ranges.type = str.slice(0, index);
       for (var i = 0; i < arr.length; i++) {
-        var range = arr[i].split("-");
-        var start = parseInt(range[0], 10);
-        var end = parseInt(range[1], 10);
-        if (isNaN(start)) {
+        var indexOf = arr[i].indexOf("-");
+        if (indexOf === -1) {
+          return -2;
+        }
+        var startStr = arr[i].slice(0, indexOf).trim();
+        var endStr = arr[i].slice(indexOf + 1).trim();
+        var start = parsePos(startStr);
+        var end = parsePos(endStr);
+        if (startStr.length === 0) {
           start = size - end;
           end = size - 1;
-        } else if (isNaN(end)) {
+        } else if (endStr.length === 0) {
           end = size - 1;
         }
         if (end > size - 1) {
           end = size - 1;
         }
-        if (isNaN(start) || isNaN(end) || start > end || start < 0) {
+        if (isNaN(start) || isNaN(end)) {
+          return -2;
+        }
+        if (start > end || start < 0) {
           continue;
         }
         ranges.push({
@@ -31507,6 +31784,10 @@ var require_range_parser = __commonJS({
         return -1;
       }
       return options && options.combine ? combineRanges(ranges) : ranges;
+    }
+    function parsePos(str) {
+      if (/^\d+$/.test(str)) return Number(str);
+      return NaN;
     }
     function combineRanges(ranges) {
       var ordered = ranges.map(mapWithIndex).sort(sortByRangeStart);
@@ -31645,7 +31926,7 @@ var require_request2 = __commonJS({
       var subdomains2 = !isIP(hostname2) ? hostname2.split(".").reverse() : [hostname2];
       return subdomains2.slice(offset);
     });
-    defineGetter(req, "path", function path3() {
+    defineGetter(req, "path", function path4() {
       return parse3(this).pathname;
     });
     defineGetter(req, "host", function host() {
@@ -31856,8 +32137,8 @@ var require_content_disposition = __commonJS({
       this.type = type;
       this.parameters = parameters;
     }
-    function basename(path3) {
-      const normalized = path3.replaceAll("\\", "/");
+    function basename(path4) {
+      const normalized = path4.replaceAll("\\", "/");
       let end = normalized.length;
       while (end > 0 && normalized[end - 1] === "/") {
         end--;
@@ -32098,32 +32379,32 @@ var require_send = __commonJS({
     var escapeHtml = require_escape_html();
     var etag = require_etag();
     var fresh = require_fresh();
-    var fs2 = require("fs");
+    var fs3 = require("fs");
     var mime = require_mime_types();
     var ms = require_ms();
     var onFinished = require_on_finished();
     var parseRange = require_range_parser();
-    var path3 = require("path");
+    var path4 = require("path");
     var statuses = require_statuses();
     var Stream2 = require("stream");
     var util2 = require("util");
-    var extname = path3.extname;
-    var join = path3.join;
-    var normalize = path3.normalize;
-    var resolve = path3.resolve;
-    var sep = path3.sep;
+    var extname = path4.extname;
+    var join2 = path4.join;
+    var normalize = path4.normalize;
+    var resolve = path4.resolve;
+    var sep = path4.sep;
     var BYTES_RANGE_REGEXP = /^ *bytes=/;
     var MAX_MAXAGE = 60 * 60 * 24 * 365 * 1e3;
     var UP_PATH_REGEXP = /(?:^|[\\/])\.\.(?:[\\/]|$)/;
     module2.exports = send;
-    function send(req, path4, options) {
-      return new SendStream(req, path4, options);
+    function send(req, path5, options) {
+      return new SendStream(req, path5, options);
     }
-    function SendStream(req, path4, options) {
+    function SendStream(req, path5, options) {
       Stream2.call(this);
       var opts = options || {};
       this.options = opts;
-      this.path = path4;
+      this.path = path5;
       this.req = req;
       this._acceptRanges = opts.acceptRanges !== void 0 ? Boolean(opts.acceptRanges) : true;
       this._cacheControl = opts.cacheControl !== void 0 ? Boolean(opts.cacheControl) : true;
@@ -32237,10 +32518,10 @@ var require_send = __commonJS({
       var lastModified = this.res.getHeader("Last-Modified");
       return parseHttpDate(lastModified) <= parseHttpDate(ifRange);
     };
-    SendStream.prototype.redirect = function redirect(path4) {
+    SendStream.prototype.redirect = function redirect(path5) {
       var res = this.res;
       if (hasListeners(this, "directory")) {
-        this.emit("directory", res, path4);
+        this.emit("directory", res, path5);
         return;
       }
       if (this.hasTrailingSlash()) {
@@ -32260,38 +32541,38 @@ var require_send = __commonJS({
     SendStream.prototype.pipe = function pipe2(res) {
       var root = this._root;
       this.res = res;
-      var path4 = decode(this.path);
-      if (path4 === -1) {
+      var path5 = decode(this.path);
+      if (path5 === -1) {
         this.error(400);
         return res;
       }
-      if (~path4.indexOf("\0")) {
+      if (~path5.indexOf("\0")) {
         this.error(400);
         return res;
       }
       var parts;
       if (root !== null) {
-        if (path4) {
-          path4 = normalize("." + sep + path4);
+        if (path5) {
+          path5 = normalize("." + sep + path5);
         }
-        if (UP_PATH_REGEXP.test(path4)) {
-          debug('malicious path "%s"', path4);
+        if (UP_PATH_REGEXP.test(path5)) {
+          debug('malicious path "%s"', path5);
           this.error(403);
           return res;
         }
-        parts = path4.split(sep);
-        path4 = normalize(join(root, path4));
+        parts = path5.split(sep);
+        path5 = normalize(join2(root, path5));
       } else {
-        if (UP_PATH_REGEXP.test(path4)) {
-          debug('malicious path "%s"', path4);
+        if (UP_PATH_REGEXP.test(path5)) {
+          debug('malicious path "%s"', path5);
           this.error(403);
           return res;
         }
-        parts = normalize(path4).split(sep);
-        path4 = resolve(path4);
+        parts = normalize(path5).split(sep);
+        path5 = resolve(path5);
       }
       if (containsDotFile(parts)) {
-        debug('%s dotfile "%s"', this._dotfiles, path4);
+        debug('%s dotfile "%s"', this._dotfiles, path5);
         switch (this._dotfiles) {
           case "allow":
             break;
@@ -32305,13 +32586,13 @@ var require_send = __commonJS({
         }
       }
       if (this._index.length && this.hasTrailingSlash()) {
-        this.sendIndex(path4);
+        this.sendIndex(path5);
         return res;
       }
-      this.sendFile(path4);
+      this.sendFile(path5);
       return res;
     };
-    SendStream.prototype.send = function send2(path4, stat) {
+    SendStream.prototype.send = function send2(path5, stat) {
       var len = stat.size;
       var options = this.options;
       var opts = {};
@@ -32323,9 +32604,9 @@ var require_send = __commonJS({
         this.headersAlreadySent();
         return;
       }
-      debug('pipe "%s"', path4);
-      this.setHeader(path4, stat);
-      this.type(path4);
+      debug('pipe "%s"', path5);
+      this.setHeader(path5, stat);
+      this.type(path5);
       if (this.isConditionalGET()) {
         if (this.isPreconditionFailure()) {
           this.error(412);
@@ -32374,30 +32655,30 @@ var require_send = __commonJS({
         res.end();
         return;
       }
-      this.stream(path4, opts);
+      this.stream(path5, opts);
     };
-    SendStream.prototype.sendFile = function sendFile(path4) {
+    SendStream.prototype.sendFile = function sendFile(path5) {
       var i = 0;
       var self = this;
-      debug('stat "%s"', path4);
-      fs2.stat(path4, function onstat(err, stat) {
-        var pathEndsWithSep = path4[path4.length - 1] === sep;
-        if (err && err.code === "ENOENT" && !extname(path4) && !pathEndsWithSep) {
+      debug('stat "%s"', path5);
+      fs3.stat(path5, function onstat(err, stat) {
+        var pathEndsWithSep = path5[path5.length - 1] === sep;
+        if (err && err.code === "ENOENT" && !extname(path5) && !pathEndsWithSep) {
           return next(err);
         }
         if (err) return self.onStatError(err);
-        if (stat.isDirectory()) return self.redirect(path4);
+        if (stat.isDirectory()) return self.redirect(path5);
         if (pathEndsWithSep) return self.error(404);
-        self.emit("file", path4, stat);
-        self.send(path4, stat);
+        self.emit("file", path5, stat);
+        self.send(path5, stat);
       });
       function next(err) {
         if (self._extensions.length <= i) {
           return err ? self.onStatError(err) : self.error(404);
         }
-        var p = path4 + "." + self._extensions[i++];
+        var p = path5 + "." + self._extensions[i++];
         debug('stat "%s"', p);
-        fs2.stat(p, function(err2, stat) {
+        fs3.stat(p, function(err2, stat) {
           if (err2) return next(err2);
           if (stat.isDirectory()) return next();
           self.emit("file", p, stat);
@@ -32405,7 +32686,7 @@ var require_send = __commonJS({
         });
       }
     };
-    SendStream.prototype.sendIndex = function sendIndex(path4) {
+    SendStream.prototype.sendIndex = function sendIndex(path5) {
       var i = -1;
       var self = this;
       function next(err) {
@@ -32413,9 +32694,9 @@ var require_send = __commonJS({
           if (err) return self.onStatError(err);
           return self.error(404);
         }
-        var p = join(path4, self._index[i]);
+        var p = join2(path5, self._index[i]);
         debug('stat "%s"', p);
-        fs2.stat(p, function(err2, stat) {
+        fs3.stat(p, function(err2, stat) {
           if (err2) return next(err2);
           if (stat.isDirectory()) return next();
           self.emit("file", p, stat);
@@ -32424,10 +32705,10 @@ var require_send = __commonJS({
       }
       next();
     };
-    SendStream.prototype.stream = function stream(path4, options) {
+    SendStream.prototype.stream = function stream(path5, options) {
       var self = this;
       var res = this.res;
-      var stream2 = fs2.createReadStream(path4, options);
+      var stream2 = fs3.createReadStream(path5, options);
       this.emit("stream", stream2);
       stream2.pipe(res);
       function cleanup() {
@@ -32442,17 +32723,17 @@ var require_send = __commonJS({
         self.emit("end");
       });
     };
-    SendStream.prototype.type = function type(path4) {
+    SendStream.prototype.type = function type(path5) {
       var res = this.res;
       if (res.getHeader("Content-Type")) return;
-      var ext = extname(path4);
+      var ext = extname(path5);
       var type2 = mime.contentType(ext) || "application/octet-stream";
       debug("content-type %s", type2);
       res.setHeader("Content-Type", type2);
     };
-    SendStream.prototype.setHeader = function setHeader(path4, stat) {
+    SendStream.prototype.setHeader = function setHeader(path5, stat) {
       var res = this.res;
-      this.emit("headers", res, path4, stat);
+      this.emit("headers", res, path5, stat);
       if (this._acceptRanges && !res.getHeader("Accept-Ranges")) {
         debug("accept ranges");
         res.setHeader("Accept-Ranges", "bytes");
@@ -32510,9 +32791,9 @@ var require_send = __commonJS({
       }
       return err instanceof Error ? createError(status, err, { expose: false }) : createError(status, err);
     }
-    function decode(path4) {
+    function decode(path5) {
       try {
-        return decodeURIComponent(path4);
+        return decodeURIComponent(path5);
       } catch (err) {
         return -1;
       }
@@ -32656,7 +32937,7 @@ var require_response2 = __commonJS({
     var http2 = require("node:http");
     var onFinished = require_on_finished();
     var mime = require_mime_types();
-    var path3 = require("node:path");
+    var path4 = require("node:path");
     var pathIsAbsolute = require("node:path").isAbsolute;
     var statuses = require_statuses();
     var sign = require_cookie_signature().sign;
@@ -32665,8 +32946,8 @@ var require_response2 = __commonJS({
     var setCharset = require_utils5().setCharset;
     var cookie = require_cookie();
     var send = require_send();
-    var extname = path3.extname;
-    var resolve = path3.resolve;
+    var extname = path4.extname;
+    var resolve = path4.resolve;
     var vary = require_vary();
     var { Buffer: Buffer2 } = require("node:buffer");
     var res = Object.create(http2.ServerResponse.prototype);
@@ -32812,26 +33093,26 @@ var require_response2 = __commonJS({
       this.type("txt");
       return this.send(body);
     };
-    res.sendFile = function sendFile(path4, options, callback) {
+    res.sendFile = function sendFile(path5, options, callback) {
       var done = callback;
       var req = this.req;
       var res2 = this;
       var next = req.next;
       var opts = options || {};
-      if (!path4) {
+      if (!path5) {
         throw new TypeError("path argument is required to res.sendFile");
       }
-      if (typeof path4 !== "string") {
+      if (typeof path5 !== "string") {
         throw new TypeError("path must be a string to res.sendFile");
       }
       if (typeof options === "function") {
         done = options;
         opts = {};
       }
-      if (!opts.root && !pathIsAbsolute(path4)) {
+      if (!opts.root && !pathIsAbsolute(path5)) {
         throw new TypeError("path must be absolute or specify root to res.sendFile");
       }
-      var pathname = encodeURI(path4);
+      var pathname = encodeURI(path5);
       opts.etag = this.app.enabled("etag");
       var file2 = send(req, pathname, opts);
       sendfile(res2, file2, opts, function(err) {
@@ -32842,7 +33123,7 @@ var require_response2 = __commonJS({
         }
       });
     };
-    res.download = function download(path4, filename, options, callback) {
+    res.download = function download(path5, filename, options, callback) {
       var done = callback;
       var name = filename;
       var opts = options || null;
@@ -32859,7 +33140,7 @@ var require_response2 = __commonJS({
         opts = filename;
       }
       var headers = {
-        "Content-Disposition": contentDisposition(name || path4)
+        "Content-Disposition": contentDisposition(name || path5)
       };
       if (opts && opts.headers) {
         var keys = Object.keys(opts.headers);
@@ -32872,7 +33153,7 @@ var require_response2 = __commonJS({
       }
       opts = Object.create(opts);
       opts.headers = headers;
-      var fullPath = !opts.root ? resolve(path4) : path4;
+      var fullPath = !opts.root ? resolve(path5) : path5;
       return this.sendFile(fullPath, opts, done);
     };
     res.contentType = res.type = function contentType(type) {
@@ -33155,11 +33436,11 @@ var require_serve_static = __commonJS({
         }
         var forwardError = !fallthrough;
         var originalUrl = parseUrl.original(req);
-        var path3 = parseUrl(req).pathname;
-        if (path3 === "/" && originalUrl.pathname.substr(-1) !== "/") {
-          path3 = "";
+        var path4 = parseUrl(req).pathname;
+        if (path4 === "/" && originalUrl.pathname.substr(-1) !== "/") {
+          path4 = "";
         }
-        var stream = send(req, path3, opts);
+        var stream = send(req, path4, opts);
         stream.on("directory", onDirectory);
         if (setHeaders) {
           stream.on("headers", setHeaders);
@@ -33807,8 +34088,8 @@ var require_req = __commonJS({
       if (req.originalUrl) {
         _req.url = req.originalUrl;
       } else {
-        const path3 = req.path;
-        _req.url = typeof path3 === "string" ? path3 : req.url ? req.url.path || req.url : void 0;
+        const path4 = req.path;
+        _req.url = typeof path4 === "string" ? path4 : req.url ? req.url.path || req.url : void 0;
       }
       if (req.query) {
         _req.query = req.query;
@@ -33973,14 +34254,14 @@ var require_redact = __commonJS({
       }
       return obj;
     }
-    function parsePath(path3) {
+    function parsePath(path4) {
       const parts = [];
       let current = "";
       let inBrackets = false;
       let inQuotes = false;
       let quoteChar = "";
-      for (let i = 0; i < path3.length; i++) {
-        const char2 = path3[i];
+      for (let i = 0; i < path4.length; i++) {
+        const char2 = path4[i];
         if (!inBrackets && char2 === ".") {
           if (current) {
             parts.push(current);
@@ -34111,10 +34392,10 @@ var require_redact = __commonJS({
       return current;
     }
     function redactPaths(obj, paths, censor, remove = false) {
-      for (const path3 of paths) {
-        const parts = parsePath(path3);
+      for (const path4 of paths) {
+        const parts = parsePath(path4);
         if (parts.includes("*")) {
-          redactWildcardPath(obj, parts, censor, path3, remove);
+          redactWildcardPath(obj, parts, censor, path4, remove);
         } else {
           if (remove) {
             removeKey(obj, parts);
@@ -34199,8 +34480,8 @@ var require_redact = __commonJS({
           }
         } else {
           if (afterWildcard.includes("*")) {
-            const wrappedCensor = typeof censor === "function" ? (value, path3) => {
-              const fullPath = [...pathArray.slice(0, pathLength), ...path3];
+            const wrappedCensor = typeof censor === "function" ? (value, path4) => {
+              const fullPath = [...pathArray.slice(0, pathLength), ...path4];
               return censor(value, fullPath);
             } : censor;
             redactWildcardPath(current, afterWildcard, wrappedCensor, originalPath, remove);
@@ -34235,8 +34516,8 @@ var require_redact = __commonJS({
         return null;
       }
       const pathStructure = /* @__PURE__ */ new Map();
-      for (const path3 of pathsToClone) {
-        const parts = parsePath(path3);
+      for (const path4 of pathsToClone) {
+        const parts = parsePath(path4);
         let current = pathStructure;
         for (let i = 0; i < parts.length; i++) {
           const part = parts[i];
@@ -34288,24 +34569,24 @@ var require_redact = __commonJS({
       }
       return cloneSelectively(obj, pathStructure);
     }
-    function validatePath(path3) {
-      if (typeof path3 !== "string") {
+    function validatePath(path4) {
+      if (typeof path4 !== "string") {
         throw new Error("Paths must be (non-empty) strings");
       }
-      if (path3 === "") {
+      if (path4 === "") {
         throw new Error("Invalid redaction path ()");
       }
-      if (path3.includes("..")) {
-        throw new Error(`Invalid redaction path (${path3})`);
+      if (path4.includes("..")) {
+        throw new Error(`Invalid redaction path (${path4})`);
       }
-      if (path3.includes(",")) {
-        throw new Error(`Invalid redaction path (${path3})`);
+      if (path4.includes(",")) {
+        throw new Error(`Invalid redaction path (${path4})`);
       }
       let bracketCount = 0;
       let inQuotes = false;
       let quoteChar = "";
-      for (let i = 0; i < path3.length; i++) {
-        const char2 = path3[i];
+      for (let i = 0; i < path4.length; i++) {
+        const char2 = path4[i];
         if ((char2 === '"' || char2 === "'") && bracketCount > 0) {
           if (!inQuotes) {
             inQuotes = true;
@@ -34319,20 +34600,20 @@ var require_redact = __commonJS({
         } else if (char2 === "]" && !inQuotes) {
           bracketCount--;
           if (bracketCount < 0) {
-            throw new Error(`Invalid redaction path (${path3})`);
+            throw new Error(`Invalid redaction path (${path4})`);
           }
         }
       }
       if (bracketCount !== 0) {
-        throw new Error(`Invalid redaction path (${path3})`);
+        throw new Error(`Invalid redaction path (${path4})`);
       }
     }
     function validatePaths(paths) {
       if (!Array.isArray(paths)) {
         throw new TypeError("paths must be an array");
       }
-      for (const path3 of paths) {
-        validatePath(path3);
+      for (const path4 of paths) {
+        validatePath(path4);
       }
     }
     function slowRedact(options = {}) {
@@ -34500,8 +34781,8 @@ var require_redaction = __commonJS({
         if (shape[k] === null) {
           o[k] = (value) => topCensor(value, [k]);
         } else {
-          const wrappedCensor = typeof censor === "function" ? (value, path3) => {
-            return censor(value, [k, ...path3]);
+          const wrappedCensor = typeof censor === "function" ? (value, path4) => {
+            return censor(value, [k, ...path4]);
           } : censor;
           o[k] = Redact({
             paths: shape[k],
@@ -34719,10 +35000,10 @@ var require_atomic_sleep = __commonJS({
 var require_sonic_boom = __commonJS({
   "../../node_modules/.pnpm/sonic-boom@4.2.1/node_modules/sonic-boom/index.js"(exports2, module2) {
     "use strict";
-    var fs2 = require("fs");
+    var fs3 = require("fs");
     var EventEmitter2 = require("events");
     var inherits = require("util").inherits;
-    var path3 = require("path");
+    var path4 = require("path");
     var sleep2 = require_atomic_sleep();
     var assert2 = require("assert");
     var BUSY_WRITE_TIMEOUT = 100;
@@ -34776,20 +35057,20 @@ var require_sonic_boom = __commonJS({
       const mode = sonic.mode;
       if (sonic.sync) {
         try {
-          if (sonic.mkdir) fs2.mkdirSync(path3.dirname(file2), { recursive: true });
-          const fd = fs2.openSync(file2, flags, mode);
+          if (sonic.mkdir) fs3.mkdirSync(path4.dirname(file2), { recursive: true });
+          const fd = fs3.openSync(file2, flags, mode);
           fileOpened(null, fd);
         } catch (err) {
           fileOpened(err);
           throw err;
         }
       } else if (sonic.mkdir) {
-        fs2.mkdir(path3.dirname(file2), { recursive: true }, (err) => {
+        fs3.mkdir(path4.dirname(file2), { recursive: true }, (err) => {
           if (err) return fileOpened(err);
-          fs2.open(file2, flags, mode, fileOpened);
+          fs3.open(file2, flags, mode, fileOpened);
         });
       } else {
-        fs2.open(file2, flags, mode, fileOpened);
+        fs3.open(file2, flags, mode, fileOpened);
       }
     }
     function SonicBoom(opts) {
@@ -34830,8 +35111,8 @@ var require_sonic_boom = __commonJS({
         this.flush = flushBuffer;
         this.flushSync = flushBufferSync;
         this._actualWrite = actualWriteBuffer;
-        fsWriteSync = () => fs2.writeSync(this.fd, this._writingBuf);
-        fsWrite = () => fs2.write(this.fd, this._writingBuf, this.release);
+        fsWriteSync = () => fs3.writeSync(this.fd, this._writingBuf);
+        fsWrite = () => fs3.write(this.fd, this._writingBuf, this.release);
       } else if (contentMode === void 0 || contentMode === kContentModeUtf8) {
         this._writingBuf = "";
         this.write = write;
@@ -34840,15 +35121,15 @@ var require_sonic_boom = __commonJS({
         this._actualWrite = actualWrite;
         fsWriteSync = () => {
           if (Buffer.isBuffer(this._writingBuf)) {
-            return fs2.writeSync(this.fd, this._writingBuf);
+            return fs3.writeSync(this.fd, this._writingBuf);
           }
-          return fs2.writeSync(this.fd, this._writingBuf, "utf8");
+          return fs3.writeSync(this.fd, this._writingBuf, "utf8");
         };
         fsWrite = () => {
           if (Buffer.isBuffer(this._writingBuf)) {
-            return fs2.write(this.fd, this._writingBuf, this.release);
+            return fs3.write(this.fd, this._writingBuf, this.release);
           }
-          return fs2.write(this.fd, this._writingBuf, "utf8", this.release);
+          return fs3.write(this.fd, this._writingBuf, "utf8", this.release);
         };
       } else {
         throw new Error(`SonicBoom supports "${kContentModeUtf8}" and "${kContentModeBuffer}", but passed ${contentMode}`);
@@ -34905,7 +35186,7 @@ var require_sonic_boom = __commonJS({
           }
         }
         if (this._fsync) {
-          fs2.fsyncSync(this.fd);
+          fs3.fsyncSync(this.fd);
         }
         const len = this._len;
         if (this._reopening) {
@@ -35019,7 +35300,7 @@ var require_sonic_boom = __commonJS({
       const onDrain = () => {
         if (!this._fsync) {
           try {
-            fs2.fsync(this.fd, (err) => {
+            fs3.fsync(this.fd, (err) => {
               this._flushPending = false;
               cb(err);
             });
@@ -35121,7 +35402,7 @@ var require_sonic_boom = __commonJS({
       const fd = this.fd;
       this.once("ready", () => {
         if (fd !== this.fd) {
-          fs2.close(fd, (err) => {
+          fs3.close(fd, (err) => {
             if (err) {
               return this.emit("error", err);
             }
@@ -35170,7 +35451,7 @@ var require_sonic_boom = __commonJS({
           buf = this._bufs[0];
         }
         try {
-          const n = Buffer.isBuffer(buf) ? fs2.writeSync(this.fd, buf) : fs2.writeSync(this.fd, buf, "utf8");
+          const n = Buffer.isBuffer(buf) ? fs3.writeSync(this.fd, buf) : fs3.writeSync(this.fd, buf, "utf8");
           const releasedBufObj = releaseWritingBuf(buf, this._len, n);
           buf = releasedBufObj.writingBuf;
           this._len = releasedBufObj.len;
@@ -35186,7 +35467,7 @@ var require_sonic_boom = __commonJS({
         }
       }
       try {
-        fs2.fsyncSync(this.fd);
+        fs3.fsyncSync(this.fd);
       } catch {
       }
     }
@@ -35207,7 +35488,7 @@ var require_sonic_boom = __commonJS({
           buf = mergeBuf(this._bufs[0], this._lens[0]);
         }
         try {
-          const n = fs2.writeSync(this.fd, buf);
+          const n = fs3.writeSync(this.fd, buf);
           buf = buf.subarray(n);
           this._len = Math.max(this._len - n, 0);
           if (buf.length <= 0) {
@@ -35235,13 +35516,13 @@ var require_sonic_boom = __commonJS({
       this._writingBuf = this._writingBuf.length ? this._writingBuf : this._bufs.shift() || "";
       if (this.sync) {
         try {
-          const written = Buffer.isBuffer(this._writingBuf) ? fs2.writeSync(this.fd, this._writingBuf) : fs2.writeSync(this.fd, this._writingBuf, "utf8");
+          const written = Buffer.isBuffer(this._writingBuf) ? fs3.writeSync(this.fd, this._writingBuf) : fs3.writeSync(this.fd, this._writingBuf, "utf8");
           release2(null, written);
         } catch (err) {
           release2(err);
         }
       } else {
-        fs2.write(this.fd, this._writingBuf, release2);
+        fs3.write(this.fd, this._writingBuf, release2);
       }
     }
     function actualWriteBuffer() {
@@ -35250,7 +35531,7 @@ var require_sonic_boom = __commonJS({
       this._writingBuf = this._writingBuf.length ? this._writingBuf : mergeBuf(this._bufs.shift(), this._lens.shift());
       if (this.sync) {
         try {
-          const written = fs2.writeSync(this.fd, this._writingBuf);
+          const written = fs3.writeSync(this.fd, this._writingBuf);
           release2(null, written);
         } catch (err) {
           release2(err);
@@ -35259,7 +35540,7 @@ var require_sonic_boom = __commonJS({
         if (kCopyBuffer) {
           this._writingBuf = Buffer.from(this._writingBuf);
         }
-        fs2.write(this.fd, this._writingBuf, release2);
+        fs3.write(this.fd, this._writingBuf, release2);
       }
     }
     function actualClose(sonic) {
@@ -35275,12 +35556,12 @@ var require_sonic_boom = __commonJS({
       sonic._lens = [];
       assert2(typeof sonic.fd === "number", `sonic.fd must be a number, got ${typeof sonic.fd}`);
       try {
-        fs2.fsync(sonic.fd, closeWrapped);
+        fs3.fsync(sonic.fd, closeWrapped);
       } catch {
       }
       function closeWrapped() {
         if (sonic.fd !== 1 && sonic.fd !== 2) {
-          fs2.close(sonic.fd, done);
+          fs3.close(sonic.fd, done);
         } else {
           done();
         }
@@ -35537,7 +35818,7 @@ var require_thread_stream = __commonJS({
     var { version: version3 } = require_package();
     var { EventEmitter: EventEmitter2 } = require("events");
     var { Worker } = require("worker_threads");
-    var { join } = require("path");
+    var { join: join2 } = require("path");
     var { pathToFileURL } = require("url");
     var { wait } = require_wait();
     var {
@@ -35573,7 +35854,7 @@ var require_thread_stream = __commonJS({
     function createWorker(stream, opts) {
       const { filename, workerData } = opts;
       const bundlerOverrides = "__bundlerPathsOverrides" in globalThis ? globalThis.__bundlerPathsOverrides : {};
-      const toExecute = bundlerOverrides["thread-stream-worker"] || join(__dirname, "lib", "worker.js");
+      const toExecute = bundlerOverrides["thread-stream-worker"] || join2(__dirname, "lib", "worker.js");
       const worker = new Worker(toExecute, {
         ...opts.workerOpts,
         trackUnmanagedFds: false,
@@ -35959,7 +36240,7 @@ var require_transport = __commonJS({
     "use strict";
     var { createRequire } = require("module");
     var getCallers = require_caller();
-    var { join, isAbsolute, sep } = require("node:path");
+    var { join: join2, isAbsolute, sep } = require("node:path");
     var sleep2 = require_atomic_sleep();
     var onExit = require_on_exit_leak_free();
     var ThreadStream = require_thread_stream();
@@ -36022,7 +36303,7 @@ var require_transport = __commonJS({
         throw new Error("only one of target or targets can be specified");
       }
       if (targets) {
-        target = bundlerOverrides["pino-worker"] || join(__dirname, "worker.js");
+        target = bundlerOverrides["pino-worker"] || join2(__dirname, "worker.js");
         options.targets = targets.filter((dest) => dest.target).map((dest) => {
           return {
             ...dest,
@@ -36040,7 +36321,7 @@ var require_transport = __commonJS({
           });
         });
       } else if (pipeline) {
-        target = bundlerOverrides["pino-worker"] || join(__dirname, "worker.js");
+        target = bundlerOverrides["pino-worker"] || join2(__dirname, "worker.js");
         options.pipelines = [pipeline.map((dest) => {
           return {
             ...dest,
@@ -36062,7 +36343,7 @@ var require_transport = __commonJS({
           return origin;
         }
         if (origin === "pino/file") {
-          return join(__dirname, "..", "file.js");
+          return join2(__dirname, "..", "file.js");
         }
         let fixTarget2;
         for (const filePath of callers) {
@@ -37051,7 +37332,7 @@ var require_safe_stable_stringify = __commonJS({
               return circularValue;
             }
             let res = "";
-            let join = ",";
+            let join2 = ",";
             const originalIndentation = indentation;
             if (Array.isArray(value)) {
               if (value.length === 0) {
@@ -37065,7 +37346,7 @@ var require_safe_stable_stringify = __commonJS({
                 indentation += spacer;
                 res += `
 ${indentation}`;
-                join = `,
+                join2 = `,
 ${indentation}`;
               }
               const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
@@ -37073,13 +37354,13 @@ ${indentation}`;
               for (; i < maximumValuesToStringify - 1; i++) {
                 const tmp2 = stringifyFnReplacer(String(i), value, stack, replacer, spacer, indentation);
                 res += tmp2 !== void 0 ? tmp2 : "null";
-                res += join;
+                res += join2;
               }
               const tmp = stringifyFnReplacer(String(i), value, stack, replacer, spacer, indentation);
               res += tmp !== void 0 ? tmp : "null";
               if (value.length - 1 > maximumBreadth) {
                 const removedKeys = value.length - maximumBreadth - 1;
-                res += `${join}"... ${getItemCount(removedKeys)} not stringified"`;
+                res += `${join2}"... ${getItemCount(removedKeys)} not stringified"`;
               }
               if (spacer !== "") {
                 res += `
@@ -37100,7 +37381,7 @@ ${originalIndentation}`;
             let separator = "";
             if (spacer !== "") {
               indentation += spacer;
-              join = `,
+              join2 = `,
 ${indentation}`;
               whitespace = " ";
             }
@@ -37114,13 +37395,13 @@ ${indentation}`;
               const tmp = stringifyFnReplacer(key2, value, stack, replacer, spacer, indentation);
               if (tmp !== void 0) {
                 res += `${separator}${strEscape(key2)}:${whitespace}${tmp}`;
-                separator = join;
+                separator = join2;
               }
             }
             if (keyLength > maximumBreadth) {
               const removedKeys = keyLength - maximumBreadth;
               res += `${separator}"...":${whitespace}"${getItemCount(removedKeys)} not stringified"`;
-              separator = join;
+              separator = join2;
             }
             if (spacer !== "" && separator.length > 1) {
               res = `
@@ -37161,7 +37442,7 @@ ${originalIndentation}`;
             }
             const originalIndentation = indentation;
             let res = "";
-            let join = ",";
+            let join2 = ",";
             if (Array.isArray(value)) {
               if (value.length === 0) {
                 return "[]";
@@ -37174,7 +37455,7 @@ ${originalIndentation}`;
                 indentation += spacer;
                 res += `
 ${indentation}`;
-                join = `,
+                join2 = `,
 ${indentation}`;
               }
               const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
@@ -37182,13 +37463,13 @@ ${indentation}`;
               for (; i < maximumValuesToStringify - 1; i++) {
                 const tmp2 = stringifyArrayReplacer(String(i), value[i], stack, replacer, spacer, indentation);
                 res += tmp2 !== void 0 ? tmp2 : "null";
-                res += join;
+                res += join2;
               }
               const tmp = stringifyArrayReplacer(String(i), value[i], stack, replacer, spacer, indentation);
               res += tmp !== void 0 ? tmp : "null";
               if (value.length - 1 > maximumBreadth) {
                 const removedKeys = value.length - maximumBreadth - 1;
-                res += `${join}"... ${getItemCount(removedKeys)} not stringified"`;
+                res += `${join2}"... ${getItemCount(removedKeys)} not stringified"`;
               }
               if (spacer !== "") {
                 res += `
@@ -37201,7 +37482,7 @@ ${originalIndentation}`;
             let whitespace = "";
             if (spacer !== "") {
               indentation += spacer;
-              join = `,
+              join2 = `,
 ${indentation}`;
               whitespace = " ";
             }
@@ -37210,7 +37491,7 @@ ${indentation}`;
               const tmp = stringifyArrayReplacer(key2, value[key2], stack, replacer, spacer, indentation);
               if (tmp !== void 0) {
                 res += `${separator}${strEscape(key2)}:${whitespace}${tmp}`;
-                separator = join;
+                separator = join2;
               }
             }
             if (spacer !== "" && separator.length > 1) {
@@ -37268,20 +37549,20 @@ ${originalIndentation}`;
               indentation += spacer;
               let res2 = `
 ${indentation}`;
-              const join2 = `,
+              const join3 = `,
 ${indentation}`;
               const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
               let i = 0;
               for (; i < maximumValuesToStringify - 1; i++) {
                 const tmp2 = stringifyIndent(String(i), value[i], stack, spacer, indentation);
                 res2 += tmp2 !== void 0 ? tmp2 : "null";
-                res2 += join2;
+                res2 += join3;
               }
               const tmp = stringifyIndent(String(i), value[i], stack, spacer, indentation);
               res2 += tmp !== void 0 ? tmp : "null";
               if (value.length - 1 > maximumBreadth) {
                 const removedKeys = value.length - maximumBreadth - 1;
-                res2 += `${join2}"... ${getItemCount(removedKeys)} not stringified"`;
+                res2 += `${join3}"... ${getItemCount(removedKeys)} not stringified"`;
               }
               res2 += `
 ${originalIndentation}`;
@@ -37297,16 +37578,16 @@ ${originalIndentation}`;
               return '"[Object]"';
             }
             indentation += spacer;
-            const join = `,
+            const join2 = `,
 ${indentation}`;
             let res = "";
             let separator = "";
             let maximumPropertiesToStringify = Math.min(keyLength, maximumBreadth);
             if (isTypedArrayWithEntries(value)) {
-              res += stringifyTypedArray(value, join, maximumBreadth);
+              res += stringifyTypedArray(value, join2, maximumBreadth);
               keys = keys.slice(value.length);
               maximumPropertiesToStringify -= value.length;
-              separator = join;
+              separator = join2;
             }
             if (deterministic) {
               keys = sort(keys, comparator);
@@ -37317,13 +37598,13 @@ ${indentation}`;
               const tmp = stringifyIndent(key2, value[key2], stack, spacer, indentation);
               if (tmp !== void 0) {
                 res += `${separator}${strEscape(key2)}: ${tmp}`;
-                separator = join;
+                separator = join2;
               }
             }
             if (keyLength > maximumBreadth) {
               const removedKeys = keyLength - maximumBreadth;
               res += `${separator}"...": "${getItemCount(removedKeys)} not stringified"`;
-              separator = join;
+              separator = join2;
             }
             if (separator !== "") {
               res = `
@@ -37643,7 +37924,7 @@ var require_multistream = __commonJS({
 var require_pino = __commonJS({
   "../../node_modules/.pnpm/pino@9.14.0/node_modules/pino/pino.js"(exports2, module2) {
     "use strict";
-    var os = require("node:os");
+    var os2 = require("node:os");
     var stdSerializers = require_pino_std_serializers();
     var caller = require_caller();
     var redaction = require_redaction();
@@ -37690,7 +37971,7 @@ var require_pino = __commonJS({
     } = symbols;
     var { epochTime, nullTime } = time4;
     var { pid } = process;
-    var hostname2 = os.hostname();
+    var hostname2 = os2.hostname();
     var defaultErrorSerializer = stdSerializers.err;
     var defaultOptions = {
       level: "info",
@@ -39832,7 +40113,7 @@ var bcryptjs_default = {
 var import_node_crypto2 = __toESM(require("node:crypto"), 1);
 var import_jsonwebtoken3 = __toESM(require_jsonwebtoken(), 1);
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/esm/index.mjs
+// ../../node_modules/.pnpm/pg@8.22.0/node_modules/pg/esm/index.mjs
 var import_lib = __toESM(require_lib2(), 1);
 var Client = import_lib.default.Client;
 var Pool = import_lib.default.Pool;
@@ -39847,7 +40128,7 @@ var TypeOverrides = import_lib.default.TypeOverrides;
 var defaults = import_lib.default.defaults;
 var esm_default = import_lib.default;
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/entity.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/entity.js
 var entityKind = /* @__PURE__ */ Symbol.for("drizzle:entityKind");
 function is(value, type) {
   if (!value || typeof value !== "object") {
@@ -39873,7 +40154,7 @@ function is(value, type) {
   return false;
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/logger.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/logger.js
 var ConsoleLogWriter = class {
   static [entityKind] = "ConsoleLogWriter";
   write(message) {
@@ -39904,7 +40185,7 @@ var NoopLogger = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/query-promise.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/query-promise.js
 var QueryPromise = class {
   static [entityKind] = "QueryPromise";
   [Symbol.toStringTag] = "QueryPromise";
@@ -39928,7 +40209,7 @@ var QueryPromise = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/column.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/column.js
 var Column = class {
   constructor(table, config2) {
     this.table = table;
@@ -39979,7 +40260,7 @@ var Column = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/column-builder.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/column-builder.js
 var ColumnBuilder = class {
   static [entityKind] = "ColumnBuilder";
   config;
@@ -40082,10 +40363,10 @@ var ColumnBuilder = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/table.utils.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/table.utils.js
 var TableName = /* @__PURE__ */ Symbol.for("drizzle:Name");
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/foreign-keys.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/foreign-keys.js
 var ForeignKeyBuilder = class {
   static [entityKind] = "PgForeignKeyBuilder";
   /** @internal */
@@ -40142,12 +40423,12 @@ var ForeignKey = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/tracing-utils.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/tracing-utils.js
 function iife(fn, ...args) {
   return fn(...args);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/unique-constraint.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/unique-constraint.js
 function uniqueKeyName(table, columns) {
   return `${table[TableName]}_${columns.join("_")}_unique`;
 }
@@ -40197,7 +40478,7 @@ var UniqueConstraint = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/utils/array.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/utils/array.js
 function parsePgArrayValue(arrayString, startFrom, inQuotes) {
   for (let i = startFrom; i < arrayString.length; i++) {
     const char2 = arrayString[i];
@@ -40273,7 +40554,7 @@ function makePgArray(array2) {
   }).join(",")}}`;
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/common.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/common.js
 var PgColumnBuilder = class extends ColumnBuilder {
   foreignKeyConfigs = [];
   static [entityKind] = "PgColumnBuilder";
@@ -40457,7 +40738,7 @@ var PgArray = class _PgArray extends PgColumn {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/enum.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/enum.js
 var PgEnumObjectColumnBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgEnumObjectColumnBuilder";
   constructor(name, enumInstance) {
@@ -40542,7 +40823,7 @@ function pgEnumObjectWithSchema(enumName, values, schema) {
   return enumInstance;
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/subquery.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/subquery.js
 var Subquery = class {
   static [entityKind] = "Subquery";
   constructor(sql2, fields, alias, isWith = false, usedTables = []) {
@@ -40563,10 +40844,10 @@ var WithSubquery = class extends Subquery {
   static [entityKind] = "WithSubquery";
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/version.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/version.js
 var version = "0.45.2";
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/tracing.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/tracing.js
 var otel;
 var rawTracer;
 var tracer = {
@@ -40601,10 +40882,10 @@ var tracer = {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/view-common.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/view-common.js
 var ViewBaseConfig = /* @__PURE__ */ Symbol.for("drizzle:ViewBaseConfig");
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/table.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/table.js
 var Schema = /* @__PURE__ */ Symbol.for("drizzle:Schema");
 var Columns = /* @__PURE__ */ Symbol.for("drizzle:Columns");
 var ExtraConfigColumns = /* @__PURE__ */ Symbol.for("drizzle:ExtraConfigColumns");
@@ -40669,7 +40950,7 @@ function getTableUniqueName(table) {
   return `${table[Schema] ?? "public"}.${table[TableName]}`;
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/sql/sql.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/sql/sql.js
 var FakePrimitiveParam = class {
   static [entityKind] = "FakePrimitiveParam";
 };
@@ -40962,7 +41243,7 @@ function sql(strings, ...params) {
     return new SQL([new StringChunk(str)]);
   }
   sql2.raw = raw;
-  function join(chunks, separator) {
+  function join2(chunks, separator) {
     const result = [];
     for (const [i, chunk] of chunks.entries()) {
       if (i > 0 && separator !== void 0) {
@@ -40972,7 +41253,7 @@ function sql(strings, ...params) {
     }
     return new SQL(result);
   }
-  sql2.join = join;
+  sql2.join = join2;
   function identifier(value) {
     return new Name(value);
   }
@@ -41066,7 +41347,7 @@ Subquery.prototype.getSQL = function() {
   return new SQL([this]);
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/alias.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/alias.js
 var ColumnAliasProxyHandler = class {
   constructor(table) {
     this.table = table;
@@ -41162,7 +41443,7 @@ function mapColumnsInSQLToAlias(query, alias) {
   }));
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/selection-proxy.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/selection-proxy.js
 var SelectionProxyHandler = class _SelectionProxyHandler {
   static [entityKind] = "SelectionProxyHandler";
   config;
@@ -41230,11 +41511,11 @@ var SelectionProxyHandler = class _SelectionProxyHandler {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/utils.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/utils.js
 function mapResultRow(columns, row, joinsNotNullableMap) {
   const nullifyMap = {};
   const result = columns.reduce(
-    (result2, { path: path3, field }, columnIndex) => {
+    (result2, { path: path4, field }, columnIndex) => {
       let decoder;
       if (is(field, Column)) {
         decoder = field;
@@ -41246,8 +41527,8 @@ function mapResultRow(columns, row, joinsNotNullableMap) {
         decoder = field.sql.decoder;
       }
       let node = result2;
-      for (const [pathChunkIndex, pathChunk] of path3.entries()) {
-        if (pathChunkIndex < path3.length - 1) {
+      for (const [pathChunkIndex, pathChunk] of path4.entries()) {
+        if (pathChunkIndex < path4.length - 1) {
           if (!(pathChunk in node)) {
             node[pathChunk] = {};
           }
@@ -41255,8 +41536,8 @@ function mapResultRow(columns, row, joinsNotNullableMap) {
         } else {
           const rawValue = row[columnIndex];
           const value = node[pathChunk] = rawValue === null ? null : decoder.mapFromDriverValue(rawValue);
-          if (joinsNotNullableMap && is(field, Column) && path3.length === 2) {
-            const objectName = path3[0];
+          if (joinsNotNullableMap && is(field, Column) && path4.length === 2) {
+            const objectName = path4[0];
             if (!(objectName in nullifyMap)) {
               nullifyMap[objectName] = value === null ? getTableName(field.table) : false;
             } else if (typeof nullifyMap[objectName] === "string" && nullifyMap[objectName] !== getTableName(field.table)) {
@@ -41384,7 +41665,7 @@ function isConfig(data) {
 }
 var textDecoder = typeof TextDecoder === "undefined" ? null : new TextDecoder();
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/int.common.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/int.common.js
 var PgIntColumnBaseBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgIntColumnBaseBuilder";
   generatedAlwaysAsIdentity(sequence) {
@@ -41423,7 +41704,7 @@ var PgIntColumnBaseBuilder = class extends PgColumnBuilder {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/bigint.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/bigint.js
 var PgBigInt53Builder = class extends PgIntColumnBaseBuilder {
   static [entityKind] = "PgBigInt53Builder";
   constructor(name) {
@@ -41477,7 +41758,7 @@ function bigint(a, b) {
   return new PgBigInt64Builder(name);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/bigserial.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/bigserial.js
 var PgBigSerial53Builder = class extends PgColumnBuilder {
   static [entityKind] = "PgBigSerial53Builder";
   constructor(name) {
@@ -41537,7 +41818,7 @@ function bigserial(a, b) {
   return new PgBigSerial64Builder(name);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/boolean.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/boolean.js
 var PgBooleanBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgBooleanBuilder";
   constructor(name) {
@@ -41558,7 +41839,7 @@ function boolean(name) {
   return new PgBooleanBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/char.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/char.js
 var PgCharBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgCharBuilder";
   constructor(name, config2) {
@@ -41587,7 +41868,7 @@ function char(a, b = {}) {
   return new PgCharBuilder(name, config2);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/cidr.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/cidr.js
 var PgCidrBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgCidrBuilder";
   constructor(name) {
@@ -41608,7 +41889,7 @@ function cidr(name) {
   return new PgCidrBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/custom.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/custom.js
 var PgCustomColumnBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgCustomColumnBuilder";
   constructor(name, fieldConfig, customTypeParams) {
@@ -41652,7 +41933,7 @@ function customType(customTypeParams) {
   };
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/date.common.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/date.common.js
 var PgDateColumnBaseBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgDateColumnBaseBuilder";
   defaultNow() {
@@ -41660,7 +41941,7 @@ var PgDateColumnBaseBuilder = class extends PgColumnBuilder {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/date.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/date.js
 var PgDateBuilder = class extends PgDateColumnBaseBuilder {
   static [entityKind] = "PgDateBuilder";
   constructor(name) {
@@ -41715,7 +41996,7 @@ function date(a, b) {
   return new PgDateStringBuilder(name);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/double-precision.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/double-precision.js
 var PgDoublePrecisionBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgDoublePrecisionBuilder";
   constructor(name) {
@@ -41745,7 +42026,7 @@ function doublePrecision(name) {
   return new PgDoublePrecisionBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/inet.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/inet.js
 var PgInetBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgInetBuilder";
   constructor(name) {
@@ -41766,7 +42047,7 @@ function inet(name) {
   return new PgInetBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/integer.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/integer.js
 var PgIntegerBuilder = class extends PgIntColumnBaseBuilder {
   static [entityKind] = "PgIntegerBuilder";
   constructor(name) {
@@ -41793,7 +42074,7 @@ function integer(name) {
   return new PgIntegerBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/interval.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/interval.js
 var PgIntervalBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgIntervalBuilder";
   constructor(name, intervalConfig) {
@@ -41820,7 +42101,7 @@ function interval(a, b = {}) {
   return new PgIntervalBuilder(name, config2);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/json.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/json.js
 var PgJsonBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgJsonBuilder";
   constructor(name) {
@@ -41857,7 +42138,7 @@ function json(name) {
   return new PgJsonBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/jsonb.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/jsonb.js
 var PgJsonbBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgJsonbBuilder";
   constructor(name) {
@@ -41894,7 +42175,7 @@ function jsonb(name) {
   return new PgJsonbBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/line.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/line.js
 var PgLineBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgLineBuilder";
   constructor(name) {
@@ -41955,7 +42236,7 @@ function line(a, b) {
   return new PgLineABCBuilder(name);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/macaddr.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/macaddr.js
 var PgMacaddrBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgMacaddrBuilder";
   constructor(name) {
@@ -41976,7 +42257,7 @@ function macaddr(name) {
   return new PgMacaddrBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/macaddr8.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/macaddr8.js
 var PgMacaddr8Builder = class extends PgColumnBuilder {
   static [entityKind] = "PgMacaddr8Builder";
   constructor(name) {
@@ -41997,7 +42278,7 @@ function macaddr8(name) {
   return new PgMacaddr8Builder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/numeric.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/numeric.js
 var PgNumericBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgNumericBuilder";
   constructor(name, precision, scale) {
@@ -42114,7 +42395,7 @@ function numeric(a, b) {
   return mode === "number" ? new PgNumericNumberBuilder(name, config2?.precision, config2?.scale) : mode === "bigint" ? new PgNumericBigIntBuilder(name, config2?.precision, config2?.scale) : new PgNumericBuilder(name, config2?.precision, config2?.scale);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/point.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/point.js
 var PgPointTupleBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgPointTupleBuilder";
   constructor(name) {
@@ -42181,7 +42462,7 @@ function point(a, b) {
   return new PgPointObjectBuilder(name);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/postgis_extension/utils.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/postgis_extension/utils.js
 function hexToBytes(hex) {
   const bytes = [];
   for (let c = 0; c < hex.length; c += 2) {
@@ -42220,7 +42501,7 @@ function parseEWKB(hex) {
   throw new Error("Unsupported geometry type");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/postgis_extension/geometry.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/postgis_extension/geometry.js
 var PgGeometryBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgGeometryBuilder";
   constructor(name) {
@@ -42280,7 +42561,7 @@ function geometry(a, b) {
   return new PgGeometryObjectBuilder(name);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/real.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/real.js
 var PgRealBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgRealBuilder";
   constructor(name, length) {
@@ -42311,7 +42592,7 @@ function real(name) {
   return new PgRealBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/serial.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/serial.js
 var PgSerialBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgSerialBuilder";
   constructor(name) {
@@ -42334,7 +42615,7 @@ function serial(name) {
   return new PgSerialBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/smallint.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/smallint.js
 var PgSmallIntBuilder = class extends PgIntColumnBaseBuilder {
   static [entityKind] = "PgSmallIntBuilder";
   constructor(name) {
@@ -42361,7 +42642,7 @@ function smallint(name) {
   return new PgSmallIntBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/smallserial.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/smallserial.js
 var PgSmallSerialBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgSmallSerialBuilder";
   constructor(name) {
@@ -42387,7 +42668,7 @@ function smallserial(name) {
   return new PgSmallSerialBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/text.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/text.js
 var PgTextBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgTextBuilder";
   constructor(name, config2) {
@@ -42411,7 +42692,7 @@ function text(a, b = {}) {
   return new PgTextBuilder(name, config2);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/time.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/time.js
 var PgTimeBuilder = class extends PgDateColumnBaseBuilder {
   constructor(name, withTimezone, precision) {
     super(name, "string", "PgTime");
@@ -42445,7 +42726,7 @@ function time(a, b = {}) {
   return new PgTimeBuilder(name, config2.withTimezone ?? false, config2.precision);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/timestamp.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/timestamp.js
 var PgTimestampBuilder = class extends PgDateColumnBaseBuilder {
   static [entityKind] = "PgTimestampBuilder";
   constructor(name, withTimezone, precision) {
@@ -42526,7 +42807,7 @@ function timestamp(a, b = {}) {
   return new PgTimestampBuilder(name, config2?.withTimezone ?? false, config2?.precision);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/uuid.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/uuid.js
 var PgUUIDBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgUUIDBuilder";
   constructor(name) {
@@ -42553,7 +42834,7 @@ function uuid(name) {
   return new PgUUIDBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/varchar.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/varchar.js
 var PgVarcharBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgVarcharBuilder";
   constructor(name, config2) {
@@ -42582,7 +42863,7 @@ function varchar(a, b = {}) {
   return new PgVarcharBuilder(name, config2);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/bit.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/bit.js
 var PgBinaryVectorBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgBinaryVectorBuilder";
   constructor(name, config2) {
@@ -42609,7 +42890,7 @@ function bit(a, b) {
   return new PgBinaryVectorBuilder(name, config2);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/halfvec.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/halfvec.js
 var PgHalfVectorBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgHalfVectorBuilder";
   constructor(name, config2) {
@@ -42642,7 +42923,7 @@ function halfvec(a, b) {
   return new PgHalfVectorBuilder(name, config2);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/sparsevec.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/sparsevec.js
 var PgSparseVectorBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgSparseVectorBuilder";
   constructor(name, config2) {
@@ -42669,7 +42950,7 @@ function sparsevec(a, b) {
   return new PgSparseVectorBuilder(name, config2);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/vector.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/vector.js
 var PgVectorBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgVectorBuilder";
   constructor(name, config2) {
@@ -42702,7 +42983,7 @@ function vector(a, b) {
   return new PgVectorBuilder(name, config2);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/all.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/columns/all.js
 function getPgColumnBuilders() {
   return {
     bigint,
@@ -42740,7 +43021,7 @@ function getPgColumnBuilders() {
   };
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/table.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/table.js
 var InlineForeignKeys = /* @__PURE__ */ Symbol.for("drizzle:PgInlineForeignKeys");
 var EnableRLS = /* @__PURE__ */ Symbol.for("drizzle:EnableRLS");
 var PgTable = class extends Table {
@@ -42796,7 +43077,7 @@ var pgTable = (name, columns, extraConfig) => {
   return pgTableWithSchema(name, columns, extraConfig, void 0);
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/primary-keys.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/primary-keys.js
 var PrimaryKeyBuilder = class {
   static [entityKind] = "PgPrimaryKeyBuilder";
   /** @internal */
@@ -42826,7 +43107,7 @@ var PrimaryKey = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/casing.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/casing.js
 function toSnakeCase(input) {
   const words = input.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? [];
   return words.map((word) => word.toLowerCase()).join("_");
@@ -42878,7 +43159,7 @@ var CasingCache = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/errors.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/errors.js
 var DrizzleError = class extends Error {
   static [entityKind] = "DrizzleError";
   constructor({ message, cause }) {
@@ -42905,7 +43186,7 @@ var TransactionRollbackError = class extends DrizzleError {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/sql/expressions/conditions.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/sql/expressions/conditions.js
 function bindIfParam(value, column) {
   if (isDriverValueEncoder(column) && !isSQLWrapper(value) && !is(value, Param) && !is(value, Placeholder) && !is(value, Column) && !is(value, Table) && !is(value, View)) {
     return new Param(value, column);
@@ -43020,7 +43301,7 @@ function notIlike(column, value) {
   return sql`${column} not ilike ${value}`;
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/sql/expressions/select.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/sql/expressions/select.js
 function asc(column) {
   return sql`${column} asc`;
 }
@@ -43028,7 +43309,7 @@ function desc(column) {
   return sql`${column} desc`;
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/relations.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/relations.js
 var Relation = class {
   constructor(sourceTable, referencedTable, relationName) {
     this.sourceTable = sourceTable;
@@ -43289,12 +43570,12 @@ function mapRelationalRow(tablesConfig, tableConfig, row, buildQueryResultSelect
   return result;
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/view-base.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/view-base.js
 var PgViewBase = class extends View {
   static [entityKind] = "PgViewBase";
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/dialect.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/dialect.js
 var PgDialect = class {
   static [entityKind] = "PgDialect";
   /** @internal */
@@ -44399,7 +44680,7 @@ var PgDialect = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/query-builders/query-builder.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/query-builders/query-builder.js
 var TypedQueryBuilder = class {
   static [entityKind] = "TypedQueryBuilder";
   /** @internal */
@@ -44408,7 +44689,7 @@ var TypedQueryBuilder = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/select.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/query-builders/select.js
 var PgSelectBuilder = class {
   static [entityKind] = "PgSelectBuilder";
   fields;
@@ -44505,7 +44786,7 @@ var PgSelectQueryBuilderBase = class extends TypedQueryBuilder {
       const baseTableName = this.tableName;
       const tableName = getTableLikeName(table);
       for (const item of extractUsedTable(table)) this.usedTables.add(item);
-      if (typeof tableName === "string" && this.config.joins?.some((join) => join.alias === tableName)) {
+      if (typeof tableName === "string" && this.config.joins?.some((join2) => join2.alias === tableName)) {
         throw new Error(`Alias "${tableName}" is already used in this query`);
       }
       if (!this.isPartialSelect) {
@@ -45224,7 +45505,7 @@ var intersectAll = createSetOperator("intersect", true);
 var except = createSetOperator("except", false);
 var exceptAll = createSetOperator("except", true);
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/query-builder.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/query-builders/query-builder.js
 var QueryBuilder = class {
   static [entityKind] = "PgQueryBuilder";
   dialect;
@@ -45311,7 +45592,7 @@ var QueryBuilder = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/utils.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/utils.js
 function extractUsedTable(table) {
   if (is(table, PgTable)) {
     return [table[Schema] ? `${table[Schema]}.${table[Table.Symbol.BaseName]}` : table[Table.Symbol.BaseName]];
@@ -45325,7 +45606,7 @@ function extractUsedTable(table) {
   return [];
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/delete.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/query-builders/delete.js
 var PgDeleteBase = class extends QueryPromise {
   constructor(table, session, dialect, withList) {
     super();
@@ -45421,7 +45702,7 @@ var PgDeleteBase = class extends QueryPromise {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/insert.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/query-builders/insert.js
 var PgInsertBuilder = class {
   constructor(table, session, dialect, withList, overridingSystemValue_) {
     this.table = table;
@@ -45614,7 +45895,7 @@ var PgInsertBase = class extends QueryPromise {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/refresh-materialized-view.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/query-builders/refresh-materialized-view.js
 var PgRefreshMaterializedView = class extends QueryPromise {
   constructor(view, session, dialect) {
     super();
@@ -45668,7 +45949,7 @@ var PgRefreshMaterializedView = class extends QueryPromise {
   };
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/update.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/query-builders/update.js
 var PgUpdateBuilder = class {
   constructor(table, session, dialect, withList) {
     this.table = table;
@@ -45726,7 +46007,7 @@ var PgUpdateBase = class extends QueryPromise {
   createJoin(joinType) {
     return (table, on) => {
       const tableName = getTableLikeName(table);
-      if (typeof tableName === "string" && this.config.joins.some((join) => join.alias === tableName)) {
+      if (typeof tableName === "string" && this.config.joins.some((join2) => join2.alias === tableName)) {
         throw new Error(`Alias "${tableName}" is already used in this query`);
       }
       if (typeof on === "function") {
@@ -45822,10 +46103,10 @@ var PgUpdateBase = class extends QueryPromise {
           const fromFields = this.getTableLikeFields(this.config.from);
           fields[tableName] = fromFields;
         }
-        for (const join of this.config.joins) {
-          const tableName2 = getTableLikeName(join.table);
-          if (typeof tableName2 === "string" && !is(join.table, SQL)) {
-            const fromFields = this.getTableLikeFields(join.table);
+        for (const join2 of this.config.joins) {
+          const tableName2 = getTableLikeName(join2.table);
+          if (typeof tableName2 === "string" && !is(join2.table, SQL)) {
+            const fromFields = this.getTableLikeFields(join2.table);
             fields[tableName2] = fromFields;
           }
         }
@@ -45880,7 +46161,7 @@ var PgUpdateBase = class extends QueryPromise {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/count.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/query-builders/count.js
 var PgCountBuilder = class _PgCountBuilder extends SQL {
   constructor(params) {
     super(_PgCountBuilder.buildEmbeddedCount(params.source, params.filters).queryChunks);
@@ -45931,7 +46212,7 @@ var PgCountBuilder = class _PgCountBuilder extends SQL {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/query.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/query-builders/query.js
 var RelationalQueryBuilder = class {
   constructor(fullSchema, schema, tableNamesMap, table, tableConfig, dialect, session) {
     this.fullSchema = fullSchema;
@@ -46044,7 +46325,7 @@ var PgRelationalQuery = class extends QueryPromise {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/raw.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/query-builders/raw.js
 var PgRaw = class extends QueryPromise {
   constructor(execute, sql2, query, mapBatchResult) {
     super();
@@ -46073,7 +46354,7 @@ var PgRaw = class extends QueryPromise {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/db.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/db.js
 var PgDatabase = class {
   constructor(dialect, session, schema) {
     this.dialect = dialect;
@@ -46352,7 +46633,7 @@ var PgDatabase = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/cache/core/cache.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/cache/core/cache.js
 var Cache = class {
   static [entityKind] = "Cache";
 };
@@ -46379,7 +46660,7 @@ async function hashQuery(sql2, params) {
   return hashHex;
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/session.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/pg-core/session.js
 var PgPreparedQuery = class {
   constructor(query, cache, queryMetadata, cacheConfig) {
     this.query = query;
@@ -46539,7 +46820,7 @@ var PgTransaction = class extends PgDatabase {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/node-postgres/session.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/node-postgres/session.js
 var { Pool: Pool2, types: types2 } = esm_default;
 var NodePgPreparedQuery = class extends PgPreparedQuery {
   constructor(client, queryString, params, logger2, cache, queryMetadata, cacheConfig, fields, name, _isResponseInArrayMode, customResultMapper) {
@@ -46755,7 +47036,7 @@ var NodePgTransaction = class _NodePgTransaction extends PgTransaction {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/node-postgres/driver.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/node-postgres/driver.js
 var NodePgDriver = class {
   constructor(client, dialect, options = {}) {
     this.client = client;
@@ -47496,10 +47777,10 @@ function assignProp(target, prop, value) {
     configurable: true
   });
 }
-function getElementAtPath(obj, path3) {
-  if (!path3)
+function getElementAtPath(obj, path4) {
+  if (!path4)
     return obj;
-  return path3.reduce((acc, key) => acc?.[key], obj);
+  return path4.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -47819,11 +48100,11 @@ function aborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path3, issues) {
+function prefixIssues(path4, issues) {
   return issues.map((iss) => {
     var _a2;
     (_a2 = iss).path ?? (_a2.path = []);
-    iss.path.unshift(path3);
+    iss.path.unshift(path4);
     return iss;
   });
 }
@@ -47960,7 +48241,7 @@ function treeifyError(error40, _mapper) {
     return issue2.message;
   };
   const result = { errors: [] };
-  const processError = (error41, path3 = []) => {
+  const processError = (error41, path4 = []) => {
     var _a2, _b;
     for (const issue2 of error41.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
@@ -47970,7 +48251,7 @@ function treeifyError(error40, _mapper) {
       } else if (issue2.code === "invalid_element") {
         processError({ issues: issue2.issues }, issue2.path);
       } else {
-        const fullpath = [...path3, ...issue2.path];
+        const fullpath = [...path4, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -48000,9 +48281,9 @@ function treeifyError(error40, _mapper) {
   processError(error40);
   return result;
 }
-function toDotPath(path3) {
+function toDotPath(path4) {
   const segs = [];
-  for (const seg of path3) {
+  for (const seg of path4) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -57983,7 +58264,7 @@ function date5(params) {
 // ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v4/classic/external.js
 config(en_default());
 
-// ../../node_modules/.pnpm/drizzle-zod@0.8.3_drizzle-o_388078da7d074fc4ad4cae0eacfc8b59/node_modules/drizzle-zod/index.mjs
+// ../../node_modules/.pnpm/drizzle-zod@0.8.3_drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0__zod@3.25.76/node_modules/drizzle-zod/index.mjs
 var CONSTANTS = {
   INT8_MIN: -128,
   INT8_MAX: 127,
@@ -58245,6 +58526,9 @@ var usersTable = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   role: userRoleEnum("role").notNull().default("user"),
   plan: text("plan").notNull().default("free"),
+  // Default true keeps legacy rows linkable; password register sets false until a
+  // federated login proves contact ownership and claims the account.
+  emailVerified: boolean("email_verified").notNull().default(true),
   stripeCustomerId: text("stripe_customer_id"),
   createdAt: timestamp("created_at").notNull().defaultNow()
 });
@@ -58302,7 +58586,7 @@ var communityPostsTable = pgTable("community_posts", {
 var insertIngredientSchema = createInsertSchema(ingredientsTable).omit({ id: true, updatedAt: true });
 var insertRecipeSchema = createInsertSchema(recipesTable).omit({ id: true, createdAt: true, updatedAt: true, ingredientsJson: true });
 var insertCommunityPostSchema = createInsertSchema(communityPostsTable).omit({ id: true, likes: true, createdAt: true });
-var insertUserSchema = createInsertSchema(usersTable).omit({ id: true, createdAt: true, role: true });
+var insertUserSchema = createInsertSchema(usersTable).omit({ id: true, createdAt: true, role: true, emailVerified: true });
 
 // ../../lib/db/src/index.ts
 var { Pool: Pool3 } = esm_default;
@@ -58330,6 +58614,32 @@ var import_fs = __toESM(require("fs"), 1);
 
 // src/routes/index.ts
 var import_express14 = __toESM(require_express2(), 1);
+
+// src/middleware/requireAuth.ts
+var import_jsonwebtoken = __toESM(require_jsonwebtoken(), 1);
+function getSecret() {
+  const s = process.env.SESSION_SECRET;
+  if (!s) throw new Error("SESSION_SECRET environment variable is required but was not set.");
+  return s;
+}
+async function requireAuth(req, res, next) {
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) return res.status(401).json({ error: "Ej inloggad." });
+  try {
+    const token = header.slice(7);
+    const payload = import_jsonwebtoken.default.verify(token, getSecret(), { issuer: "smakvarlden", audience: "smakvarlden-app" });
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, payload.id));
+    if (!user) return res.status(401).json({ error: "Anv\xE4ndare hittades inte." });
+    req.user = user;
+    return next();
+  } catch {
+    return res.status(401).json({ error: "Ogiltig eller utg\xE5ngen token." });
+  }
+}
+function requireAdmin(req, res, next) {
+  if (req.user?.role !== "admin") return res.status(403).json({ error: "\xC5tkomst nekad." });
+  return next();
+}
 
 // src/routes/health.ts
 var import_express = __toESM(require_express2(), 1);
@@ -58812,8 +59122,8 @@ function getErrorMap2() {
 
 // ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path3, errorMaps, issueData } = params;
-  const fullPath = [...path3, ...issueData.path || []];
+  const { data, path: path4, errorMaps, issueData } = params;
+  const fullPath = [...path4, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -58929,11 +59239,11 @@ var errorUtil;
 
 // ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path3, key) {
+  constructor(parent, value, path4, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path3;
+    this._path = path4;
     this._key = key;
   }
   get path() {
@@ -62603,11 +62913,26 @@ var recipes_default = router2;
 // src/routes/ingredients.ts
 var import_express3 = __toESM(require_express2(), 1);
 var router3 = (0, import_express3.Router)();
+function formatIngredient(row) {
+  return { id: row.id, name: row.name, category: row.category, unit: row.unit, currentPriceSek: parseFloat(String(row.currentPriceSek)), priceChangePct: parseFloat(String(row.priceChangePct)), supplier: row.supplier ?? void 0, updatedAt: row.updatedAt.toISOString() };
+}
+async function recalcRecipesForIngredients(ingredientIds) {
+  if (!ingredientIds.length) return;
+  const affected = await db.selectDistinct({ recipeId: recipeIngredientsTable.recipeId }).from(recipeIngredientsTable).where(inArray(recipeIngredientsTable.ingredientId, ingredientIds));
+  if (!affected.length) return;
+  for (const { recipeId } of affected) {
+    const lines = await db.select({ quantity: recipeIngredientsTable.quantity, priceSek: ingredientsTable.currentPriceSek }).from(recipeIngredientsTable).innerJoin(ingredientsTable, eq(recipeIngredientsTable.ingredientId, ingredientsTable.id)).where(eq(recipeIngredientsTable.recipeId, recipeId));
+    const totalCost = Math.round(lines.reduce((s, l) => s + parseFloat(String(l.quantity)) * parseFloat(String(l.priceSek)), 0) * 100) / 100;
+    const [recipe] = await db.select({ sellingPriceSek: recipesTable.sellingPriceSek }).from(recipesTable).where(eq(recipesTable.id, recipeId));
+    if (!recipe) continue;
+    const sp = parseFloat(String(recipe.sellingPriceSek));
+    const margin = sp > 0 ? Math.round((sp - totalCost) / sp * 100 * 100) / 100 : 0;
+    await db.update(recipesTable).set({ totalCostSek: String(totalCost), profitMarginPct: String(margin), updatedAt: /* @__PURE__ */ new Date() }).where(eq(recipesTable.id, recipeId));
+  }
+}
 router3.get("/", async (req, res) => {
   const parsed = ListIngredientsQueryParams.safeParse(req.query);
-  if (!parsed.success) {
-    return res.status(400).json({ error: "Invalid query params" });
-  }
+  if (!parsed.success) return res.status(400).json({ error: "Invalid query params" });
   const { category, search } = parsed.data;
   const conditions = [];
   if (category) conditions.push(eq(ingredientsTable.category, category));
@@ -62617,22 +62942,9 @@ router3.get("/", async (req, res) => {
 });
 router3.post("/", async (req, res) => {
   const parsed = CreateIngredientBody.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ error: "Invalid body" });
-  }
-  const [row] = await db.insert(ingredientsTable).values({
-    name: parsed.data.name,
-    category: parsed.data.category,
-    unit: parsed.data.unit,
-    currentPriceSek: String(parsed.data.currentPriceSek),
-    supplier: parsed.data.supplier ?? null,
-    priceChangePct: "0"
-  }).returning();
-  await db.insert(activityLogTable).values({
-    type: "recipe_created",
-    title: `Ny ingrediens tillagd: ${row.name}`,
-    subtitle: `${row.category} \xB7 ${row.currentPriceSek} SEK/${row.unit}`
-  });
+  if (!parsed.success) return res.status(400).json({ error: "Invalid body" });
+  const [row] = await db.insert(ingredientsTable).values({ name: parsed.data.name, category: parsed.data.category, unit: parsed.data.unit, currentPriceSek: String(parsed.data.currentPriceSek), supplier: parsed.data.supplier ?? null, priceChangePct: "0" }).returning();
+  await db.insert(activityLogTable).values({ type: "recipe_created", title: `Ny ingrediens tillagd: ${row.name}`, subtitle: `${row.category} \xB7 ${row.currentPriceSek} SEK/${row.unit}` });
   return res.status(201).json(formatIngredient(row));
 });
 router3.get("/price-trends", async (_req, res) => {
@@ -62640,34 +62952,19 @@ router3.get("/price-trends", async (_req, res) => {
   const trends = [];
   const now = /* @__PURE__ */ new Date();
   for (const ing of rows) {
+    const base = parseFloat(String(ing.currentPriceSek));
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now);
       d.setDate(d.getDate() - i * 7);
-      const base = parseFloat(String(ing.currentPriceSek));
-      const variation = base * (0.85 + Math.random() * 0.3);
-      trends.push({
-        ingredientId: ing.id,
-        ingredientName: ing.name,
-        date: d.toISOString().slice(0, 10),
-        priceSek: Math.round(variation * 100) / 100
-      });
+      const seed = (ing.id * 17 + i * 31) % 100;
+      trends.push({ ingredientId: ing.id, ingredientName: ing.name, date: d.toISOString().slice(0, 10), priceSek: Math.round(base * (0.88 + seed / 100 * 0.24) * 100) / 100 });
     }
   }
   return res.json(trends);
 });
 router3.get("/category-breakdown", async (_req, res) => {
-  const rows = await db.select({
-    category: ingredientsTable.category,
-    count: sql`count(*)::int`,
-    avgPriceSek: sql`avg(current_price_sek::numeric)`,
-    totalPriceSek: sql`sum(current_price_sek::numeric)`
-  }).from(ingredientsTable).groupBy(ingredientsTable.category);
-  return res.json(rows.map((r) => ({
-    category: r.category,
-    count: r.count,
-    avgPriceSek: Math.round(Number(r.avgPriceSek) * 100) / 100,
-    totalPriceSek: Math.round(Number(r.totalPriceSek) * 100) / 100
-  })));
+  const rows = await db.select({ category: ingredientsTable.category, count: sql`count(*)::int`, avgPriceSek: sql`avg(current_price_sek::numeric)`, totalPriceSek: sql`sum(current_price_sek::numeric)` }).from(ingredientsTable).groupBy(ingredientsTable.category);
+  return res.json(rows.map((r) => ({ category: r.category, count: r.count, avgPriceSek: Math.round(Number(r.avgPriceSek) * 100) / 100, totalPriceSek: Math.round(Number(r.totalPriceSek) * 100) / 100 })));
 });
 router3.get("/:id", async (req, res) => {
   const parsed = GetIngredientParams.safeParse({ id: Number(req.params.id) });
@@ -62685,42 +62982,27 @@ router3.put("/:id", async (req, res) => {
   const oldPrice = parseFloat(String(existing[0].currentPriceSek));
   const newPrice = bodyParsed.data.currentPriceSek ?? oldPrice;
   const changePct = oldPrice > 0 ? (newPrice - oldPrice) / oldPrice * 100 : 0;
-  const [row] = await db.update(ingredientsTable).set({
-    name: bodyParsed.data.name ?? existing[0].name,
-    category: bodyParsed.data.category ?? existing[0].category,
-    unit: bodyParsed.data.unit ?? existing[0].unit,
-    currentPriceSek: String(newPrice),
-    priceChangePct: String(Math.round(changePct * 100) / 100),
-    supplier: bodyParsed.data.supplier ?? existing[0].supplier,
-    updatedAt: /* @__PURE__ */ new Date()
-  }).where(eq(ingredientsTable.id, paramParsed.data.id)).returning();
-  if (Math.abs(changePct) > 0.01) {
-    await db.insert(activityLogTable).values({
-      type: "price_change",
-      title: `Pris\xE4ndring: ${row.name}`,
-      subtitle: `${changePct > 0 ? "+" : ""}${Math.round(changePct * 10) / 10}% till ${newPrice} SEK/${row.unit}`
-    });
-  }
+  const [row] = await db.update(ingredientsTable).set({ name: bodyParsed.data.name ?? existing[0].name, category: bodyParsed.data.category ?? existing[0].category, unit: bodyParsed.data.unit ?? existing[0].unit, currentPriceSek: String(newPrice), priceChangePct: String(Math.round(changePct * 100) / 100), supplier: bodyParsed.data.supplier ?? existing[0].supplier, updatedAt: /* @__PURE__ */ new Date() }).where(eq(ingredientsTable.id, paramParsed.data.id)).returning();
+  if (Math.abs(changePct) > 0.01) await db.insert(activityLogTable).values({ type: "price_change", title: `Pris\xE4ndring: ${row.name}`, subtitle: `${changePct > 0 ? "+" : ""}${Math.round(changePct * 10) / 10}% till ${newPrice} SEK/${row.unit}` });
+  await recalcRecipesForIngredients([paramParsed.data.id]);
   return res.json(formatIngredient(row));
 });
 router3.delete("/:id", async (req, res) => {
   const parsed = DeleteIngredientParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
+  const affectedRecipes = await db.selectDistinct({ recipeId: recipeIngredientsTable.recipeId }).from(recipeIngredientsTable).where(eq(recipeIngredientsTable.ingredientId, parsed.data.id));
   await db.delete(ingredientsTable).where(eq(ingredientsTable.id, parsed.data.id));
+  for (const { recipeId } of affectedRecipes) {
+    const lines = await db.select({ quantity: recipeIngredientsTable.quantity, priceSek: ingredientsTable.currentPriceSek }).from(recipeIngredientsTable).innerJoin(ingredientsTable, eq(recipeIngredientsTable.ingredientId, ingredientsTable.id)).where(eq(recipeIngredientsTable.recipeId, recipeId));
+    const totalCost = Math.round(lines.reduce((s, l) => s + parseFloat(String(l.quantity)) * parseFloat(String(l.priceSek)), 0) * 100) / 100;
+    const [recipe] = await db.select({ sellingPriceSek: recipesTable.sellingPriceSek }).from(recipesTable).where(eq(recipesTable.id, recipeId));
+    if (!recipe) continue;
+    const sp = parseFloat(String(recipe.sellingPriceSek));
+    const margin = sp > 0 ? Math.round((sp - totalCost) / sp * 100 * 100) / 100 : 0;
+    await db.update(recipesTable).set({ totalCostSek: String(totalCost), profitMarginPct: String(margin), updatedAt: /* @__PURE__ */ new Date() }).where(eq(recipesTable.id, recipeId));
+  }
   return res.status(204).send();
 });
-function formatIngredient(row) {
-  return {
-    id: row.id,
-    name: row.name,
-    category: row.category,
-    unit: row.unit,
-    currentPriceSek: parseFloat(String(row.currentPriceSek)),
-    priceChangePct: parseFloat(String(row.priceChangePct)),
-    supplier: row.supplier ?? void 0,
-    updatedAt: row.updatedAt.toISOString()
-  };
-}
 var ingredients_default = router3;
 
 // src/routes/dashboard.ts
@@ -64073,12 +64355,12 @@ function encodeURIPath(str) {
   return str.replace(/[^A-Za-z0-9\-._~!$&'()*+,;=:@]+/g, encodeURIComponent);
 }
 var EMPTY = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.create(null));
-var createPathTagFunction = (pathEncoder = encodeURIPath) => function path3(statics, ...params) {
+var createPathTagFunction = (pathEncoder = encodeURIPath) => function path4(statics, ...params) {
   if (statics.length === 1)
     return statics[0];
   let postPath = false;
   const invalidSegments = [];
-  const path4 = statics.reduce((previousValue, currentValue, index) => {
+  const path5 = statics.reduce((previousValue, currentValue, index) => {
     if (/[?#]/.test(currentValue)) {
       postPath = true;
     }
@@ -64095,7 +64377,7 @@ var createPathTagFunction = (pathEncoder = encodeURIPath) => function path3(stat
     }
     return previousValue + currentValue + (index === params.length ? "" : encoded);
   }, "");
-  const pathOnly = path4.split(/[?#]/, 1)[0];
+  const pathOnly = path5.split(/[?#]/, 1)[0];
   const invalidSegmentPattern = /(?<=^|\/)(?:\.|%2e){1,2}(?=\/|$)/gi;
   let match;
   while ((match = invalidSegmentPattern.exec(pathOnly)) !== null) {
@@ -64116,10 +64398,10 @@ var createPathTagFunction = (pathEncoder = encodeURIPath) => function path3(stat
     }, "");
     throw new AnthropicError(`Path parameters result in path with invalid segments:
 ${invalidSegments.map((e) => e.error).join("\n")}
-${path4}
+${path5}
 ${underline}`);
   }
-  return path4;
+  return path5;
 };
 var path = /* @__PURE__ */ createPathTagFunction(encodeURIPath);
 
@@ -68663,9 +68945,9 @@ var BaseAnthropic = class {
   makeStatusError(status, error40, message, headers) {
     return APIError.generate(status, error40, message, headers);
   }
-  buildURL(path3, query, defaultBaseURL) {
+  buildURL(path4, query, defaultBaseURL) {
     const baseURL = !__classPrivateFieldGet(this, _BaseAnthropic_instances, "m", _BaseAnthropic_baseURLOverridden).call(this) && defaultBaseURL || this.baseURL;
-    const url2 = isAbsoluteURL(path3) ? new URL(path3) : new URL(baseURL + (baseURL.endsWith("/") && path3.startsWith("/") ? path3.slice(1) : path3));
+    const url2 = isAbsoluteURL(path4) ? new URL(path4) : new URL(baseURL + (baseURL.endsWith("/") && path4.startsWith("/") ? path4.slice(1) : path4));
     const defaultQuery = this.defaultQuery();
     const pathQuery = Object.fromEntries(url2.searchParams);
     if (!isEmptyObj(defaultQuery) || !isEmptyObj(pathQuery)) {
@@ -68697,24 +68979,24 @@ var BaseAnthropic = class {
    */
   async prepareRequest(request, { url: url2, options }) {
   }
-  get(path3, opts) {
-    return this.methodRequest("get", path3, opts);
+  get(path4, opts) {
+    return this.methodRequest("get", path4, opts);
   }
-  post(path3, opts) {
-    return this.methodRequest("post", path3, opts);
+  post(path4, opts) {
+    return this.methodRequest("post", path4, opts);
   }
-  patch(path3, opts) {
-    return this.methodRequest("patch", path3, opts);
+  patch(path4, opts) {
+    return this.methodRequest("patch", path4, opts);
   }
-  put(path3, opts) {
-    return this.methodRequest("put", path3, opts);
+  put(path4, opts) {
+    return this.methodRequest("put", path4, opts);
   }
-  delete(path3, opts) {
-    return this.methodRequest("delete", path3, opts);
+  delete(path4, opts) {
+    return this.methodRequest("delete", path4, opts);
   }
-  methodRequest(method, path3, opts) {
+  methodRequest(method, path4, opts) {
     return this.request(Promise.resolve(opts).then((opts2) => {
-      return { method, path: path3, ...opts2 };
+      return { method, path: path4, ...opts2 };
     }));
   }
   request(options, remainingRetries = null) {
@@ -68818,8 +69100,8 @@ var BaseAnthropic = class {
     }));
     return { response, options, controller, requestLogID, retryOfRequestLogID, startTime };
   }
-  getAPIList(path3, Page2, opts) {
-    return this.requestAPIList(Page2, opts && "then" in opts ? opts.then((opts2) => ({ method: "get", path: path3, ...opts2 })) : { method: "get", path: path3, ...opts });
+  getAPIList(path4, Page2, opts) {
+    return this.requestAPIList(Page2, opts && "then" in opts ? opts.then((opts2) => ({ method: "get", path: path4, ...opts2 })) : { method: "get", path: path4, ...opts });
   }
   requestAPIList(Page2, options) {
     const request = this.makeRequest(options, null, void 0);
@@ -68907,8 +69189,8 @@ var BaseAnthropic = class {
   }
   async buildRequest(inputOptions, { retryCount = 0 } = {}) {
     const options = { ...inputOptions };
-    const { method, path: path3, query, defaultBaseURL } = options;
-    const url2 = this.buildURL(path3, query, defaultBaseURL);
+    const { method, path: path4, query, defaultBaseURL } = options;
+    const url2 = this.buildURL(path4, query, defaultBaseURL);
     if ("timeout" in options)
       validatePositiveInteger("timeout", options.timeout);
     options.timeout = options.timeout ?? this.timeout;
@@ -69018,12 +69300,7 @@ Anthropic.Beta = Beta;
 
 // src/routes/community.ts
 var router5 = (0, import_express5.Router)();
-var NEWS_FEEDS = [
-  {
-    source: "Food Supply",
-    url: "https://www.food-supply.se/xml/rss2/articles?description=true"
-  }
-];
+var NEWS_FEEDS = [{ source: "Food Supply", url: "https://www.food-supply.se/xml/rss2/articles?description=true" }];
 var WEEK_MS = 7 * 24 * 60 * 60 * 1e3;
 var newsCache = {};
 function getAiClient() {
@@ -69037,6 +69314,13 @@ router5.get("/posts", async (req, res) => {
   const rows = await db.select().from(communityPostsTable).where(search ? ilike(communityPostsTable.recipeName, `%${search}%`) : void 0).orderBy(desc(communityPostsTable.createdAt));
   return res.json(rows.map(formatPost));
 });
+router5.get("/posts/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  if (!id || !Number.isFinite(id)) return res.status(400).json({ error: "Invalid id" });
+  const [post] = await db.select().from(communityPostsTable).where(eq(communityPostsTable.id, id));
+  if (!post) return res.status(404).json({ error: "Not found" });
+  return res.json(formatPost(post));
+});
 router5.get("/news", async (req, res) => {
   const lang = req.query.lang === "en" ? "en" : "sv";
   const cacheKey = `news:${lang}`;
@@ -69046,72 +69330,26 @@ router5.get("/news", async (req, res) => {
       return res.json(newsCache[cacheKey].items);
     }
     const feedResults = await Promise.allSettled(NEWS_FEEDS.map(fetchFeed));
-    const swedishItems = feedResults.flatMap((result) => result.status === "fulfilled" ? result.value : []).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 8);
+    const swedishItems = feedResults.flatMap((r) => r.status === "fulfilled" ? r.value : []).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 8);
     newsCache["news:sv"] = { expiresAt: Date.now() + WEEK_MS, items: swedishItems };
     const items = lang === "en" ? await translateNewsToEnglish(swedishItems) : swedishItems;
-    const translated = lang === "sv" || items.every((item) => item.language === "en");
-    newsCache[cacheKey] = { expiresAt: Date.now() + (translated ? WEEK_MS : 10 * 60 * 1e3), items };
-    res.set("Cache-Control", translated ? "public, max-age=0, s-maxage=604800, stale-while-revalidate=86400" : "no-store");
+    const fullyTranslated = lang === "sv" || items.every((i) => i.language === "en");
+    newsCache[cacheKey] = { expiresAt: Date.now() + (fullyTranslated ? WEEK_MS : 10 * 60 * 1e3), items };
+    res.set("Cache-Control", fullyTranslated ? "public, max-age=0, s-maxage=604800, stale-while-revalidate=86400" : "no-store");
     return res.json(items);
   } catch {
     res.set("Cache-Control", "no-store");
     return res.json(newsCache[cacheKey]?.items ?? newsCache["news:sv"]?.items ?? []);
   }
 });
-async function translateNewsToEnglish(items) {
-  if (!items.length) return items;
-  const client = getAiClient();
-  if (!client) return items.map((item) => ({ ...item, language: "sv" }));
-  try {
-    const response = await client.messages.create({
-      model: "claude-haiku-4-5",
-      max_tokens: 4e3,
-      system: "Translate Swedish restaurant industry news into natural, concise English. Return only raw JSON with no markdown, no prose, and no code fences.",
-      messages: [{
-        role: "user",
-        content: JSON.stringify({
-          instruction: "Translate each title and summary to English. Preserve id, source, url, and publishedAt exactly. Return a JSON array.",
-          items: items.map(({ id, title, summary, source, url: url2, publishedAt }) => ({ id, title, summary, source, url: url2, publishedAt }))
-        })
-      }]
-    });
-    const raw = response.content[0]?.type === "text" ? response.content[0].text : "[]";
-    const jsonText = raw.trim().replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
-    const match = jsonText.match(/\[[\s\S]*\]/);
-    const parsed = JSON.parse(match?.[0] ?? jsonText);
-    const byId = new Map(parsed.map((item) => [item.id, item]));
-    return items.map((item) => {
-      const translated = byId.get(item.id);
-      return {
-        ...item,
-        title: typeof translated?.title === "string" && translated.title.trim() ? translated.title : item.title,
-        summary: typeof translated?.summary === "string" && translated.summary.trim() ? translated.summary : item.summary,
-        language: "en",
-        translatedFrom: "sv"
-      };
-    });
-  } catch {
-    return items.map((item) => ({ ...item, language: "sv" }));
-  }
-}
-router5.post("/posts", async (req, res) => {
+router5.post("/posts", requireAuth, async (req, res) => {
   const parsed = CreateCommunityPostBody.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid body" });
-  const [post] = await db.insert(communityPostsTable).values({
-    recipeName: parsed.data.recipeName,
-    chefName: parsed.data.chefName,
-    description: parsed.data.description,
-    category: parsed.data.category,
-    costSek: String(parsed.data.costSek)
-  }).returning();
-  await db.insert(activityLogTable).values({
-    type: "recipe_shared",
-    title: `Recept delat: ${post.recipeName}`,
-    subtitle: `av ${post.chefName} \xB7 ${post.category}`
-  });
+  const [post] = await db.insert(communityPostsTable).values({ recipeName: parsed.data.recipeName, chefName: parsed.data.chefName, description: parsed.data.description, category: parsed.data.category, costSek: String(parsed.data.costSek) }).returning();
+  await db.insert(activityLogTable).values({ type: "recipe_shared", title: `Recept delat: ${post.recipeName}`, subtitle: `av ${post.chefName} \xB7 ${post.category}` });
   return res.status(201).json(formatPost(post));
 });
-router5.post("/posts/:id/like", async (req, res) => {
+router5.post("/posts/:id/like", requireAuth, async (req, res) => {
   const parsed = LikeCommunityPostParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) return res.status(400).json({ error: "Invalid id" });
   const [post] = await db.update(communityPostsTable).set({ likes: sql`likes + 1` }).where(eq(communityPostsTable.id, parsed.data.id)).returning();
@@ -69119,27 +69357,31 @@ router5.post("/posts/:id/like", async (req, res) => {
   return res.json(formatPost(post));
 });
 function formatPost(p) {
-  return {
-    id: p.id,
-    recipeName: p.recipeName,
-    chefName: p.chefName,
-    description: p.description,
-    category: p.category,
-    costSek: parseFloat(String(p.costSek)),
-    likes: p.likes,
-    createdAt: p.createdAt.toISOString()
-  };
+  return { id: p.id, recipeName: p.recipeName, chefName: p.chefName, description: p.description, category: p.category, costSek: parseFloat(String(p.costSek)), likes: p.likes, createdAt: p.createdAt.toISOString() };
+}
+async function translateNewsToEnglish(items) {
+  if (!items.length) return items;
+  const client = getAiClient();
+  if (!client) return items.map((i) => ({ ...i, language: "sv" }));
+  try {
+    const response = await client.messages.create({ model: "claude-haiku-4-5", max_tokens: 4e3, system: "Translate Swedish restaurant industry news into natural, concise English. Return only raw JSON with no markdown, no prose, and no code fences.", messages: [{ role: "user", content: JSON.stringify({ instruction: "Translate each title and summary to English. Preserve id, source, url, and publishedAt exactly. Return a JSON array.", items: items.map(({ id, title, summary, source, url: url2, publishedAt }) => ({ id, title, summary, source, url: url2, publishedAt })) }) }] });
+    const raw = response.content[0]?.type === "text" ? response.content[0].text : "[]";
+    const jsonText = raw.trim().replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+    const match = jsonText.match(/\[[\s\S]*\]/);
+    const parsed = JSON.parse(match?.[0] ?? jsonText);
+    const byId = new Map(parsed.map((i) => [i.id, i]));
+    return items.map((item) => {
+      const t = byId.get(item.id);
+      return { ...item, title: typeof t?.title === "string" && t.title.trim() ? t.title : item.title, summary: typeof t?.summary === "string" && t.summary.trim() ? t.summary : item.summary, language: "en", translatedFrom: "sv" };
+    });
+  } catch {
+    return items.map((i) => ({ ...i, language: "sv" }));
+  }
 }
 async function fetchFeed(feed) {
-  const response = await fetch(feed.url, {
-    headers: {
-      "Accept": "application/rss+xml, application/xml, text/xml",
-      "User-Agent": "Smakvarlden/1.0 (+https://github.com/msx9973/smakvarlden-course)"
-    }
-  });
+  const response = await fetch(feed.url, { headers: { Accept: "application/rss+xml, application/xml, text/xml", "User-Agent": "Smakvarlden/1.0 (+https://github.com/msx9973/smakvarlden-course)" } });
   if (!response.ok) return [];
-  const xml = await response.text();
-  return parseRss(xml, feed.source);
+  return parseRss(await response.text(), feed.source);
 }
 function parseRss(xml, source) {
   return [...xml.matchAll(/<item\b[\s\S]*?<\/item>/gi)].map((match) => {
@@ -69148,61 +69390,34 @@ function parseRss(xml, source) {
     const url2 = decodeXml(readTag(item, "link"));
     const summary = stripHtml(decodeXml(readTag(item, "description"))).slice(0, 220);
     const pubDate = readTag(item, "pubDate");
-    const publishedAt = pubDate ? new Date(pubDate).toISOString() : (/* @__PURE__ */ new Date()).toISOString();
-    return {
-      id: `${source}:${url2 || title}`,
-      title,
-      summary,
-      source,
-      url: url2,
-      publishedAt,
-      language: "sv"
-    };
-  }).filter((item) => item.title && item.url);
+    return { id: `${source}:${url2 || title}`, title, summary, source, url: url2, publishedAt: pubDate ? new Date(pubDate).toISOString() : (/* @__PURE__ */ new Date()).toISOString(), language: "sv" };
+  }).filter((i) => i.title && i.url);
 }
 function readTag(xml, tag) {
-  const match = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i"));
+  const match = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, "i"));
   return match ? match[1].replace(/^<!\[CDATA\[/, "").replace(/\]\]>$/, "").trim() : "";
 }
-function decodeXml(value) {
-  return value.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+function decodeXml(v) {
+  return v.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
 }
-function stripHtml(value) {
-  return value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+function stripHtml(v) {
+  return v.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 var community_default = router5;
 
 // src/routes/auth.ts
 var import_express6 = __toESM(require_express2(), 1);
 var import_node_crypto = __toESM(require("node:crypto"), 1);
-var import_jsonwebtoken = __toESM(require_jsonwebtoken(), 1);
-var router6 = (0, import_express6.Router)();
+var import_jsonwebtoken2 = __toESM(require_jsonwebtoken(), 1);
+
+// src/lib/accountIdentity.ts
 var PHONE_EMAIL_DOMAIN = "phone.smakvarlden.local";
 var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-var GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
-var GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
-var GOOGLE_USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
-function getSecret() {
-  return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
-}
-function signToken(user) {
-  return import_jsonwebtoken.default.sign({ id: user.id, email: user.email, role: user.role }, getSecret(), {
-    expiresIn: "14d",
-    issuer: "smakvarlden",
-    audience: "smakvarlden-app"
-  });
-}
-function publicContact(email3) {
-  if (!email3.endsWith(`@${PHONE_EMAIL_DOMAIN}`)) return email3;
-  const digits = email3.slice("phone.".length, -`@${PHONE_EMAIL_DOMAIN}`.length);
-  return `+${digits}`;
-}
-function formatUser(u) {
-  return { id: u.id, name: u.name, email: publicContact(u.email), role: u.role, plan: u.plan, createdAt: u.createdAt.toISOString() };
-}
 function normalizeEmail(value) {
   const email3 = value.trim().toLowerCase();
-  return EMAIL_RE.test(email3) ? email3 : null;
+  if (!EMAIL_RE.test(email3)) return null;
+  if (email3.endsWith(`@${PHONE_EMAIL_DOMAIN}`)) return null;
+  return email3;
 }
 function normalizePhone(value) {
   const compact = value.trim().replace(/[()\s-]/g, "");
@@ -69217,21 +69432,57 @@ function contactToStorageEmail(value) {
   if (phone) return `phone.${phone.slice(1)}@${PHONE_EMAIL_DOMAIN}`;
   return null;
 }
-function validatePassword(password) {
-  if (typeof password !== "string") return "Fyll i l\xF6senord.";
-  if (password.length < 8) return "L\xF6senordet m\xE5ste vara minst 8 tecken.";
-  if (!/[A-Za-zÅÄÖåäö]/.test(password) || !/\d/.test(password)) {
-    return "L\xF6senordet m\xE5ste inneh\xE5lla b\xE5de bokst\xE4ver och siffror.";
-  }
-  return null;
+function shouldClaimUnverifiedPasswordAccount(user) {
+  return user.emailVerified === false;
 }
-function verifyToken(token) {
-  const decoded = import_jsonwebtoken.default.decode(token);
-  if (!decoded?.iss && !decoded?.aud) return import_jsonwebtoken.default.verify(token, getSecret());
-  return import_jsonwebtoken.default.verify(token, getSecret(), {
+function assertSupabaseIdentityVerified(profile) {
+  if (profile.email) {
+    if (!profile.email_confirmed_at) {
+      throw new Error("E-postadressen \xE4r inte verifierad.");
+    }
+    return;
+  }
+  if (profile.phone) {
+    if (!profile.phone_confirmed_at) {
+      throw new Error("Telefonnumret \xE4r inte verifierat.");
+    }
+    return;
+  }
+}
+
+// src/routes/auth.ts
+var router6 = (0, import_express6.Router)();
+var GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+var GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+var GOOGLE_USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
+function getSecret2() {
+  const s = process.env.SESSION_SECRET;
+  if (!s) throw new Error("SESSION_SECRET is required. Set it in your environment variables.");
+  return s;
+}
+function signToken(user) {
+  return import_jsonwebtoken2.default.sign({ id: user.id, email: user.email, role: user.role }, getSecret2(), {
+    expiresIn: "14d",
     issuer: "smakvarlden",
     audience: "smakvarlden-app"
   });
+}
+function publicContact(email3) {
+  if (!email3.endsWith(`@${PHONE_EMAIL_DOMAIN}`)) return email3;
+  const digits = email3.slice("phone.".length, -`@${PHONE_EMAIL_DOMAIN}`.length);
+  return `+${digits}`;
+}
+function formatUser(u) {
+  return { id: u.id, name: u.name, email: publicContact(u.email), role: u.role, plan: u.plan, createdAt: u.createdAt.toISOString() };
+}
+function validatePassword(password) {
+  if (typeof password !== "string") return "Fyll i l\xF6senord.";
+  if (password.length < 8) return "L\xF6senordet m\xE5ste vara minst 8 tecken.";
+  if (!/[A-Za-zÅÄÖåäö]/.test(password) || !/\d/.test(password)) return "L\xF6senordet m\xE5ste inneh\xE5lla b\xE5de bokst\xE4ver och siffror.";
+  return null;
+}
+function verifyToken(token) {
+  return import_jsonwebtoken2.default.verify(token, getSecret2(), { issuer: "smakvarlden", audience: "smakvarlden-app" });
 }
 function getOrigin(req) {
   const configured = process.env.PUBLIC_APP_URL ?? process.env.URL;
@@ -69259,19 +69510,15 @@ function getSupabaseUrl() {
   return (process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL)?.replace(/\/$/, "") ?? null;
 }
 function signState(returnTo) {
-  const payload = Buffer.from(JSON.stringify({
-    returnTo: returnTo.startsWith("/") ? returnTo : "/",
-    nonce: import_node_crypto.default.randomBytes(16).toString("hex"),
-    ts: Date.now()
-  })).toString("base64url");
-  const sig = import_node_crypto.default.createHmac("sha256", getSecret()).update(payload).digest("base64url");
+  const payload = Buffer.from(JSON.stringify({ returnTo: returnTo.startsWith("/") ? returnTo : "/", nonce: import_node_crypto.default.randomBytes(16).toString("hex"), ts: Date.now() })).toString("base64url");
+  const sig = import_node_crypto.default.createHmac("sha256", getSecret2()).update(payload).digest("base64url");
   return `${payload}.${sig}`;
 }
 function readState(value) {
   if (typeof value !== "string") return null;
   const [payload, sig] = value.split(".");
   if (!payload || !sig) return null;
-  const expected = import_node_crypto.default.createHmac("sha256", getSecret()).update(payload).digest("base64url");
+  const expected = import_node_crypto.default.createHmac("sha256", getSecret2()).update(payload).digest("base64url");
   const actualBuffer = Buffer.from(sig);
   const expectedBuffer = Buffer.from(expected);
   if (actualBuffer.length !== expectedBuffer.length || !import_node_crypto.default.timingSafeEqual(actualBuffer, expectedBuffer)) return null;
@@ -69284,45 +69531,67 @@ function readState(value) {
   }
 }
 function oauthResultHtml(token, returnTo) {
-  return `<!doctype html>
-<html lang="sv">
-<head><meta charset="utf-8"><title>Loggar in...</title></head>
-<body>
-<script>
-localStorage.setItem("smakvarlden_token", ${JSON.stringify(token)});
-window.location.replace(${JSON.stringify(returnTo)});
-</script>
-</body>
-</html>`;
+  return `<!doctype html><html lang="sv"><head><meta charset="utf-8"><title>Loggar in...</title></head><body><script>localStorage.setItem("smakvarlden_token", ${JSON.stringify(token)});window.location.replace(${JSON.stringify(returnTo)});</script></body></html>`;
+}
+async function resolveRole() {
+  const [row] = await db.select({ cnt: sql`count(*)::int` }).from(usersTable);
+  return (row?.cnt ?? 0) === 0 ? "admin" : "user";
+}
+async function randomPasswordHash() {
+  return bcryptjs_default.hash(import_node_crypto.default.randomBytes(32).toString("base64url"), 12);
+}
+async function claimUnverifiedAccount(existing, name) {
+  const passwordHash = await randomPasswordHash();
+  const [updated] = await db.update(usersTable).set({
+    passwordHash,
+    emailVerified: true,
+    name: name.trim().slice(0, 80) || existing.name
+  }).where(eq(usersTable.id, existing.id)).returning();
+  return updated;
 }
 async function findOrCreateGoogleUser(profile) {
   const email3 = normalizeEmail(profile.email);
   if (!email3 || profile.email_verified === false) throw new Error("Google-kontot m\xE5ste ha en verifierad e-postadress.");
   const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, email3));
-  if (existing) return existing;
-  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
-  const passwordHash = await bcryptjs_default.hash(import_node_crypto.default.randomBytes(32).toString("base64url"), 12);
+  const oauthName = (profile.name ?? profile.given_name ?? email3.split("@")[0]).trim().slice(0, 80);
+  if (existing) {
+    if (shouldClaimUnverifiedPasswordAccount(existing)) {
+      return claimUnverifiedAccount(existing, oauthName);
+    }
+    return existing;
+  }
+  const role = await resolveRole();
+  const passwordHash = await randomPasswordHash();
   const [user] = await db.insert(usersTable).values({
-    name: (profile.name ?? profile.given_name ?? email3.split("@")[0]).trim().slice(0, 80),
+    name: oauthName,
     email: email3,
     passwordHash,
-    role: isFirstUser ? "admin" : "user"
+    role,
+    emailVerified: true
   }).returning();
   return user;
 }
 async function findOrCreateSupabaseUser(profile) {
+  assertSupabaseIdentityVerified(profile);
   const email3 = profile.email ? normalizeEmail(profile.email) : null;
   const storageEmail = email3 ?? contactToStorageEmail(profile.phone) ?? `supabase.${profile.id}@${PHONE_EMAIL_DOMAIN}`;
   const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
-  if (existing) return existing;
   const fallbackName = email3?.split("@")[0] ?? profile.phone ?? "Smakv\xE4rlden anv\xE4ndare";
-  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
-  const passwordHash = await bcryptjs_default.hash(import_node_crypto.default.randomBytes(32).toString("base64url"), 12);
+  const oauthName = (profile.user_metadata?.full_name ?? profile.user_metadata?.name ?? fallbackName).trim().slice(0, 80);
+  if (existing) {
+    if (shouldClaimUnverifiedPasswordAccount(existing)) {
+      return claimUnverifiedAccount(existing, oauthName);
+    }
+    return existing;
+  }
+  const role = await resolveRole();
+  const passwordHash = await randomPasswordHash();
   const [user] = await db.insert(usersTable).values({
-    name: (profile.user_metadata?.full_name ?? profile.user_metadata?.name ?? fallbackName).trim().slice(0, 80),
+    name: oauthName,
     email: storageEmail,
     passwordHash,
-    role: isFirstUser ? "admin" : "user"
+    role,
+    emailVerified: true
   }).returning();
   return user;
 }
@@ -69330,21 +69599,17 @@ router6.post("/auth/supabase", async (req, res) => {
   const credentials = getSupabaseCredentials();
   const { accessToken } = req.body ?? {};
   if (!credentials) return res.status(503).json({ error: "Supabase Auth \xE4r inte konfigurerat." });
-  if (typeof accessToken !== "string" || accessToken.length < 20) {
-    return res.status(400).json({ error: "Supabase-session saknas." });
-  }
+  if (typeof accessToken !== "string" || accessToken.length < 20) return res.status(400).json({ error: "Supabase-session saknas." });
   try {
-    const userResponse = await fetch(`${credentials.url}/auth/v1/user`, {
-      headers: {
-        apikey: credentials.anonKey,
-        Authorization: `Bearer ${accessToken}`
-      }
-    });
+    const userResponse = await fetch(`${credentials.url}/auth/v1/user`, { headers: { apikey: credentials.anonKey, Authorization: `Bearer ${accessToken}` } });
     if (!userResponse.ok) return res.status(401).json({ error: "Ogiltig Supabase-session." });
     const profile = await userResponse.json();
     const user = await findOrCreateSupabaseUser(profile);
     return res.json({ token: signToken(user), user: formatUser(user) });
-  } catch {
+  } catch (err) {
+    if (err instanceof Error && /verifierad|verifierat/i.test(err.message)) {
+      return res.status(403).json({ error: err.message });
+    }
     return res.status(500).json({ error: "Kunde inte verifiera Supabase-session." });
   }
 });
@@ -69374,51 +69639,37 @@ router6.get("/auth/google/callback", async (req, res) => {
   const credentials = getGoogleCredentials();
   const code = typeof req.query.code === "string" ? req.query.code : "";
   const returnTo = readState(req.query.state) ?? "/";
-  if (!credentials || !code) return res.redirect(`/login?oauth=failed`);
+  if (!credentials || !code) return res.redirect("/login?oauth=failed");
   try {
-    const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id: credentials.clientId,
-        client_secret: credentials.clientSecret,
-        code,
-        grant_type: "authorization_code",
-        redirect_uri: getGoogleRedirectUri(req)
-      })
-    });
+    const tokenResponse = await fetch(GOOGLE_TOKEN_URL, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ client_id: credentials.clientId, client_secret: credentials.clientSecret, code, grant_type: "authorization_code", redirect_uri: getGoogleRedirectUri(req) }) });
     if (!tokenResponse.ok) throw new Error("Google token exchange failed");
     const tokenData = await tokenResponse.json();
     if (!tokenData.access_token) throw new Error("Google token saknas.");
-    const profileResponse = await fetch(GOOGLE_USERINFO_URL, {
-      headers: { Authorization: `Bearer ${tokenData.access_token}` }
-    });
+    const profileResponse = await fetch(GOOGLE_USERINFO_URL, { headers: { Authorization: `Bearer ${tokenData.access_token}` } });
     if (!profileResponse.ok) throw new Error("Google profil kunde inte h\xE4mtas.");
     const profile = await profileResponse.json();
     const user = await findOrCreateGoogleUser(profile);
-    const appToken = signToken(user);
-    return res.type("html").send(oauthResultHtml(appToken, returnTo));
+    return res.type("html").send(oauthResultHtml(signToken(user), returnTo));
   } catch {
-    return res.redirect(`/login?oauth=failed`);
+    return res.redirect("/login?oauth=failed");
   }
 });
 router6.post("/auth/register", async (req, res) => {
   const { name, email: email3, contact, identifier, phone, password } = req.body ?? {};
   const storageEmail = contactToStorageEmail(email3 ?? contact ?? identifier ?? phone);
-  if (typeof name !== "string" || name.trim().length < 2 || !storageEmail || !password) {
-    return res.status(400).json({ error: "Fyll i namn, e-post eller telefonnummer och l\xF6senord." });
-  }
+  if (typeof name !== "string" || name.trim().length < 2 || !storageEmail || !password) return res.status(400).json({ error: "Fyll i namn, e-post eller telefonnummer och l\xF6senord." });
   const passwordError = validatePassword(password);
   if (passwordError) return res.status(400).json({ error: passwordError });
   const existing = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
   if (existing.length > 0) return res.status(400).json({ error: "Kontot finns redan. Logga in ist\xE4llet." });
   const passwordHash = await bcryptjs_default.hash(password, 12);
-  const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
+  const role = await resolveRole();
   const [user] = await db.insert(usersTable).values({
     name: name.trim().slice(0, 80),
     email: storageEmail,
     passwordHash,
-    role: isFirstUser ? "admin" : "user"
+    role,
+    emailVerified: false
   }).returning();
   return res.status(201).json({ token: signToken(user), user: formatUser(user) });
 });
@@ -69964,7 +70215,7 @@ var spoonacular_default = router11;
 // src/routes/stripe.ts
 var import_express12 = __toESM(require_express2(), 1);
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/Error.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/Error.js
 var Error_exports = {};
 __export(Error_exports, {
   RateLimitError: () => RateLimitError2,
@@ -70048,27 +70299,33 @@ var generateV2Error = (rawStripeError) => {
   return generateV1Error(rawStripeError);
 };
 var StripeError = class extends Error {
+  // errorProperties: The end of the section generated from our OpenAPI spec
   constructor(raw = {}, type = null) {
     super(raw.message);
     this.type = type || this.constructor.name;
     this.raw = raw;
     this.rawType = raw.type;
-    this.code = raw.code;
-    this.doc_url = raw.doc_url;
-    this.param = raw.param;
     this.detail = raw.detail;
     this.headers = raw.headers;
     this.requestId = raw.requestId;
     this.statusCode = raw.statusCode;
     this.message = raw.message ?? "";
     this.userMessage = raw.user_message;
+    this.advice_code = raw.advice_code;
     this.charge = raw.charge;
+    this.code = raw.code;
     this.decline_code = raw.decline_code;
+    this.doc_url = raw.doc_url;
+    this.network_advice_code = raw.network_advice_code;
+    this.network_decline_code = raw.network_decline_code;
+    this.param = raw.param;
     this.payment_intent = raw.payment_intent;
     this.payment_method = raw.payment_method;
     this.payment_method_type = raw.payment_method_type;
+    this.request_log_url = raw.request_log_url;
     this.setup_intent = raw.setup_intent;
     this.source = raw.source;
+    this.user_message = raw.user_message;
   }
 };
 StripeError.generate = generateV1Error;
@@ -70166,13 +70423,13 @@ var TemporarySessionExpiredError = class extends StripeError {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/net/HttpClient.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/net/HttpClient.js
 var HttpClient = class _HttpClient {
   /** The client name used for diagnostics. */
   getClientName() {
     throw new Error("getClientName not implemented.");
   }
-  makeRequest(host, port, path3, method, headers, requestData, protocol, timeout) {
+  makeRequest(host, port, path4, method, headers, requestData, protocol, timeout) {
     throw new Error("makeRequest not implemented.");
   }
   /** Helper to make a consistent timeout error across implementations. */
@@ -70206,7 +70463,7 @@ var HttpClientResponse = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/Types.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/Types.js
 var DEFAULT_BASE_ADDRESSES = {
   api: "api.stripe.com",
   files: "files.stripe.com",
@@ -70214,7 +70471,7 @@ var DEFAULT_BASE_ADDRESSES = {
   meter_events: "meter-events.stripe.com"
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/utils.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/utils.js
 function queryStringifyRequestData(data) {
   return stringifyRequestData(data);
 }
@@ -70363,12 +70620,6 @@ function pascalToCamelCase(name) {
     return name[0].toLowerCase() + name.substring(1);
   }
 }
-function emitWarning(warning) {
-  if (typeof process.emitWarning !== "function") {
-    return console.warn(`Stripe: ${warning}`);
-  }
-  return process.emitWarning(warning, "Stripe");
-}
 function isObject2(obj) {
   const type = typeof obj;
   return (type === "function" || type === "object") && !!obj;
@@ -70401,11 +70652,6 @@ function validateInteger(name, n, defaultVal) {
     }
   }
   return n;
-}
-function determineProcessUserAgentProperties() {
-  return typeof process === "undefined" ? {} : {
-    lang_version: process.version
-  };
 }
 var AI_AGENTS = [
   // The beginning of the section generated from our OpenAPI spec
@@ -70457,21 +70703,17 @@ function dateTimeReplacer(key, value) {
 function jsonStringifyRequestData(data) {
   return JSON.stringify(data, dateTimeReplacer);
 }
-function getAPIMode(path3) {
-  if (!path3) {
+function getAPIMode(path4) {
+  if (!path4) {
     return "v1";
   }
-  return path3.startsWith("/v2") ? "v2" : "v1";
+  return path4.startsWith("/v2") ? "v2" : "v1";
 }
 function parseHttpHeaderAsString(header) {
   if (Array.isArray(header)) {
     return header.join(", ");
   }
   return String(header);
-}
-function parseHttpHeaderAsNumber(header) {
-  const number4 = Array.isArray(header) ? header[0] : header;
-  return Number(number4);
 }
 function parseHeadersForFetch(headers) {
   return Object.entries(headers).map(([key, value]) => {
@@ -70490,8 +70732,7 @@ function attachCallSiteToError(err, callSiteStack) {
 ${callerFrames}`;
 }
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/RequestSender.js
-var MAX_RETRY_AFTER_WAIT = 60;
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/RequestSender.js
 var RequestSender = class _RequestSender {
   constructor(stripe, maxBufferedRequestMetric) {
     this._stripe = stripe;
@@ -70528,6 +70769,12 @@ var RequestSender = class _RequestSender {
   _getRequestId(headers) {
     return headers["request-id"];
   }
+  _emitStripeNotice(headers) {
+    const notice = headers["stripe-notice"];
+    if (notice) {
+      this._stripe._platformFunctions.emitWarning(typeof notice === "string" ? notice : notice[0]);
+    }
+  }
   /**
    * Used by methods with spec.streaming === true. For these methods, we do not
    * buffer successful responses into memory or do parse them into stripe
@@ -70541,6 +70788,7 @@ var RequestSender = class _RequestSender {
   _streamingResponseHandler(requestEvent, usage, callback) {
     return (res) => {
       const headers = res.getHeaders();
+      this._emitStripeNotice(headers);
       const streamCompleteCallback = () => {
         const responseEvent = this._makeResponseEvent(requestEvent, res.getStatusCode(), headers);
         this._stripe._emitter.emit("response", responseEvent);
@@ -70559,6 +70807,7 @@ var RequestSender = class _RequestSender {
   _jsonResponseHandler(requestEvent, apiMode, usage, callback) {
     return (res) => {
       const headers = res.getHeaders();
+      this._emitStripeNotice(headers);
       const requestId = this._getRequestId(headers);
       const statusCode = res.getStatusCode();
       const responseEvent = this._makeResponseEvent(requestEvent, statusCode, headers);
@@ -70642,15 +70891,12 @@ var RequestSender = class _RequestSender {
     }
     return false;
   }
-  _getSleepTimeInMS(numRetries, retryAfter = null) {
+  _getSleepTimeInMS(numRetries) {
     const initialNetworkRetryDelay = this._stripe.getInitialNetworkRetryDelay();
     const maxNetworkRetryDelay = this._stripe.getMaxNetworkRetryDelay();
     let sleepSeconds = Math.min(initialNetworkRetryDelay * Math.pow(2, numRetries - 1), maxNetworkRetryDelay);
     sleepSeconds *= 0.5 * (1 + Math.random());
     sleepSeconds = Math.max(initialNetworkRetryDelay, sleepSeconds);
-    if (Number.isInteger(retryAfter) && retryAfter <= MAX_RETRY_AFTER_WAIT) {
-      sleepSeconds = Math.max(sleepSeconds, retryAfter);
-    }
     return sleepSeconds * 1e3;
   }
   // Max retries can be set on a per request basis. Favor those over the global setting
@@ -70686,7 +70932,7 @@ var RequestSender = class _RequestSender {
     const methodHasPayload = method == "POST" || method == "PUT" || method == "PATCH";
     if (methodHasPayload || contentLength) {
       if (!methodHasPayload) {
-        emitWarning(`${method} method had non-zero contentLength but no payload is expected for this verb`);
+        this._stripe._platformFunctions.emitWarning(`${method} method had non-zero contentLength but no payload is expected for this verb`);
       }
       defaultHeaders["Content-Length"] = contentLength;
     }
@@ -70720,7 +70966,7 @@ var RequestSender = class _RequestSender {
   _recordRequestMetrics(requestId, requestDurationMs, usage) {
     if (this._stripe.getTelemetryEnabled() && requestId) {
       if (this._stripe._prevRequestMetrics.length > this._maxBufferedRequestMetric) {
-        emitWarning("Request metrics buffer is full, dropping telemetry message.");
+        this._stripe._platformFunctions.emitWarning("Request metrics buffer is full, dropping telemetry message.");
       } else {
         const m = {
           request_id: requestId,
@@ -70733,7 +70979,7 @@ var RequestSender = class _RequestSender {
       }
     }
   }
-  _rawRequest(method, path3, params, options, usage) {
+  _rawRequest(method, path4, params, options, usage) {
     return new Promise((resolve, reject) => {
       try {
         const requestMethod2 = method.toUpperCase();
@@ -70747,7 +70993,7 @@ var RequestSender = class _RequestSender {
         }
         const apiBase = processed.apiBase || (options?.apiBase ?? null);
         const host = apiBase ? this._stripe.resolveBaseAddress(apiBase) : null;
-        this._request(requestMethod2, host, path3, data, processed.authenticator, {
+        this._request(requestMethod2, host, path4, data, processed.authenticator, {
           headers: processed.headers,
           settings: processed.settings,
           streaming: processed.streaming
@@ -70769,19 +71015,19 @@ var RequestSender = class _RequestSender {
   /**
    * This is the main HTTP method that all resources eventually call
    */
-  _request(method, host, path3, data, authenticator, options, usage = [], callback, requestDataProcessor = null) {
+  _request(method, host, path4, data, authenticator, options, usage = [], callback, requestDataProcessor = null) {
     let requestData;
     authenticator = authenticator ?? this._stripe._authenticator;
-    const apiMode = getAPIMode(path3);
-    const retryRequest = (requestFn, apiVersion, headers, requestRetries, retryAfter) => {
-      return setTimeout(requestFn, this._getSleepTimeInMS(requestRetries, retryAfter), apiVersion, headers, requestRetries + 1);
+    const apiMode = getAPIMode(path4);
+    const retryRequest = (requestFn, apiVersion, headers, requestRetries) => {
+      return setTimeout(requestFn, this._getSleepTimeInMS(requestRetries), apiVersion, headers, requestRetries + 1);
     };
     const makeRequest = (apiVersion, headers, numRetries) => {
       const timeout = options.settings && options.settings.timeout && Number.isInteger(options.settings.timeout) && options.settings.timeout >= 0 ? options.settings.timeout : this._stripe.getApiField("timeout");
       const request = {
         host: host || this._stripe.getApiField("host"),
         port: this._stripe.getApiField("port"),
-        path: path3,
+        path: path4,
         method,
         headers: Object.assign({}, headers),
         body: requestData,
@@ -70798,7 +71044,7 @@ var RequestSender = class _RequestSender {
           account: parseHttpHeaderAsString(headers["Stripe-Account"]),
           idempotency_key: parseHttpHeaderAsString(headers["Idempotency-Key"]),
           method,
-          path: path3,
+          path: path4,
           body: this._stripe.getEmitEventBodiesEnabled() ? data ?? void 0 : void 0,
           request_start_time: requestStartTime
         });
@@ -70807,7 +71053,7 @@ var RequestSender = class _RequestSender {
         this._stripe._emitter.emit("request", requestEvent);
         req.then((res) => {
           if (_RequestSender._shouldRetry(res, requestRetries, maxRetries)) {
-            return retryRequest(makeRequest, apiVersion, headers, requestRetries, parseHttpHeaderAsNumber(res.getHeaders()["retry-after"]));
+            return retryRequest(makeRequest, apiVersion, headers, requestRetries);
           } else if (options.streaming && res.getStatusCode() < 400) {
             return this._streamingResponseHandler(requestEvent, usage, callback)(res);
           } else {
@@ -70815,7 +71061,7 @@ var RequestSender = class _RequestSender {
           }
         }).catch((error40) => {
           if (_RequestSender._shouldRetry(null, requestRetries, maxRetries, error40)) {
-            return retryRequest(makeRequest, apiVersion, headers, requestRetries, null);
+            return retryRequest(makeRequest, apiVersion, headers, requestRetries);
           } else {
             const isTimeoutError = error40.code && error40.code === HttpClient.TIMEOUT_ERROR_CODE;
             return callback(new StripeConnectionError({
@@ -70868,7 +71114,7 @@ var RequestSender = class _RequestSender {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/Decimal.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/Decimal.js
 var ROUNDING_PRESETS = {
   "ubb-usage-count": { mode: "significant-figures", value: 15 },
   "v1-api": { mode: "decimal-places", value: 12 }
@@ -71572,7 +71818,7 @@ var Decimal = {
   zero: new DecimalImpl(0n, 0)
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/V2Coercion.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/V2Coercion.js
 var coerceV2RequestData = (data, schema) => {
   if (data == null) {
     return data;
@@ -71653,16 +71899,16 @@ var coerceV2ResponseData = (data, schema) => {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/autoPagination.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/autoPagination.js
 var V1Iterator = class {
-  constructor(firstPagePromise, params, options, method, path3, spec, stripeResource) {
+  constructor(firstPagePromise, params, options, method, path4, spec, stripeResource) {
     this.index = 0;
     this.pagePromise = firstPagePromise;
     this.promiseCache = { currentPromise: null };
     this.params = params;
     this.options = options;
     this.method = method;
-    this.path = path3;
+    this.path = path4;
     this.spec = spec;
     this.stripeResource = stripeResource;
   }
@@ -71732,6 +71978,7 @@ var V2ListIterator = class {
     this.firstPagePromise = firstPagePromise;
     this.currentPageIterator = null;
     this.nextPageUrl = null;
+    this.promiseCache = { currentPromise: null };
     this.options = options;
     this.spec = spec;
     this.stripeResource = stripeResource;
@@ -71752,13 +71999,16 @@ var V2ListIterator = class {
     this.currentPageIterator = page.data[Symbol.iterator]();
     return this.currentPageIterator;
   }
-  async next() {
+  async _next() {
     await this.initFirstPage();
     if (this.currentPageIterator) {
-      const result2 = this.currentPageIterator.next();
-      if (!result2.done)
-        return { done: false, value: result2.value };
+      const result = this.currentPageIterator.next();
+      if (!result.done)
+        return { done: false, value: result.value };
     }
+    return this.nextFromNewPage();
+  }
+  async nextFromNewPage() {
     const nextPageIterator = await this.turnPage();
     if (!nextPageIterator) {
       return { done: true, value: void 0 };
@@ -71766,17 +72016,31 @@ var V2ListIterator = class {
     const result = nextPageIterator.next();
     if (!result.done)
       return { done: false, value: result.value };
-    return { done: true, value: void 0 };
+    return this.nextFromNewPage();
+  }
+  next() {
+    if (this.promiseCache.currentPromise) {
+      return this.promiseCache.currentPromise;
+    }
+    const nextPromise = (async () => {
+      try {
+        return await this._next();
+      } finally {
+        this.promiseCache.currentPromise = null;
+      }
+    })();
+    this.promiseCache.currentPromise = nextPromise;
+    return nextPromise;
   }
 };
-var makeAutoPaginationMethods = (stripeResource, params, options, method, path3, spec, firstPagePromise) => {
-  const apiMode = getAPIMode(path3);
+var makeAutoPaginationMethods = (stripeResource, params, options, method, path4, spec, firstPagePromise) => {
+  const apiMode = getAPIMode(path4);
   const methodType = spec?.methodType;
   if (apiMode !== "v2" && methodType === "search") {
-    return makeAutoPaginationMethodsFromIterator(new V1SearchIterator(firstPagePromise, params, options, method, path3, spec, stripeResource));
+    return makeAutoPaginationMethodsFromIterator(new V1SearchIterator(firstPagePromise, params, options, method, path4, spec, stripeResource));
   }
   if (apiMode !== "v2" && methodType === "list") {
-    return makeAutoPaginationMethodsFromIterator(new V1ListIterator(firstPagePromise, params, options, method, path3, spec, stripeResource));
+    return makeAutoPaginationMethodsFromIterator(new V1ListIterator(firstPagePromise, params, options, method, path4, spec, stripeResource));
   }
   if (apiMode === "v2" && methodType === "list") {
     return makeAutoPaginationMethodsFromIterator(new V2ListIterator(firstPagePromise, options, spec, stripeResource));
@@ -71919,7 +72183,7 @@ function wrapAsyncIteratorWithCallback(asyncIteratorNext, onItem) {
   });
 }
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/StripeResource.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/StripeResource.js
 var StripeResource = class {
   constructor(stripe, deprecatedUrlData) {
     this.resourcePath = "";
@@ -71939,7 +72203,7 @@ var StripeResource = class {
   }
   initialize(_stripe, _deprecatedUrlData) {
   }
-  _makeRequest(method, path3, params, options, spec) {
+  _makeRequest(method, path4, params, options, spec) {
     const requestMethod2 = method.toUpperCase();
     const encode = spec?.encode || ((data2) => data2);
     const data = encode(params ? { ...params } : {});
@@ -71981,7 +72245,7 @@ var StripeResource = class {
       }
       const emptyQuery = Object.keys(queryData).length === 0;
       const fullPath = [
-        path3,
+        path4,
         emptyQuery ? "" : "?",
         queryStringifyRequestData(queryData)
       ].join("");
@@ -71992,14 +72256,14 @@ var StripeResource = class {
       }, usage, requestCallback, this.requestDataProcessor?.bind(this));
     });
     if (spec?.methodType) {
-      Object.assign(innerPromise, makeAutoPaginationMethods(this, params ? { ...params } : {}, options, requestMethod2, path3, spec, innerPromise));
+      Object.assign(innerPromise, makeAutoPaginationMethods(this, params ? { ...params } : {}, options, requestMethod2, path4, spec, innerPromise));
     }
     return innerPromise;
   }
 };
 StripeResource.MAX_BUFFERED_REQUEST_METRICS = 100;
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/StripeContext.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/StripeContext.js
 var StripeContext = class _StripeContext {
   /**
    * Creates a new StripeContext with the given segments.
@@ -72049,14 +72313,17 @@ var StripeContext = class _StripeContext {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/platform/NodePlatformFunctions.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/platform/NodePlatformFunctions.js
 var crypto4 = __toESM(require("crypto"), 1);
+var fs = __toESM(require("fs"), 1);
+var os = __toESM(require("os"), 1);
+var path2 = __toESM(require("path"), 1);
 var import_events2 = require("events");
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/crypto/NodeCryptoProvider.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/crypto/NodeCryptoProvider.js
 var crypto3 = __toESM(require("crypto"), 1);
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/crypto/CryptoProvider.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/crypto/CryptoProvider.js
 var CryptoProvider = class {
   /**
    * Computes a SHA-256 HMAC given a secret and a payload (encoded in UTF-8).
@@ -72093,7 +72360,7 @@ var CryptoProvider = class {
 var CryptoProviderOnlySupportsAsyncError = class extends Error {
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/crypto/NodeCryptoProvider.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/crypto/NodeCryptoProvider.js
 var NodeCryptoProvider = class extends CryptoProvider {
   /** @override */
   computeHMACSignature(payload, secret) {
@@ -72110,7 +72377,7 @@ var NodeCryptoProvider = class extends CryptoProvider {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/net/NodeHttpClient.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/net/NodeHttpClient.js
 var http_ = __toESM(require("http"), 1);
 var https_ = __toESM(require("https"), 1);
 var http = http_.default || http_;
@@ -72126,7 +72393,7 @@ var NodeHttpClient = class extends HttpClient {
   getClientName() {
     return "node";
   }
-  makeRequest(host, port, path3, method, headers, requestData, protocol, timeout) {
+  makeRequest(host, port, path4, method, headers, requestData, protocol, timeout) {
     const isInsecureConnection = protocol === "http";
     let agent = this._agent;
     if (!agent) {
@@ -72136,7 +72403,7 @@ var NodeHttpClient = class extends HttpClient {
       const req = (isInsecureConnection ? http : https).request({
         host,
         port,
-        path: path3,
+        path: path4,
         method,
         agent,
         headers,
@@ -72199,7 +72466,7 @@ var NodeHttpClientResponse = class extends HttpClientResponse {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/net/FetchHttpClient.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/net/FetchHttpClient.js
 var FetchHttpClient = class _FetchHttpClient extends HttpClient {
   constructor(fetchFn) {
     super();
@@ -72261,12 +72528,12 @@ var FetchHttpClient = class _FetchHttpClient extends HttpClient {
   getClientName() {
     return "fetch";
   }
-  async makeRequest(host, port, path3, method, headers, requestData, protocol, timeout) {
+  async makeRequest(host, port, path4, method, headers, requestData, protocol, timeout) {
     const isInsecureConnection = protocol === "http";
-    if (!path3.startsWith("/")) {
-      throw new Error(`Only relative paths are supported, got: "${path3}"`);
+    if (!path4.startsWith("/")) {
+      throw new Error(`Only relative paths are supported, got: "${path4}"`);
     }
-    const url2 = new URL(`${isInsecureConnection ? "http" : "https"}://${host}${path3}`);
+    const url2 = new URL(`${isInsecureConnection ? "http" : "https"}://${host}${path4}`);
     url2.port = port;
     const methodHasPayload = method == "POST" || method == "PUT" || method == "PATCH";
     const body = requestData || (methodHasPayload ? "" : void 0);
@@ -72314,7 +72581,7 @@ var FetchHttpClientResponse = class _FetchHttpClientResponse extends HttpClientR
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/crypto/SubtleCryptoProvider.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/crypto/SubtleCryptoProvider.js
 var SubtleCryptoProvider = class extends CryptoProvider {
   constructor(subtleCrypto) {
     super();
@@ -72349,7 +72616,7 @@ for (let i = 0; i < byteHexMapping.length; i++) {
   byteHexMapping[i] = i.toString(16).padStart(2, "0");
 }
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/platform/PlatformFunctions.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/platform/PlatformFunctions.js
 var PlatformFunctions = class {
   constructor() {
     this._fetchFn = null;
@@ -72359,6 +72626,28 @@ var PlatformFunctions = class {
    * Returns platform info string for telemetry, or null if unavailable.
    */
   getPlatformInfo() {
+    return null;
+  }
+  getTelemetryId() {
+    return null;
+  }
+  /**
+   * Emits a warning. Node.js uses process.emitWarning; other runtimes
+   * fall back to console.warn.
+   */
+  emitWarning(warning) {
+    console.warn(`Stripe: ${warning}`);
+  }
+  /**
+   * Returns environment variables, or null if unavailable.
+   */
+  getEnv() {
+    return null;
+  }
+  /**
+   * Returns the runtime version string, or null if unavailable.
+   */
+  getRuntimeVersion() {
     return null;
   }
   /**
@@ -72438,11 +72727,14 @@ var PlatformFunctions = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/platform/NodePlatformFunctions.js
-var import_os = require("os");
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/platform/NodePlatformFunctions.js
 var StreamProcessingError = class extends StripeError {
 };
 var NodePlatformFunctions = class extends PlatformFunctions {
+  constructor() {
+    super(...arguments);
+    this._telemetryId = void 0;
+  }
   /** @override */
   uuid4() {
     if (crypto4.randomUUID) {
@@ -72452,7 +72744,68 @@ var NodePlatformFunctions = class extends PlatformFunctions {
   }
   /** @override */
   getPlatformInfo() {
-    return `${process.platform} ${(0, import_os.release)()} ${(0, import_os.arch)()}`;
+    return `${process.platform} ${os.release()} ${os.arch()}`;
+  }
+  /** @override */
+  emitWarning(warning) {
+    if (typeof process.emitWarning === "function") {
+      process.emitWarning(warning, "Stripe");
+    } else {
+      super.emitWarning(warning);
+    }
+  }
+  /** @override */
+  getEnv() {
+    return process.env;
+  }
+  /** @override */
+  getRuntimeVersion() {
+    return process.version;
+  }
+  /** @override */
+  getTelemetryId() {
+    if (this._telemetryId !== void 0) {
+      return this._telemetryId;
+    }
+    const filePath = this._getTelemetryIdPath();
+    if (!filePath) {
+      this._telemetryId = null;
+      return null;
+    }
+    try {
+      const content = fs.readFileSync(filePath, "utf8").trim();
+      if (content) {
+        this._telemetryId = content;
+        return content;
+      }
+    } catch {
+    }
+    const newId = crypto4.randomBytes(16).toString("hex");
+    try {
+      fs.mkdirSync(path2.dirname(filePath), { recursive: true });
+      fs.writeFileSync(filePath, newId, "utf8");
+    } catch {
+      this._telemetryId = null;
+      return null;
+    }
+    this._telemetryId = newId;
+    return newId;
+  }
+  _getTelemetryIdPath() {
+    if (process.platform === "win32") {
+      const appData = process.env.APPDATA;
+      if (!appData)
+        return null;
+      return path2.join(appData, "Stripe", "telemetry_id");
+    }
+    const xdg = process.env.XDG_CONFIG_HOME;
+    if (xdg) {
+      return path2.join(xdg, "stripe", "telemetry_id");
+    }
+    const home = os.homedir();
+    if (!home)
+      return null;
+    return path2.join(home, ".config", "stripe", "telemetry_id");
   }
   /**
    * @override
@@ -72515,7 +72868,7 @@ var NodePlatformFunctions = class extends PlatformFunctions {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/Webhooks.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/Webhooks.js
 function createWebhooks(platformFunctions) {
   const Webhook = {
     DEFAULT_TOLERANCE: 300,
@@ -72704,10 +73057,10 @@ function createWebhooks(platformFunctions) {
   return Webhook;
 }
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/apiVersion.js
-var ApiVersion = "2026-04-22.dahlia";
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/apiVersion.js
+var ApiVersion = "2026-06-24.dahlia";
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources.js
 var resources_exports3 = {};
 __export(resources_exports3, {
   Account: () => AccountResource3,
@@ -72788,7 +73141,7 @@ __export(resources_exports3, {
   WebhookEndpoints: () => WebhookEndpointResource
 });
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/ResourceNamespace.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/ResourceNamespace.js
 function ResourceNamespace(stripe, resources) {
   for (const name in resources) {
     if (!Object.prototype.hasOwnProperty.call(resources, name)) {
@@ -72805,7 +73158,7 @@ function resourceNamespace(namespace, resources) {
   };
 }
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Core/AccountLinks.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/V2/Core/AccountLinks.js
 var AccountLinkResource = class extends StripeResource {
   /**
    * Creates an AccountLink object that includes a single-use URL that an account can use to access a Stripe-hosted flow for collecting or updating required information.
@@ -72816,10 +73169,14 @@ var AccountLinkResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Core/AccountTokens.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/V2/Core/AccountTokens.js
 var AccountTokenResource = class extends StripeResource {
   /**
-   * Creates an Account Token.
+   * Create an account token with a publishable key and pass it to the Accounts v2 API to
+   * create or update an account without its data touching your server.
+   * Learn more about [account tokens](https://docs.stripe.com/connect/account-tokens).
+   * In live mode, you can only create account tokens with your application's publishable key.
+   * In test mode, you can create account tokens with your secret key or publishable key.
    * @throws Stripe.RateLimitError
    */
   create(params, options) {
@@ -72850,11 +73207,11 @@ var AccountTokenResource = class extends StripeResource {
    * @throws Stripe.RateLimitError
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v2/core/account_tokens/${id}`, params, options);
+    return this._makeRequest("GET", `/v2/core/account_tokens/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/FinancialConnections/Accounts.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/FinancialConnections/Accounts.js
 var AccountResource = class extends StripeResource {
   /**
    * Returns a list of Financial Connections Account objects.
@@ -72868,50 +73225,50 @@ var AccountResource = class extends StripeResource {
    * Retrieves the details of an Financial Connections Account.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/financial_connections/accounts/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/financial_connections/accounts/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Disables your access to a Financial Connections Account. You will no longer be able to access data associated with the account (e.g. balances, transactions).
    */
   disconnect(id, params, options) {
-    return this._makeRequest("POST", `/v1/financial_connections/accounts/${id}/disconnect`, params, options);
+    return this._makeRequest("POST", `/v1/financial_connections/accounts/${encodeURIComponent(id)}/disconnect`, params, options);
   }
   /**
    * Refreshes the data associated with a Financial Connections Account.
    */
   refresh(id, params, options) {
-    return this._makeRequest("POST", `/v1/financial_connections/accounts/${id}/refresh`, params, options);
+    return this._makeRequest("POST", `/v1/financial_connections/accounts/${encodeURIComponent(id)}/refresh`, params, options);
   }
   /**
    * Subscribes to periodic refreshes of data associated with a Financial Connections Account. When the account status is active, data is typically refreshed once a day.
    */
   subscribe(id, params, options) {
-    return this._makeRequest("POST", `/v1/financial_connections/accounts/${id}/subscribe`, params, options);
+    return this._makeRequest("POST", `/v1/financial_connections/accounts/${encodeURIComponent(id)}/subscribe`, params, options);
   }
   /**
    * Unsubscribes from periodic refreshes of data associated with a Financial Connections Account.
    */
   unsubscribe(id, params, options) {
-    return this._makeRequest("POST", `/v1/financial_connections/accounts/${id}/unsubscribe`, params, options);
+    return this._makeRequest("POST", `/v1/financial_connections/accounts/${encodeURIComponent(id)}/unsubscribe`, params, options);
   }
   /**
    * Lists all owners for a given Account
    */
   listOwners(id, params, options) {
-    return this._makeRequest("GET", `/v1/financial_connections/accounts/${id}/owners`, params, options, {
+    return this._makeRequest("GET", `/v1/financial_connections/accounts/${encodeURIComponent(id)}/owners`, params, options, {
       methodType: "list"
     });
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Core/Accounts/Persons.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/V2/Core/Accounts/Persons.js
 var PersonResource = class extends StripeResource {
   /**
    * Returns a paginated list of Persons associated with an Account.
    * @throws Stripe.RateLimitError
    */
-  list(id, params, options) {
-    return this._makeRequest("GET", `/v2/core/accounts/${id}/persons`, params, options, {
+  list(accountId, params, options) {
+    return this._makeRequest("GET", `/v2/core/accounts/${encodeURIComponent(accountId)}/persons`, params, options, {
       methodType: "list",
       responseSchema: {
         kind: "object",
@@ -72936,8 +73293,8 @@ var PersonResource = class extends StripeResource {
    * Create a Person. Adds an individual to an Account's identity. You can set relationship attributes and identity information at creation.
    * @throws Stripe.RateLimitError
    */
-  create(id, params, options) {
-    return this._makeRequest("POST", `/v2/core/accounts/${id}/persons`, params, options, {
+  create(accountId, params, options) {
+    return this._makeRequest("POST", `/v2/core/accounts/${encodeURIComponent(accountId)}/persons`, params, options, {
       requestSchema: {
         kind: "object",
         fields: {
@@ -72963,14 +73320,14 @@ var PersonResource = class extends StripeResource {
    * @throws Stripe.RateLimitError
    */
   del(accountId, id, params, options) {
-    return this._makeRequest("DELETE", `/v2/core/accounts/${accountId}/persons/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v2/core/accounts/${encodeURIComponent(accountId)}/persons/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves a Person associated with an Account.
    * @throws Stripe.RateLimitError
    */
   retrieve(accountId, id, params, options) {
-    return this._makeRequest("GET", `/v2/core/accounts/${accountId}/persons/${id}`, params, options, {
+    return this._makeRequest("GET", `/v2/core/accounts/${encodeURIComponent(accountId)}/persons/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -72987,7 +73344,7 @@ var PersonResource = class extends StripeResource {
    * @throws Stripe.RateLimitError
    */
   update(accountId, id, params, options) {
-    return this._makeRequest("POST", `/v2/core/accounts/${accountId}/persons/${id}`, params, options, {
+    return this._makeRequest("POST", `/v2/core/accounts/${encodeURIComponent(accountId)}/persons/${encodeURIComponent(id)}`, params, options, {
       requestSchema: {
         kind: "object",
         fields: {
@@ -73010,14 +73367,15 @@ var PersonResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Core/Accounts/PersonTokens.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/V2/Core/Accounts/PersonTokens.js
 var PersonTokenResource = class extends StripeResource {
   /**
-   * Creates a Person Token associated with an Account.
+   * Creates a single-use token that represents the details for a person. Use this when you create or update persons associated with an Account v2. Learn more about [account tokens](https://docs.stripe.com/connect/account-tokens).
+   * You can only create person tokens with your application's publishable key and in live mode. You can use your application's secret key to create person tokens only in test mode.
    * @throws Stripe.RateLimitError
    */
-  create(id, params, options) {
-    return this._makeRequest("POST", `/v2/core/accounts/${id}/person_tokens`, params, options, {
+  create(accountId, params, options) {
+    return this._makeRequest("POST", `/v2/core/accounts/${encodeURIComponent(accountId)}/person_tokens`, params, options, {
       requestSchema: {
         kind: "object",
         fields: {
@@ -73034,11 +73392,11 @@ var PersonTokenResource = class extends StripeResource {
    * @throws Stripe.RateLimitError
    */
   retrieve(accountId, id, params, options) {
-    return this._makeRequest("GET", `/v2/core/accounts/${accountId}/person_tokens/${id}`, params, options);
+    return this._makeRequest("GET", `/v2/core/accounts/${encodeURIComponent(accountId)}/person_tokens/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Core/Accounts.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/V2/Core/Accounts.js
 var AccountResource2 = class extends StripeResource {
   constructor(stripe) {
     super(stripe);
@@ -73083,7 +73441,7 @@ var AccountResource2 = class extends StripeResource {
     });
   }
   /**
-   * An Account is a representation of a company, individual or other entity that a user interacts with. Accounts contain identifying information about the entity, and configurations that store the features an account has access to. An account can be configured as any or all of the following configurations: Customer, Merchant and/or Recipient.
+   * Create an Account that represents a company, individual, or other entity that your business interacts with. Accounts contain identifying information about the entity, and configurations that store the features an account has access to. An account can be configured as any or all of the following configurations: Customer, Merchant and/or Recipient.
    * @throws Stripe.RateLimitError
    */
   create(params, options) {
@@ -73133,7 +73491,7 @@ var AccountResource2 = class extends StripeResource {
    * @throws Stripe.RateLimitError
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v2/core/accounts/${id}`, params, options, {
+    return this._makeRequest("GET", `/v2/core/accounts/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -73160,7 +73518,7 @@ var AccountResource2 = class extends StripeResource {
    * @throws Stripe.RateLimitError
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v2/core/accounts/${id}`, params, options, {
+    return this._makeRequest("POST", `/v2/core/accounts/${encodeURIComponent(id)}`, params, options, {
       requestSchema: {
         kind: "object",
         fields: {
@@ -73206,7 +73564,7 @@ var AccountResource2 = class extends StripeResource {
    * @throws Stripe.RateLimitError
    */
   close(id, params, options) {
-    return this._makeRequest("POST", `/v2/core/accounts/${id}/close`, params, options, {
+    return this._makeRequest("POST", `/v2/core/accounts/${encodeURIComponent(id)}/close`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -73230,7 +73588,7 @@ var AccountResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Entitlements/ActiveEntitlements.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Entitlements/ActiveEntitlements.js
 var ActiveEntitlementResource = class extends StripeResource {
   /**
    * Retrieve a list of active entitlements for a customer
@@ -73244,11 +73602,11 @@ var ActiveEntitlementResource = class extends StripeResource {
    * Retrieve an active entitlement
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/entitlements/active_entitlements/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/entitlements/active_entitlements/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Billing/Alerts.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Billing/Alerts.js
 var AlertResource = class extends StripeResource {
   /**
    * Lists billing active and inactive alerts
@@ -73268,29 +73626,29 @@ var AlertResource = class extends StripeResource {
    * Retrieves a billing alert given an ID
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/billing/alerts/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/billing/alerts/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Reactivates this alert, allowing it to trigger again.
    */
   activate(id, params, options) {
-    return this._makeRequest("POST", `/v1/billing/alerts/${id}/activate`, params, options);
+    return this._makeRequest("POST", `/v1/billing/alerts/${encodeURIComponent(id)}/activate`, params, options);
   }
   /**
    * Archives this alert, removing it from the list view and APIs. This is non-reversible.
    */
   archive(id, params, options) {
-    return this._makeRequest("POST", `/v1/billing/alerts/${id}/archive`, params, options);
+    return this._makeRequest("POST", `/v1/billing/alerts/${encodeURIComponent(id)}/archive`, params, options);
   }
   /**
    * Deactivates this alert, preventing it from triggering.
    */
   deactivate(id, params, options) {
-    return this._makeRequest("POST", `/v1/billing/alerts/${id}/deactivate`, params, options);
+    return this._makeRequest("POST", `/v1/billing/alerts/${encodeURIComponent(id)}/deactivate`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Tax/Associations.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Tax/Associations.js
 var AssociationResource = class extends StripeResource {
   /**
    * Finds a tax association object by PaymentIntent id.
@@ -73300,7 +73658,7 @@ var AssociationResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/Authorizations.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Issuing/Authorizations.js
 var AuthorizationResource = class extends StripeResource {
   /**
    * Returns a list of Issuing Authorization objects. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -73492,7 +73850,7 @@ var AuthorizationResource = class extends StripeResource {
    * Retrieves an Issuing Authorization object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/issuing/authorizations/${id}`, params, options, {
+    return this._makeRequest("GET", `/v1/issuing/authorizations/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -73661,7 +74019,7 @@ var AuthorizationResource = class extends StripeResource {
    * Updates the specified Issuing Authorization object by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/issuing/authorizations/${id}`, params, options, {
+    return this._makeRequest("POST", `/v1/issuing/authorizations/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -73832,7 +74190,7 @@ var AuthorizationResource = class extends StripeResource {
    * @deprecated
    */
   approve(id, params, options) {
-    return this._makeRequest("POST", `/v1/issuing/authorizations/${id}/approve`, params, options, {
+    return this._makeRequest("POST", `/v1/issuing/authorizations/${encodeURIComponent(id)}/approve`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -74003,7 +74361,7 @@ var AuthorizationResource = class extends StripeResource {
    * @deprecated
    */
   decline(id, params, options) {
-    return this._makeRequest("POST", `/v1/issuing/authorizations/${id}/decline`, params, options, {
+    return this._makeRequest("POST", `/v1/issuing/authorizations/${encodeURIComponent(id)}/decline`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -74170,7 +74528,7 @@ var AuthorizationResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Issuing/Authorizations.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/Issuing/Authorizations.js
 var AuthorizationResource2 = class extends StripeResource {
   /**
    * Create a test-mode authorization.
@@ -74382,7 +74740,7 @@ var AuthorizationResource2 = class extends StripeResource {
    * Capture a test-mode authorization.
    */
   capture(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/issuing/authorizations/${id}/capture`, params, options, {
+    return this._makeRequest("POST", `/v1/test_helpers/issuing/authorizations/${encodeURIComponent(id)}/capture`, params, options, {
       requestSchema: {
         kind: "object",
         fields: {
@@ -74604,7 +74962,7 @@ var AuthorizationResource2 = class extends StripeResource {
    * Expire a test-mode Authorization.
    */
   expire(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/issuing/authorizations/${id}/expire`, params, options, {
+    return this._makeRequest("POST", `/v1/test_helpers/issuing/authorizations/${encodeURIComponent(id)}/expire`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -74773,7 +75131,7 @@ var AuthorizationResource2 = class extends StripeResource {
    * Finalize the amount on an Authorization prior to capture, when the initial authorization was for an estimated amount.
    */
   finalizeAmount(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/issuing/authorizations/${id}/finalize_amount`, params, options, {
+    return this._makeRequest("POST", `/v1/test_helpers/issuing/authorizations/${encodeURIComponent(id)}/finalize_amount`, params, options, {
       requestSchema: {
         kind: "object",
         fields: {
@@ -74979,7 +75337,7 @@ var AuthorizationResource2 = class extends StripeResource {
    * Respond to a fraud challenge on a testmode Issuing authorization, simulating either a confirmation of fraud or a correction of legitimacy.
    */
   respond(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/issuing/authorizations/${id}/fraud_challenges/respond`, params, options, {
+    return this._makeRequest("POST", `/v1/test_helpers/issuing/authorizations/${encodeURIComponent(id)}/fraud_challenges/respond`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -75148,7 +75506,7 @@ var AuthorizationResource2 = class extends StripeResource {
    * Increment a test-mode Authorization.
    */
   increment(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/issuing/authorizations/${id}/increment`, params, options, {
+    return this._makeRequest("POST", `/v1/test_helpers/issuing/authorizations/${encodeURIComponent(id)}/increment`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -75317,7 +75675,7 @@ var AuthorizationResource2 = class extends StripeResource {
    * Reverse a test-mode Authorization.
    */
   reverse(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/issuing/authorizations/${id}/reverse`, params, options, {
+    return this._makeRequest("POST", `/v1/test_helpers/issuing/authorizations/${encodeURIComponent(id)}/reverse`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -75484,13 +75842,13 @@ var AuthorizationResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Tax/Calculations.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Tax/Calculations.js
 var CalculationResource = class extends StripeResource {
   /**
    * Retrieves a Tax Calculation object, if the calculation hasn't expired.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/tax/calculations/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/tax/calculations/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Calculates tax based on the input and returns a Tax Calculation object.
@@ -75502,13 +75860,13 @@ var CalculationResource = class extends StripeResource {
    * Retrieves the line items of a tax calculation as a collection, if the calculation hasn't expired.
    */
   listLineItems(id, params, options) {
-    return this._makeRequest("GET", `/v1/tax/calculations/${id}/line_items`, params, options, {
+    return this._makeRequest("GET", `/v1/tax/calculations/${encodeURIComponent(id)}/line_items`, params, options, {
       methodType: "list"
     });
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/Cardholders.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Issuing/Cardholders.js
 var CardholderResource = class extends StripeResource {
   /**
    * Returns a list of Issuing Cardholder objects. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -75528,17 +75886,17 @@ var CardholderResource = class extends StripeResource {
    * Retrieves an Issuing Cardholder object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/issuing/cardholders/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/issuing/cardholders/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the specified Issuing Cardholder object by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/issuing/cardholders/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/issuing/cardholders/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/Cards.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Issuing/Cards.js
 var CardResource = class extends StripeResource {
   /**
    * Returns a list of Issuing Card objects. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -75558,51 +75916,51 @@ var CardResource = class extends StripeResource {
    * Retrieves an Issuing Card object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/issuing/cards/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/issuing/cards/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the specified Issuing Card object by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/issuing/cards/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/issuing/cards/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Issuing/Cards.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/Issuing/Cards.js
 var CardResource2 = class extends StripeResource {
   /**
    * Updates the shipping status of the specified Issuing Card object to delivered.
    */
   deliverCard(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/issuing/cards/${id}/shipping/deliver`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/issuing/cards/${encodeURIComponent(id)}/shipping/deliver`, params, options);
   }
   /**
    * Updates the shipping status of the specified Issuing Card object to failure.
    */
   failCard(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/issuing/cards/${id}/shipping/fail`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/issuing/cards/${encodeURIComponent(id)}/shipping/fail`, params, options);
   }
   /**
    * Updates the shipping status of the specified Issuing Card object to returned.
    */
   returnCard(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/issuing/cards/${id}/shipping/return`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/issuing/cards/${encodeURIComponent(id)}/shipping/return`, params, options);
   }
   /**
    * Updates the shipping status of the specified Issuing Card object to shipped.
    */
   shipCard(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/issuing/cards/${id}/shipping/ship`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/issuing/cards/${encodeURIComponent(id)}/shipping/ship`, params, options);
   }
   /**
    * Updates the shipping status of the specified Issuing Card object to submitted. This method requires Stripe Version ‘2024-09-30.acacia' or later.
    */
   submitCard(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/issuing/cards/${id}/shipping/submit`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/issuing/cards/${encodeURIComponent(id)}/shipping/submit`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/BillingPortal/Configurations.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/BillingPortal/Configurations.js
 var ConfigurationResource = class extends StripeResource {
   /**
    * Returns a list of configurations that describe the functionality of the customer portal.
@@ -75622,35 +75980,35 @@ var ConfigurationResource = class extends StripeResource {
    * Retrieves a configuration that describes the functionality of the customer portal.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/billing_portal/configurations/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/billing_portal/configurations/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates a configuration that describes the functionality of the customer portal.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/billing_portal/configurations/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/billing_portal/configurations/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Terminal/Configurations.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Terminal/Configurations.js
 var ConfigurationResource2 = class extends StripeResource {
   /**
    * Deletes a Configuration object.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/terminal/configurations/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/terminal/configurations/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves a Configuration object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/terminal/configurations/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/terminal/configurations/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates a new Configuration object.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/terminal/configurations/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/terminal/configurations/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Returns a list of Configuration objects.
@@ -75668,7 +76026,7 @@ var ConfigurationResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/ConfirmationTokens.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/ConfirmationTokens.js
 var ConfirmationTokenResource = class extends StripeResource {
   /**
    * Creates a test mode Confirmation Token server side for your integration tests.
@@ -75678,7 +76036,7 @@ var ConfirmationTokenResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Terminal/ConnectionTokens.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Terminal/ConnectionTokens.js
 var ConnectionTokenResource = class extends StripeResource {
   /**
    * To connect to a reader the Stripe Terminal SDK needs to retrieve a short-lived connection token from Stripe, proxied through your server. On your backend, add an endpoint that creates and returns a connection token.
@@ -75688,7 +76046,7 @@ var ConnectionTokenResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Billing/CreditBalanceSummary.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Billing/CreditBalanceSummary.js
 var CreditBalanceSummaryResource = class extends StripeResource {
   /**
    * Retrieves the credit balance summary for a customer.
@@ -75698,7 +76056,7 @@ var CreditBalanceSummaryResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Billing/CreditBalanceTransactions.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Billing/CreditBalanceTransactions.js
 var CreditBalanceTransactionResource = class extends StripeResource {
   /**
    * Retrieve a list of credit balance transactions.
@@ -75712,11 +76070,11 @@ var CreditBalanceTransactionResource = class extends StripeResource {
    * Retrieves a credit balance transaction.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/billing/credit_balance_transactions/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/billing/credit_balance_transactions/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Billing/CreditGrants.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Billing/CreditGrants.js
 var CreditGrantResource = class extends StripeResource {
   /**
    * Retrieve a list of credit grants.
@@ -75736,29 +76094,29 @@ var CreditGrantResource = class extends StripeResource {
    * Retrieves a credit grant.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/billing/credit_grants/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/billing/credit_grants/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates a credit grant.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/billing/credit_grants/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/billing/credit_grants/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Expires a credit grant.
    */
   expire(id, params, options) {
-    return this._makeRequest("POST", `/v1/billing/credit_grants/${id}/expire`, params, options);
+    return this._makeRequest("POST", `/v1/billing/credit_grants/${encodeURIComponent(id)}/expire`, params, options);
   }
   /**
    * Voids a credit grant.
    */
   voidGrant(id, params, options) {
-    return this._makeRequest("POST", `/v1/billing/credit_grants/${id}/void`, params, options);
+    return this._makeRequest("POST", `/v1/billing/credit_grants/${encodeURIComponent(id)}/void`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/CreditReversals.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Treasury/CreditReversals.js
 var CreditReversalResource = class extends StripeResource {
   /**
    * Returns a list of CreditReversals.
@@ -75778,21 +76136,21 @@ var CreditReversalResource = class extends StripeResource {
    * Retrieves the details of an existing CreditReversal by passing the unique CreditReversal ID from either the CreditReversal creation request or CreditReversal list
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/treasury/credit_reversals/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/treasury/credit_reversals/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Customers.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/Customers.js
 var CustomerResource = class extends StripeResource {
   /**
    * Create an incoming testmode bank transfer
    */
   fundCashBalance(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/customers/${id}/fund_cash_balance`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/customers/${encodeURIComponent(id)}/fund_cash_balance`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/DebitReversals.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Treasury/DebitReversals.js
 var DebitReversalResource = class extends StripeResource {
   /**
    * Returns a list of DebitReversals.
@@ -75812,11 +76170,11 @@ var DebitReversalResource = class extends StripeResource {
    * Retrieves a DebitReversal object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/treasury/debit_reversals/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/treasury/debit_reversals/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/Disputes.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Issuing/Disputes.js
 var DisputeResource = class extends StripeResource {
   /**
    * Returns a list of Issuing Dispute objects. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -75836,23 +76194,23 @@ var DisputeResource = class extends StripeResource {
    * Retrieves an Issuing Dispute object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/issuing/disputes/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/issuing/disputes/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the specified Issuing Dispute object by setting the values of the parameters passed. Any parameters not provided will be left unchanged. Properties on the evidence object can be unset by passing in an empty string.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/issuing/disputes/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/issuing/disputes/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Submits an Issuing Dispute to the card network. Stripe validates that all evidence fields required for the dispute's reason are present. For more details, see [Dispute reasons and evidence](https://docs.stripe.com/docs/issuing/purchases/disputes#dispute-reasons-and-evidence).
    */
   submit(id, params, options) {
-    return this._makeRequest("POST", `/v1/issuing/disputes/${id}/submit`, params, options);
+    return this._makeRequest("POST", `/v1/issuing/disputes/${encodeURIComponent(id)}/submit`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Radar/EarlyFraudWarnings.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Radar/EarlyFraudWarnings.js
 var EarlyFraudWarningResource = class extends StripeResource {
   /**
    * Returns a list of early fraud warnings.
@@ -75868,11 +76226,11 @@ var EarlyFraudWarningResource = class extends StripeResource {
    * Please refer to the [early fraud warning](https://docs.stripe.com/api#early_fraud_warning_object) object reference for more details.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/radar/early_fraud_warnings/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/radar/early_fraud_warnings/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Core/EventDestinations.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/V2/Core/EventDestinations.js
 var EventDestinationResource = class extends StripeResource {
   /**
    * Lists all event destinations.
@@ -75892,41 +76250,41 @@ var EventDestinationResource = class extends StripeResource {
    * Delete an event destination.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v2/core/event_destinations/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v2/core/event_destinations/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves the details of an event destination.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v2/core/event_destinations/${id}`, params, options);
+    return this._makeRequest("GET", `/v2/core/event_destinations/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Update the details of an event destination.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v2/core/event_destinations/${id}`, params, options);
+    return this._makeRequest("POST", `/v2/core/event_destinations/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Disable an event destination.
    */
   disable(id, params, options) {
-    return this._makeRequest("POST", `/v2/core/event_destinations/${id}/disable`, params, options);
+    return this._makeRequest("POST", `/v2/core/event_destinations/${encodeURIComponent(id)}/disable`, params, options);
   }
   /**
    * Enable an event destination.
    */
   enable(id, params, options) {
-    return this._makeRequest("POST", `/v2/core/event_destinations/${id}/enable`, params, options);
+    return this._makeRequest("POST", `/v2/core/event_destinations/${encodeURIComponent(id)}/enable`, params, options);
   }
   /**
    * Send a `ping` event to an event destination.
    */
   ping(id, params, options) {
-    return this._makeRequest("POST", `/v2/core/event_destinations/${id}/ping`, params, options);
+    return this._makeRequest("POST", `/v2/core/event_destinations/${encodeURIComponent(id)}/ping`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Core/Events.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/V2/Core/Events.js
 var EventResource = class extends StripeResource {
   /**
    * List events, going back up to 30 days.
@@ -75944,13 +76302,14 @@ var EventResource = class extends StripeResource {
     });
   }
   /**
-   * Retrieves the details of an event.
+   * Retrieves the details of an event if it was created in the last 30 days. Supply the unique
+   * identifier of the event, which might have been delivered to your event destination.
    */
   retrieve(id, params, options) {
     const transformResponseData = (response) => {
       return this.addFetchRelatedObjectIfNeeded(response);
     };
-    return this._makeRequest("GET", `/v2/core/events/${id}`, params, options, {
+    return this._makeRequest("GET", `/v2/core/events/${encodeURIComponent(id)}`, params, options, {
       transformResponseData
     });
   }
@@ -75979,7 +76338,7 @@ var EventResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Entitlements/Features.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Entitlements/Features.js
 var FeatureResource = class extends StripeResource {
   /**
    * Retrieve a list of features
@@ -75999,17 +76358,17 @@ var FeatureResource = class extends StripeResource {
    * Retrieves a feature
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/entitlements/features/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/entitlements/features/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Update a feature's metadata or permanently deactivate it.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/entitlements/features/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/entitlements/features/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/FinancialAccounts.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Treasury/FinancialAccounts.js
 var FinancialAccountResource = class extends StripeResource {
   /**
    * Returns a list of FinancialAccounts.
@@ -76029,57 +76388,208 @@ var FinancialAccountResource = class extends StripeResource {
    * Retrieves the details of a FinancialAccount.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/treasury/financial_accounts/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/treasury/financial_accounts/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the details of a FinancialAccount.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/treasury/financial_accounts/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/treasury/financial_accounts/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Closes a FinancialAccount. A FinancialAccount can only be closed if it has a zero balance, has no pending InboundTransfers, and has canceled all attached Issuing cards.
    */
   close(id, params, options) {
-    return this._makeRequest("POST", `/v1/treasury/financial_accounts/${id}/close`, params, options);
+    return this._makeRequest("POST", `/v1/treasury/financial_accounts/${encodeURIComponent(id)}/close`, params, options);
   }
   /**
    * Updates the Features associated with a FinancialAccount.
    */
   updateFeatures(id, params, options) {
-    return this._makeRequest("POST", `/v1/treasury/financial_accounts/${id}/features`, params, options);
+    return this._makeRequest("POST", `/v1/treasury/financial_accounts/${encodeURIComponent(id)}/features`, params, options);
   }
   /**
    * Retrieves Features information associated with the FinancialAccount.
    */
   retrieveFeatures(id, params, options) {
-    return this._makeRequest("GET", `/v1/treasury/financial_accounts/${id}/features`, params, options);
+    return this._makeRequest("GET", `/v1/treasury/financial_accounts/${encodeURIComponent(id)}/features`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Treasury/InboundTransfers.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/V2/Commerce/ProductCatalog/Imports.js
+var ImportResource = class extends StripeResource {
+  /**
+   * Returns a list of ProductCatalogImport objects.
+   */
+  list(params, options) {
+    return this._makeRequest("GET", "/v2/commerce/product_catalog/imports", params, options, {
+      methodType: "list",
+      responseSchema: {
+        kind: "object",
+        fields: {
+          data: {
+            kind: "array",
+            element: {
+              kind: "object",
+              fields: {
+                status_details: {
+                  kind: "object",
+                  fields: {
+                    processing: {
+                      kind: "object",
+                      fields: {
+                        error_count: { kind: "int64_string" },
+                        success_count: { kind: "int64_string" }
+                      }
+                    },
+                    succeeded: {
+                      kind: "object",
+                      fields: { success_count: { kind: "int64_string" } }
+                    },
+                    succeeded_with_errors: {
+                      kind: "object",
+                      fields: {
+                        error_count: { kind: "int64_string" },
+                        error_file: {
+                          kind: "object",
+                          fields: { size: { kind: "int64_string" } }
+                        },
+                        samples: {
+                          kind: "array",
+                          element: {
+                            kind: "object",
+                            fields: { row: { kind: "int64_string" } }
+                          }
+                        },
+                        success_count: { kind: "int64_string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+  /**
+   * Creates a ProductCatalogImport.
+   */
+  create(params, options) {
+    return this._makeRequest("POST", "/v2/commerce/product_catalog/imports", params, options, {
+      responseSchema: {
+        kind: "object",
+        fields: {
+          status_details: {
+            kind: "object",
+            fields: {
+              processing: {
+                kind: "object",
+                fields: {
+                  error_count: { kind: "int64_string" },
+                  success_count: { kind: "int64_string" }
+                }
+              },
+              succeeded: {
+                kind: "object",
+                fields: { success_count: { kind: "int64_string" } }
+              },
+              succeeded_with_errors: {
+                kind: "object",
+                fields: {
+                  error_count: { kind: "int64_string" },
+                  error_file: {
+                    kind: "object",
+                    fields: { size: { kind: "int64_string" } }
+                  },
+                  samples: {
+                    kind: "array",
+                    element: {
+                      kind: "object",
+                      fields: { row: { kind: "int64_string" } }
+                    }
+                  },
+                  success_count: { kind: "int64_string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+  /**
+   * Retrieves a ProductCatalogImport by ID.
+   */
+  retrieve(id, params, options) {
+    return this._makeRequest("GET", `/v2/commerce/product_catalog/imports/${encodeURIComponent(id)}`, params, options, {
+      responseSchema: {
+        kind: "object",
+        fields: {
+          status_details: {
+            kind: "object",
+            fields: {
+              processing: {
+                kind: "object",
+                fields: {
+                  error_count: { kind: "int64_string" },
+                  success_count: { kind: "int64_string" }
+                }
+              },
+              succeeded: {
+                kind: "object",
+                fields: { success_count: { kind: "int64_string" } }
+              },
+              succeeded_with_errors: {
+                kind: "object",
+                fields: {
+                  error_count: { kind: "int64_string" },
+                  error_file: {
+                    kind: "object",
+                    fields: { size: { kind: "int64_string" } }
+                  },
+                  samples: {
+                    kind: "array",
+                    element: {
+                      kind: "object",
+                      fields: { row: { kind: "int64_string" } }
+                    }
+                  },
+                  success_count: { kind: "int64_string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/Treasury/InboundTransfers.js
 var InboundTransferResource = class extends StripeResource {
   /**
    * Transitions a test mode created InboundTransfer to the failed status. The InboundTransfer must already be in the processing state.
    */
   fail(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/treasury/inbound_transfers/${id}/fail`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/treasury/inbound_transfers/${encodeURIComponent(id)}/fail`, params, options);
   }
   /**
    * Marks the test mode InboundTransfer object as returned and links the InboundTransfer to a ReceivedDebit. The InboundTransfer must already be in the succeeded state.
    */
   returnInboundTransfer(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/treasury/inbound_transfers/${id}/return`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/treasury/inbound_transfers/${encodeURIComponent(id)}/return`, params, options);
   }
   /**
    * Transitions a test mode created InboundTransfer to the succeeded status. The InboundTransfer must already be in the processing state.
    */
   succeed(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/treasury/inbound_transfers/${id}/succeed`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/treasury/inbound_transfers/${encodeURIComponent(id)}/succeed`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/InboundTransfers.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Treasury/InboundTransfers.js
 var InboundTransferResource2 = class extends StripeResource {
   /**
    * Returns a list of InboundTransfers sent from the specified FinancialAccount.
@@ -76099,35 +76609,35 @@ var InboundTransferResource2 = class extends StripeResource {
    * Retrieves the details of an existing InboundTransfer.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/treasury/inbound_transfers/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/treasury/inbound_transfers/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Cancels an InboundTransfer.
    */
   cancel(id, params, options) {
-    return this._makeRequest("POST", `/v1/treasury/inbound_transfers/${id}/cancel`, params, options);
+    return this._makeRequest("POST", `/v1/treasury/inbound_transfers/${encodeURIComponent(id)}/cancel`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Terminal/Locations.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Terminal/Locations.js
 var LocationResource = class extends StripeResource {
   /**
    * Deletes a Location object.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/terminal/locations/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/terminal/locations/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves a Location object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/terminal/locations/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/terminal/locations/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates a Location object by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/terminal/locations/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/terminal/locations/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Returns a list of Location objects.
@@ -76146,7 +76656,7 @@ var LocationResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Billing/MeterEventAdjustments.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Billing/MeterEventAdjustments.js
 var MeterEventAdjustmentResource = class extends StripeResource {
   /**
    * Creates a billing meter event adjustment.
@@ -76156,7 +76666,7 @@ var MeterEventAdjustmentResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Billing/MeterEventAdjustments.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/V2/Billing/MeterEventAdjustments.js
 var MeterEventAdjustmentResource2 = class extends StripeResource {
   /**
    * Creates a meter event adjustment to cancel a previously sent meter event.
@@ -76166,17 +76676,17 @@ var MeterEventAdjustmentResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Billing/MeterEventSession.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/V2/Billing/MeterEventSession.js
 var MeterEventSessionResource = class extends StripeResource {
   /**
-   * Creates a meter event session to send usage on the high-throughput meter event stream. Authentication tokens are only valid for 15 minutes, so you will need to create a new meter event session when your token expires.
+   * Creates a meter event session to send usage on the high-throughput meter event stream. Authentication tokens are only valid for 15 minutes, so you need to create a new meter event session when your token expires.
    */
   create(params, options) {
     return this._makeRequest("POST", "/v2/billing/meter_event_session", params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Billing/MeterEventStream.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/V2/Billing/MeterEventStream.js
 var MeterEventStreamResource = class extends StripeResource {
   /**
    * Creates meter events. Events are processed asynchronously, including validation. Requires a meter event session for authentication. Supports up to 10,000 requests per second in livemode. For even higher rate-limits, contact sales.
@@ -76189,7 +76699,7 @@ var MeterEventStreamResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Billing/MeterEvents.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Billing/MeterEvents.js
 var MeterEventResource = class extends StripeResource {
   /**
    * Creates a billing meter event.
@@ -76199,7 +76709,7 @@ var MeterEventResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Billing/MeterEvents.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/V2/Billing/MeterEvents.js
 var MeterEventResource2 = class extends StripeResource {
   /**
    * Creates a meter event. Events are validated synchronously, but are processed asynchronously. Supports up to 1,000 events per second in livemode. For higher rate-limits, please use meter event streams instead.
@@ -76209,7 +76719,7 @@ var MeterEventResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Billing/Meters.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Billing/Meters.js
 var MeterResource = class extends StripeResource {
   /**
    * Retrieve a list of billing meters.
@@ -76229,37 +76739,37 @@ var MeterResource = class extends StripeResource {
    * Retrieves a billing meter given an ID.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/billing/meters/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/billing/meters/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates a billing meter.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/billing/meters/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/billing/meters/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * When a meter is deactivated, no more meter events will be accepted for this meter. You can't attach a deactivated meter to a price.
    */
   deactivate(id, params, options) {
-    return this._makeRequest("POST", `/v1/billing/meters/${id}/deactivate`, params, options);
+    return this._makeRequest("POST", `/v1/billing/meters/${encodeURIComponent(id)}/deactivate`, params, options);
   }
   /**
    * When a meter is reactivated, events for this meter can be accepted and you can attach the meter to a price.
    */
   reactivate(id, params, options) {
-    return this._makeRequest("POST", `/v1/billing/meters/${id}/reactivate`, params, options);
+    return this._makeRequest("POST", `/v1/billing/meters/${encodeURIComponent(id)}/reactivate`, params, options);
   }
   /**
    * Retrieve a list of billing meter event summaries.
    */
   listEventSummaries(id, params, options) {
-    return this._makeRequest("GET", `/v1/billing/meters/${id}/event_summaries`, params, options, {
+    return this._makeRequest("GET", `/v1/billing/meters/${encodeURIComponent(id)}/event_summaries`, params, options, {
       methodType: "list"
     });
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Terminal/OnboardingLinks.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Terminal/OnboardingLinks.js
 var OnboardingLinkResource = class extends StripeResource {
   /**
    * Creates a new OnboardingLink object that contains a redirect_url used for onboarding onto Tap to Pay on iPhone.
@@ -76269,7 +76779,7 @@ var OnboardingLinkResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Climate/Orders.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Climate/Orders.js
 var OrderResource = class extends StripeResource {
   /**
    * Lists all Climate order objects. The orders are returned sorted by creation date, with the
@@ -76312,7 +76822,7 @@ var OrderResource = class extends StripeResource {
    * Retrieves the details of a Climate order object with the given ID.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/climate/orders/${id}`, params, options, {
+    return this._makeRequest("GET", `/v1/climate/orders/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: { metric_tons: { kind: "decimal_string" } }
@@ -76323,7 +76833,7 @@ var OrderResource = class extends StripeResource {
    * Updates the specified order by setting the values of the parameters passed.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/climate/orders/${id}`, params, options, {
+    return this._makeRequest("POST", `/v1/climate/orders/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: { metric_tons: { kind: "decimal_string" } }
@@ -76337,7 +76847,7 @@ var OrderResource = class extends StripeResource {
    * provides 90 days advance notice and refunds the amount_total.
    */
   cancel(id, params, options) {
-    return this._makeRequest("POST", `/v1/climate/orders/${id}/cancel`, params, options, {
+    return this._makeRequest("POST", `/v1/climate/orders/${encodeURIComponent(id)}/cancel`, params, options, {
       responseSchema: {
         kind: "object",
         fields: { metric_tons: { kind: "decimal_string" } }
@@ -76346,35 +76856,35 @@ var OrderResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Treasury/OutboundPayments.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/Treasury/OutboundPayments.js
 var OutboundPaymentResource = class extends StripeResource {
   /**
    * Updates a test mode created OutboundPayment with tracking details. The OutboundPayment must not be cancelable, and cannot be in the canceled or failed states.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/treasury/outbound_payments/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/treasury/outbound_payments/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Transitions a test mode created OutboundPayment to the failed status. The OutboundPayment must already be in the processing state.
    */
   fail(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/treasury/outbound_payments/${id}/fail`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/treasury/outbound_payments/${encodeURIComponent(id)}/fail`, params, options);
   }
   /**
    * Transitions a test mode created OutboundPayment to the posted status. The OutboundPayment must already be in the processing state.
    */
   post(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/treasury/outbound_payments/${id}/post`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/treasury/outbound_payments/${encodeURIComponent(id)}/post`, params, options);
   }
   /**
    * Transitions a test mode created OutboundPayment to the returned status. The OutboundPayment must already be in the processing state.
    */
   returnOutboundPayment(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/treasury/outbound_payments/${id}/return`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/treasury/outbound_payments/${encodeURIComponent(id)}/return`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/OutboundPayments.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Treasury/OutboundPayments.js
 var OutboundPaymentResource2 = class extends StripeResource {
   /**
    * Returns a list of OutboundPayments sent from the specified FinancialAccount.
@@ -76394,45 +76904,45 @@ var OutboundPaymentResource2 = class extends StripeResource {
    * Retrieves the details of an existing OutboundPayment by passing the unique OutboundPayment ID from either the OutboundPayment creation request or OutboundPayment list.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/treasury/outbound_payments/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/treasury/outbound_payments/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Cancel an OutboundPayment.
    */
   cancel(id, params, options) {
-    return this._makeRequest("POST", `/v1/treasury/outbound_payments/${id}/cancel`, params, options);
+    return this._makeRequest("POST", `/v1/treasury/outbound_payments/${encodeURIComponent(id)}/cancel`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Treasury/OutboundTransfers.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/Treasury/OutboundTransfers.js
 var OutboundTransferResource = class extends StripeResource {
   /**
    * Updates a test mode created OutboundTransfer with tracking details. The OutboundTransfer must not be cancelable, and cannot be in the canceled or failed states.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/treasury/outbound_transfers/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/treasury/outbound_transfers/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Transitions a test mode created OutboundTransfer to the failed status. The OutboundTransfer must already be in the processing state.
    */
   fail(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/treasury/outbound_transfers/${id}/fail`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/treasury/outbound_transfers/${encodeURIComponent(id)}/fail`, params, options);
   }
   /**
    * Transitions a test mode created OutboundTransfer to the posted status. The OutboundTransfer must already be in the processing state.
    */
   post(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/treasury/outbound_transfers/${id}/post`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/treasury/outbound_transfers/${encodeURIComponent(id)}/post`, params, options);
   }
   /**
    * Transitions a test mode created OutboundTransfer to the returned status. The OutboundTransfer must already be in the processing state.
    */
   returnOutboundTransfer(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/treasury/outbound_transfers/${id}/return`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/treasury/outbound_transfers/${encodeURIComponent(id)}/return`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/OutboundTransfers.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Treasury/OutboundTransfers.js
 var OutboundTransferResource2 = class extends StripeResource {
   /**
    * Returns a list of OutboundTransfers sent from the specified FinancialAccount.
@@ -76452,17 +76962,17 @@ var OutboundTransferResource2 = class extends StripeResource {
    * Retrieves the details of an existing OutboundTransfer by passing the unique OutboundTransfer ID from either the OutboundTransfer creation request or OutboundTransfer list.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/treasury/outbound_transfers/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/treasury/outbound_transfers/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * An OutboundTransfer can be canceled if the funds have not yet been paid out.
    */
   cancel(id, params, options) {
-    return this._makeRequest("POST", `/v1/treasury/outbound_transfers/${id}/cancel`, params, options);
+    return this._makeRequest("POST", `/v1/treasury/outbound_transfers/${encodeURIComponent(id)}/cancel`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Radar/PaymentEvaluations.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Radar/PaymentEvaluations.js
 var PaymentEvaluationResource = class extends StripeResource {
   /**
    * Request a Radar API fraud risk score from Stripe for a payment before sending it for external processor authorization.
@@ -76472,7 +76982,7 @@ var PaymentEvaluationResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/PersonalizationDesigns.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Issuing/PersonalizationDesigns.js
 var PersonalizationDesignResource = class extends StripeResource {
   /**
    * Returns a list of personalization design objects. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -76492,39 +77002,39 @@ var PersonalizationDesignResource = class extends StripeResource {
    * Retrieves a personalization design object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/issuing/personalization_designs/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/issuing/personalization_designs/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates a card personalization object.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/issuing/personalization_designs/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/issuing/personalization_designs/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Issuing/PersonalizationDesigns.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/Issuing/PersonalizationDesigns.js
 var PersonalizationDesignResource2 = class extends StripeResource {
   /**
    * Updates the status of the specified testmode personalization design object to active.
    */
   activate(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/issuing/personalization_designs/${id}/activate`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/issuing/personalization_designs/${encodeURIComponent(id)}/activate`, params, options);
   }
   /**
    * Updates the status of the specified testmode personalization design object to inactive.
    */
   deactivate(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/issuing/personalization_designs/${id}/deactivate`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/issuing/personalization_designs/${encodeURIComponent(id)}/deactivate`, params, options);
   }
   /**
    * Updates the status of the specified testmode personalization design object to rejected.
    */
   reject(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/issuing/personalization_designs/${id}/reject`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/issuing/personalization_designs/${encodeURIComponent(id)}/reject`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/PhysicalBundles.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Issuing/PhysicalBundles.js
 var PhysicalBundleResource = class extends StripeResource {
   /**
    * Returns a list of physical bundle objects. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -76538,11 +77048,11 @@ var PhysicalBundleResource = class extends StripeResource {
    * Retrieves a physical bundle object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/issuing/physical_bundles/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/issuing/physical_bundles/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Climate/Products.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Climate/Products.js
 var ProductResource = class extends StripeResource {
   /**
    * Lists all available Climate product objects.
@@ -76568,7 +77078,7 @@ var ProductResource = class extends StripeResource {
    * Retrieves the details of a Climate product with the given ID.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/climate/products/${id}`, params, options, {
+    return this._makeRequest("GET", `/v1/climate/products/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: { metric_tons_available: { kind: "decimal_string" } }
@@ -76577,25 +77087,25 @@ var ProductResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Terminal/Readers.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Terminal/Readers.js
 var ReaderResource = class extends StripeResource {
   /**
    * Deletes a Reader object.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/terminal/readers/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/terminal/readers/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves a Reader object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/terminal/readers/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/terminal/readers/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates a Reader object by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/terminal/readers/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/terminal/readers/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Returns a list of Reader objects.
@@ -76615,75 +77125,75 @@ var ReaderResource = class extends StripeResource {
    * Cancels the current reader action. See [Programmatic Cancellation](https://docs.stripe.com/docs/terminal/payments/collect-card-payment?terminal-sdk-platform=server-driven#programmatic-cancellation) for more details.
    */
   cancelAction(id, params, options) {
-    return this._makeRequest("POST", `/v1/terminal/readers/${id}/cancel_action`, params, options);
+    return this._makeRequest("POST", `/v1/terminal/readers/${encodeURIComponent(id)}/cancel_action`, params, options);
   }
   /**
    * Initiates an [input collection flow](https://docs.stripe.com/docs/terminal/features/collect-inputs) on a Reader to display input forms and collect information from your customers.
    */
   collectInputs(id, params, options) {
-    return this._makeRequest("POST", `/v1/terminal/readers/${id}/collect_inputs`, params, options);
+    return this._makeRequest("POST", `/v1/terminal/readers/${encodeURIComponent(id)}/collect_inputs`, params, options);
   }
   /**
    * Initiates a payment flow on a Reader and updates the PaymentIntent with card details before manual confirmation. See [Collecting a Payment method](https://docs.stripe.com/docs/terminal/payments/collect-card-payment?terminal-sdk-platform=server-driven&process=inspect#collect-a-paymentmethod) for more details.
    */
   collectPaymentMethod(id, params, options) {
-    return this._makeRequest("POST", `/v1/terminal/readers/${id}/collect_payment_method`, params, options);
+    return this._makeRequest("POST", `/v1/terminal/readers/${encodeURIComponent(id)}/collect_payment_method`, params, options);
   }
   /**
    * Finalizes a payment on a Reader. See [Confirming a Payment](https://docs.stripe.com/docs/terminal/payments/collect-card-payment?terminal-sdk-platform=server-driven&process=inspect#confirm-the-paymentintent) for more details.
    */
   confirmPaymentIntent(id, params, options) {
-    return this._makeRequest("POST", `/v1/terminal/readers/${id}/confirm_payment_intent`, params, options);
+    return this._makeRequest("POST", `/v1/terminal/readers/${encodeURIComponent(id)}/confirm_payment_intent`, params, options);
   }
   /**
    * Initiates a payment flow on a Reader. See [process the payment](https://docs.stripe.com/docs/terminal/payments/collect-card-payment?terminal-sdk-platform=server-driven&process=immediately#process-payment) for more details.
    */
   processPaymentIntent(id, params, options) {
-    return this._makeRequest("POST", `/v1/terminal/readers/${id}/process_payment_intent`, params, options);
+    return this._makeRequest("POST", `/v1/terminal/readers/${encodeURIComponent(id)}/process_payment_intent`, params, options);
   }
   /**
    * Initiates a SetupIntent flow on a Reader. See [Save directly without charging](https://docs.stripe.com/docs/terminal/features/saving-payment-details/save-directly) for more details.
    */
   processSetupIntent(id, params, options) {
-    return this._makeRequest("POST", `/v1/terminal/readers/${id}/process_setup_intent`, params, options);
+    return this._makeRequest("POST", `/v1/terminal/readers/${encodeURIComponent(id)}/process_setup_intent`, params, options);
   }
   /**
    * Initiates an in-person refund on a Reader. See [Refund an Interac Payment](https://docs.stripe.com/docs/terminal/payments/regional?integration-country=CA#refund-an-interac-payment) for more details.
    */
   refundPayment(id, params, options) {
-    return this._makeRequest("POST", `/v1/terminal/readers/${id}/refund_payment`, params, options);
+    return this._makeRequest("POST", `/v1/terminal/readers/${encodeURIComponent(id)}/refund_payment`, params, options);
   }
   /**
    * Sets the reader display to show [cart details](https://docs.stripe.com/docs/terminal/features/display).
    */
   setReaderDisplay(id, params, options) {
-    return this._makeRequest("POST", `/v1/terminal/readers/${id}/set_reader_display`, params, options);
+    return this._makeRequest("POST", `/v1/terminal/readers/${encodeURIComponent(id)}/set_reader_display`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Terminal/Readers.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/Terminal/Readers.js
 var ReaderResource2 = class extends StripeResource {
   /**
    * Presents a payment method on a simulated reader. Can be used to simulate accepting a payment, saving a card or refunding a transaction.
    */
   presentPaymentMethod(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/terminal/readers/${id}/present_payment_method`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/terminal/readers/${encodeURIComponent(id)}/present_payment_method`, params, options);
   }
   /**
    * Use this endpoint to trigger a successful input collection on a simulated reader.
    */
   succeedInputCollection(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/terminal/readers/${id}/succeed_input_collection`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/terminal/readers/${encodeURIComponent(id)}/succeed_input_collection`, params, options);
   }
   /**
    * Use this endpoint to complete an input collection with a timeout error on a simulated reader.
    */
   timeoutInputCollection(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/terminal/readers/${id}/timeout_input_collection`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/terminal/readers/${encodeURIComponent(id)}/timeout_input_collection`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Treasury/ReceivedCredits.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/Treasury/ReceivedCredits.js
 var ReceivedCreditResource = class extends StripeResource {
   /**
    * Use this endpoint to simulate a test mode ReceivedCredit initiated by a third party. In live mode, you can't directly create ReceivedCredits initiated by third parties.
@@ -76693,7 +77203,7 @@ var ReceivedCreditResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/ReceivedCredits.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Treasury/ReceivedCredits.js
 var ReceivedCreditResource2 = class extends StripeResource {
   /**
    * Returns a list of ReceivedCredits.
@@ -76707,11 +77217,11 @@ var ReceivedCreditResource2 = class extends StripeResource {
    * Retrieves the details of an existing ReceivedCredit by passing the unique ReceivedCredit ID from the ReceivedCredit list.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/treasury/received_credits/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/treasury/received_credits/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Treasury/ReceivedDebits.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/Treasury/ReceivedDebits.js
 var ReceivedDebitResource = class extends StripeResource {
   /**
    * Use this endpoint to simulate a test mode ReceivedDebit initiated by a third party. In live mode, you can't directly create ReceivedDebits initiated by third parties.
@@ -76721,7 +77231,7 @@ var ReceivedDebitResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/ReceivedDebits.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Treasury/ReceivedDebits.js
 var ReceivedDebitResource2 = class extends StripeResource {
   /**
    * Returns a list of ReceivedDebits.
@@ -76735,21 +77245,21 @@ var ReceivedDebitResource2 = class extends StripeResource {
    * Retrieves the details of an existing ReceivedDebit by passing the unique ReceivedDebit ID from the ReceivedDebit list
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/treasury/received_debits/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/treasury/received_debits/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Refunds.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/Refunds.js
 var RefundResource = class extends StripeResource {
   /**
    * Expire a refund with a status of requires_action.
    */
   expire(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/refunds/${id}/expire`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/refunds/${encodeURIComponent(id)}/expire`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Tax/Registrations.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Tax/Registrations.js
 var RegistrationResource = class extends StripeResource {
   /**
    * Returns a list of Tax Registration objects.
@@ -76769,7 +77279,7 @@ var RegistrationResource = class extends StripeResource {
    * Returns a Tax Registration object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/tax/registrations/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/tax/registrations/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates an existing Tax Registration object.
@@ -76777,11 +77287,11 @@ var RegistrationResource = class extends StripeResource {
    * A registration cannot be deleted after it has been created. If you wish to end a registration you may do so by setting expires_at.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/tax/registrations/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/tax/registrations/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Reporting/ReportRuns.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Reporting/ReportRuns.js
 var ReportRunResource = class extends StripeResource {
   /**
    * Returns a list of Report Runs, with the most recent appearing first.
@@ -76801,11 +77311,11 @@ var ReportRunResource = class extends StripeResource {
    * Retrieves the details of an existing Report Run.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/reporting/report_runs/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/reporting/report_runs/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Reporting/ReportTypes.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Reporting/ReportTypes.js
 var ReportTypeResource = class extends StripeResource {
   /**
    * Returns a full list of Report Types.
@@ -76819,11 +77329,11 @@ var ReportTypeResource = class extends StripeResource {
    * Retrieves the details of a Report Type. (Certain report types require a [live-mode API key](https://stripe.com/docs/keys#test-live-modes).)
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/reporting/report_types/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/reporting/report_types/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Forwarding/Requests.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Forwarding/Requests.js
 var RequestResource = class extends StripeResource {
   /**
    * Lists all ForwardingRequest objects.
@@ -76843,11 +77353,11 @@ var RequestResource = class extends StripeResource {
    * Retrieves a ForwardingRequest object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/forwarding/requests/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/forwarding/requests/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Sigma/ScheduledQueryRuns.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Sigma/ScheduledQueryRuns.js
 var ScheduledQueryRunResource = class extends StripeResource {
   /**
    * Returns a list of scheduled query runs.
@@ -76861,11 +77371,11 @@ var ScheduledQueryRunResource = class extends StripeResource {
    * Retrieves the details of an scheduled query run.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/sigma/scheduled_query_runs/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/sigma/scheduled_query_runs/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Apps/Secrets.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Apps/Secrets.js
 var SecretResource = class extends StripeResource {
   /**
    * List all secrets stored on the given scope.
@@ -76895,7 +77405,7 @@ var SecretResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/BillingPortal/Sessions.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/BillingPortal/Sessions.js
 var SessionResource = class extends StripeResource {
   /**
    * Creates a session of the customer portal.
@@ -76905,7 +77415,7 @@ var SessionResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Checkout/Sessions.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Checkout/Sessions.js
 var SessionResource2 = class extends StripeResource {
   /**
    * Returns a list of Checkout Sessions.
@@ -77113,7 +77623,7 @@ var SessionResource2 = class extends StripeResource {
    * Retrieves a Checkout Session object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/checkout/sessions/${id}`, params, options, {
+    return this._makeRequest("GET", `/v1/checkout/sessions/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -77203,7 +77713,7 @@ var SessionResource2 = class extends StripeResource {
    * Related guide: [Dynamically update a Checkout Session](https://docs.stripe.com/payments/advanced/dynamic-updates)
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/checkout/sessions/${id}`, params, options, {
+    return this._makeRequest("POST", `/v1/checkout/sessions/${encodeURIComponent(id)}`, params, options, {
       requestSchema: {
         kind: "object",
         fields: {
@@ -77310,7 +77820,7 @@ var SessionResource2 = class extends StripeResource {
    * After it expires, a customer can't complete a Checkout Session and customers loading the Checkout Session see a message saying the Checkout Session is expired.
    */
   expire(id, params, options) {
-    return this._makeRequest("POST", `/v1/checkout/sessions/${id}/expire`, params, options, {
+    return this._makeRequest("POST", `/v1/checkout/sessions/${encodeURIComponent(id)}/expire`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -77398,7 +77908,7 @@ var SessionResource2 = class extends StripeResource {
    * When retrieving a Checkout Session, there is an includable line_items property containing the first handful of those items. There is also a URL where you can retrieve the full (paginated) list of line items.
    */
   listLineItems(id, params, options) {
-    return this._makeRequest("GET", `/v1/checkout/sessions/${id}/line_items`, params, options, {
+    return this._makeRequest("GET", `/v1/checkout/sessions/${encodeURIComponent(id)}/line_items`, params, options, {
       methodType: "list",
       responseSchema: {
         kind: "object",
@@ -77473,13 +77983,13 @@ var SessionResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/FinancialConnections/Sessions.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/FinancialConnections/Sessions.js
 var SessionResource3 = class extends StripeResource {
   /**
    * Retrieves the details of a Financial Connections Session
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/financial_connections/sessions/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/financial_connections/sessions/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * To launch the Financial Connections authorization flow, create a Session. The session's client_secret can be used to launch the flow using Stripe.js.
@@ -77489,7 +77999,7 @@ var SessionResource3 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Tax/Settings.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Tax/Settings.js
 var SettingResource = class extends StripeResource {
   /**
    * Retrieves Tax Settings for a merchant.
@@ -77505,7 +78015,7 @@ var SettingResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Climate/Suppliers.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Climate/Suppliers.js
 var SupplierResource = class extends StripeResource {
   /**
    * Lists all available Climate supplier objects.
@@ -77519,23 +78029,23 @@ var SupplierResource = class extends StripeResource {
    * Retrieves a Climate supplier object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/climate/suppliers/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/climate/suppliers/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/TestClocks.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/TestClocks.js
 var TestClockResource = class extends StripeResource {
   /**
    * Deletes a test clock.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/test_helpers/test_clocks/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/test_helpers/test_clocks/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves a test clock.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/test_helpers/test_clocks/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/test_helpers/test_clocks/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Returns a list of your test clocks.
@@ -77555,11 +78065,11 @@ var TestClockResource = class extends StripeResource {
    * Starts advancing a test clock to a specified time in the future. Advancement is done when status changes to Ready.
    */
   advance(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/test_clocks/${id}/advance`, params, options);
+    return this._makeRequest("POST", `/v1/test_helpers/test_clocks/${encodeURIComponent(id)}/advance`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/Tokens.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Issuing/Tokens.js
 var TokenResource = class extends StripeResource {
   /**
    * Lists all Issuing Token objects for a given card.
@@ -77573,17 +78083,17 @@ var TokenResource = class extends StripeResource {
    * Retrieves an Issuing Token object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/issuing/tokens/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/issuing/tokens/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Attempts to update the specified Issuing Token object to the status specified.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/issuing/tokens/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/issuing/tokens/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/TransactionEntries.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Treasury/TransactionEntries.js
 var TransactionEntryResource = class extends StripeResource {
   /**
    * Retrieves a list of TransactionEntry objects.
@@ -77790,7 +78300,7 @@ var TransactionEntryResource = class extends StripeResource {
    * Retrieves a TransactionEntry object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/treasury/transaction_entries/${id}`, params, options, {
+    return this._makeRequest("GET", `/v1/treasury/transaction_entries/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -77980,7 +78490,7 @@ var TransactionEntryResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/FinancialConnections/Transactions.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/FinancialConnections/Transactions.js
 var TransactionResource = class extends StripeResource {
   /**
    * Returns a list of Financial Connections Transaction objects.
@@ -77994,11 +78504,11 @@ var TransactionResource = class extends StripeResource {
    * Retrieves the details of a Financial Connections Transaction
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/financial_connections/transactions/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/financial_connections/transactions/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/Transactions.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Issuing/Transactions.js
 var TransactionResource2 = class extends StripeResource {
   /**
    * Returns a list of Issuing Transaction objects. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -78102,7 +78612,7 @@ var TransactionResource2 = class extends StripeResource {
    * Retrieves an Issuing Transaction object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/issuing/transactions/${id}`, params, options, {
+    return this._makeRequest("GET", `/v1/issuing/transactions/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -78191,7 +78701,7 @@ var TransactionResource2 = class extends StripeResource {
    * Updates the specified Issuing Transaction object by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/issuing/transactions/${id}`, params, options, {
+    return this._makeRequest("POST", `/v1/issuing/transactions/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -78278,13 +78788,13 @@ var TransactionResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Tax/Transactions.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Tax/Transactions.js
 var TransactionResource3 = class extends StripeResource {
   /**
    * Retrieves a Tax Transaction object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/tax/transactions/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/tax/transactions/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Creates a Tax Transaction from a calculation, if that calculation hasn't expired. Calculations expire after 90 days.
@@ -78302,19 +78812,19 @@ var TransactionResource3 = class extends StripeResource {
    * Retrieves the line items of a committed standalone transaction as a collection.
    */
   listLineItems(id, params, options) {
-    return this._makeRequest("GET", `/v1/tax/transactions/${id}/line_items`, params, options, {
+    return this._makeRequest("GET", `/v1/tax/transactions/${encodeURIComponent(id)}/line_items`, params, options, {
       methodType: "list"
     });
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Issuing/Transactions.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/Issuing/Transactions.js
 var TransactionResource4 = class extends StripeResource {
   /**
    * Refund a test-mode Transaction.
    */
   refund(id, params, options) {
-    return this._makeRequest("POST", `/v1/test_helpers/issuing/transactions/${id}/refund`, params, options, {
+    return this._makeRequest("POST", `/v1/test_helpers/issuing/transactions/${encodeURIComponent(id)}/refund`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -78685,7 +79195,7 @@ var TransactionResource4 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/Transactions.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Treasury/Transactions.js
 var TransactionResource5 = class extends StripeResource {
   /**
    * Retrieves a list of Transaction objects.
@@ -78918,7 +79428,7 @@ var TransactionResource5 = class extends StripeResource {
    * Retrieves the details of an existing Transaction.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/treasury/transactions/${id}`, params, options, {
+    return this._makeRequest("GET", `/v1/treasury/transactions/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -79134,19 +79644,19 @@ var TransactionResource5 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Radar/ValueListItems.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Radar/ValueListItems.js
 var ValueListItemResource = class extends StripeResource {
   /**
    * Deletes a ValueListItem object, removing it from its parent value list.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/radar/value_list_items/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/radar/value_list_items/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves a ValueListItem object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/radar/value_list_items/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/radar/value_list_items/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Returns a list of ValueListItem objects. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -79164,25 +79674,25 @@ var ValueListItemResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Radar/ValueLists.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Radar/ValueLists.js
 var ValueListResource = class extends StripeResource {
   /**
    * Deletes a ValueList object, also deleting any items contained within the value list. To be deleted, a value list must not be referenced in any rules.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/radar/value_lists/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/radar/value_lists/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves a ValueList object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/radar/value_lists/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/radar/value_lists/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates a ValueList object by setting the values of the parameters passed. Any parameters not provided will be left unchanged. Note that item_type is immutable.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/radar/value_lists/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/radar/value_lists/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Returns a list of ValueList objects. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -79200,7 +79710,7 @@ var ValueListResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Identity/VerificationReports.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Identity/VerificationReports.js
 var VerificationReportResource = class extends StripeResource {
   /**
    * List all verification reports.
@@ -79214,11 +79724,11 @@ var VerificationReportResource = class extends StripeResource {
    * Retrieves an existing VerificationReport
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/identity/verification_reports/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/identity/verification_reports/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Identity/VerificationSessions.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Identity/VerificationSessions.js
 var VerificationSessionResource = class extends StripeResource {
   /**
    * Returns a list of VerificationSessions
@@ -79247,7 +79757,7 @@ var VerificationSessionResource = class extends StripeResource {
    * client_secret or url to allow re-submission.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/identity/verification_sessions/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/identity/verification_sessions/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates a VerificationSession object.
@@ -79256,7 +79766,7 @@ var VerificationSessionResource = class extends StripeResource {
    * verification check and options.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/identity/verification_sessions/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/identity/verification_sessions/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * A VerificationSession object can be canceled when it is in requires_input [status](https://docs.stripe.com/docs/identity/how-sessions-work).
@@ -79264,7 +79774,7 @@ var VerificationSessionResource = class extends StripeResource {
    * Once canceled, future submission attempts are disabled. This cannot be undone. [Learn more](https://docs.stripe.com/docs/identity/verification-sessions#cancel).
    */
   cancel(id, params, options) {
-    return this._makeRequest("POST", `/v1/identity/verification_sessions/${id}/cancel`, params, options);
+    return this._makeRequest("POST", `/v1/identity/verification_sessions/${encodeURIComponent(id)}/cancel`, params, options);
   }
   /**
    * Redact a VerificationSession to remove all collected information from Stripe. This will redact
@@ -79288,11 +79798,11 @@ var VerificationSessionResource = class extends StripeResource {
    * [Learn more](https://docs.stripe.com/docs/identity/verification-sessions#redact).
    */
   redact(id, params, options) {
-    return this._makeRequest("POST", `/v1/identity/verification_sessions/${id}/redact`, params, options);
+    return this._makeRequest("POST", `/v1/identity/verification_sessions/${encodeURIComponent(id)}/redact`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Accounts.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Accounts.js
 var AccountResource3 = class extends StripeResource {
   /**
    * With [Connect](https://docs.stripe.com/connect), you can delete accounts you manage.
@@ -79304,14 +79814,14 @@ var AccountResource3 = class extends StripeResource {
    * If you want to delete your own account, use the [account information tab in your account settings](https://dashboard.stripe.com/settings/account) instead.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/accounts/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/accounts/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves the details of an account. Pass `null` as the account id to retrieve details about your own account.
    */
   retrieve(id, params, options) {
     if (typeof id === "string") {
-      return this._makeRequest("GET", `/v1/accounts/${id}`, params, options);
+      return this._makeRequest("GET", `/v1/accounts/${encodeURIComponent(id)}`, params, options);
     } else {
       return this._makeRequest("GET", "/v1/account", params, options);
     }
@@ -79332,7 +79842,7 @@ var AccountResource3 = class extends StripeResource {
    * [Connect](https://docs.stripe.com/docs/connect/updating-accounts) documentation to learn more about updating accounts.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/accounts/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/accounts/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves the details of an account.
@@ -79365,13 +79875,13 @@ var AccountResource3 = class extends StripeResource {
    * Only accounts where your platform is liable for negative account balances, which includes Custom and Express accounts, can be rejected. Test-mode accounts can be rejected at any time. Live-mode accounts can only be rejected after all balances are zero.
    */
   reject(id, params, options) {
-    return this._makeRequest("POST", `/v1/accounts/${id}/reject`, params, options);
+    return this._makeRequest("POST", `/v1/accounts/${encodeURIComponent(id)}/reject`, params, options);
   }
   /**
    * Returns a list of capabilities associated with the account. The capabilities are returned sorted by creation date, with the most recent capability appearing first.
    */
   listCapabilities(id, params, options) {
-    return this._makeRequest("GET", `/v1/accounts/${id}/capabilities`, params, options, {
+    return this._makeRequest("GET", `/v1/accounts/${encodeURIComponent(id)}/capabilities`, params, options, {
       methodType: "list"
     });
   }
@@ -79379,25 +79889,25 @@ var AccountResource3 = class extends StripeResource {
    * Retrieves information about the specified Account Capability.
    */
   retrieveCapability(accountId, id, params, options) {
-    return this._makeRequest("GET", `/v1/accounts/${accountId}/capabilities/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/accounts/${encodeURIComponent(accountId)}/capabilities/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates an existing Account Capability. Request or remove a capability by updating its requested parameter.
    */
   updateCapability(accountId, id, params, options) {
-    return this._makeRequest("POST", `/v1/accounts/${accountId}/capabilities/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/accounts/${encodeURIComponent(accountId)}/capabilities/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Delete a specified external account for a given account.
    */
   deleteExternalAccount(accountId, id, params, options) {
-    return this._makeRequest("DELETE", `/v1/accounts/${accountId}/external_accounts/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/accounts/${encodeURIComponent(accountId)}/external_accounts/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieve a specified external account for a given account.
    */
   retrieveExternalAccount(accountId, id, params, options) {
-    return this._makeRequest("GET", `/v1/accounts/${accountId}/external_accounts/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/accounts/${encodeURIComponent(accountId)}/external_accounts/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the metadata, account holder name, account holder type of a bank account belonging to
@@ -79410,13 +79920,13 @@ var AccountResource3 = class extends StripeResource {
    * arguments or changes.
    */
   updateExternalAccount(accountId, id, params, options) {
-    return this._makeRequest("POST", `/v1/accounts/${accountId}/external_accounts/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/accounts/${encodeURIComponent(accountId)}/external_accounts/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * List external accounts for an account.
    */
   listExternalAccounts(id, params, options) {
-    return this._makeRequest("GET", `/v1/accounts/${id}/external_accounts`, params, options, {
+    return this._makeRequest("GET", `/v1/accounts/${encodeURIComponent(id)}/external_accounts`, params, options, {
       methodType: "list"
     });
   }
@@ -79424,7 +79934,7 @@ var AccountResource3 = class extends StripeResource {
    * Create an external account for a given account.
    */
   createExternalAccount(id, params, options) {
-    return this._makeRequest("POST", `/v1/accounts/${id}/external_accounts`, params, options);
+    return this._makeRequest("POST", `/v1/accounts/${encodeURIComponent(id)}/external_accounts`, params, options);
   }
   /**
    * Creates a login link for a connected account to access the Express Dashboard.
@@ -79432,31 +79942,31 @@ var AccountResource3 = class extends StripeResource {
    * You can only create login links for accounts that use the [Express Dashboard](https://docs.stripe.com/connect/express-dashboard) and are connected to your platform.
    */
   createLoginLink(id, params, options) {
-    return this._makeRequest("POST", `/v1/accounts/${id}/login_links`, params, options);
+    return this._makeRequest("POST", `/v1/accounts/${encodeURIComponent(id)}/login_links`, params, options);
   }
   /**
    * Deletes an existing person's relationship to the account's legal entity. Any person with a relationship for an account can be deleted through the API, except if the person is the account_opener. If your integration is using the executive parameter, you cannot delete the only verified executive on file.
    */
   deletePerson(accountId, id, params, options) {
-    return this._makeRequest("DELETE", `/v1/accounts/${accountId}/persons/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/accounts/${encodeURIComponent(accountId)}/persons/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves an existing person.
    */
   retrievePerson(accountId, id, params, options) {
-    return this._makeRequest("GET", `/v1/accounts/${accountId}/persons/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/accounts/${encodeURIComponent(accountId)}/persons/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates an existing person.
    */
   updatePerson(accountId, id, params, options) {
-    return this._makeRequest("POST", `/v1/accounts/${accountId}/persons/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/accounts/${encodeURIComponent(accountId)}/persons/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Returns a list of people associated with the account's legal entity. The people are returned sorted by creation date, with the most recent people appearing first.
    */
   listPersons(id, params, options) {
-    return this._makeRequest("GET", `/v1/accounts/${id}/persons`, params, options, {
+    return this._makeRequest("GET", `/v1/accounts/${encodeURIComponent(id)}/persons`, params, options, {
       methodType: "list"
     });
   }
@@ -79464,11 +79974,11 @@ var AccountResource3 = class extends StripeResource {
    * Creates a new person.
    */
   createPerson(id, params, options) {
-    return this._makeRequest("POST", `/v1/accounts/${id}/persons`, params, options);
+    return this._makeRequest("POST", `/v1/accounts/${encodeURIComponent(id)}/persons`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/AccountLinks.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/AccountLinks.js
 var AccountLinkResource2 = class extends StripeResource {
   /**
    * Creates an AccountLink object that includes a single-use Stripe URL that the platform can redirect their user to in order to take them through the Connect Onboarding flow.
@@ -79478,7 +79988,7 @@ var AccountLinkResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/AccountSessions.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/AccountSessions.js
 var AccountSessionResource = class extends StripeResource {
   /**
    * Creates a AccountSession object that includes a single-use token that the platform can use on their front-end to grant client-side API access.
@@ -79488,19 +79998,19 @@ var AccountSessionResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/ApplePayDomains.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/ApplePayDomains.js
 var ApplePayDomainResource = class extends StripeResource {
   /**
    * Delete an apple pay domain.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/apple_pay/domains/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/apple_pay/domains/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieve an apple pay domain.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/apple_pay/domains/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/apple_pay/domains/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * List apple pay domains.
@@ -79518,7 +80028,7 @@ var ApplePayDomainResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/ApplicationFees.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/ApplicationFees.js
 var ApplicationFeeResource = class extends StripeResource {
   /**
    * Returns a list of application fees you've previously collected. The application fees are returned in sorted order, with the most recent fees appearing first.
@@ -79532,13 +80042,13 @@ var ApplicationFeeResource = class extends StripeResource {
    * Retrieves the details of an application fee that your account has collected. The same information is returned when refunding the application fee.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/application_fees/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/application_fees/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * By default, you can see the 10 most recent refunds stored directly on the application fee object, but you can also retrieve details about a specific refund stored on the application fee.
    */
   retrieveRefund(feeId, id, params, options) {
-    return this._makeRequest("GET", `/v1/application_fees/${feeId}/refunds/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/application_fees/${encodeURIComponent(feeId)}/refunds/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the specified application fee refund by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
@@ -79546,13 +80056,13 @@ var ApplicationFeeResource = class extends StripeResource {
    * This request only accepts metadata as an argument.
    */
   updateRefund(feeId, id, params, options) {
-    return this._makeRequest("POST", `/v1/application_fees/${feeId}/refunds/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/application_fees/${encodeURIComponent(feeId)}/refunds/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * You can see a list of the refunds belonging to a specific application fee. Note that the 10 most recent refunds are always available by default on the application fee object. If you need more than those 10, you can use this API method and the limit and starting_after parameters to page through additional refunds.
    */
   listRefunds(id, params, options) {
-    return this._makeRequest("GET", `/v1/application_fees/${id}/refunds`, params, options, {
+    return this._makeRequest("GET", `/v1/application_fees/${encodeURIComponent(id)}/refunds`, params, options, {
       methodType: "list"
     });
   }
@@ -79568,11 +80078,11 @@ var ApplicationFeeResource = class extends StripeResource {
    * or when trying to refund more money than is left on an application fee.
    */
   createRefund(id, params, options) {
-    return this._makeRequest("POST", `/v1/application_fees/${id}/refunds`, params, options);
+    return this._makeRequest("POST", `/v1/application_fees/${encodeURIComponent(id)}/refunds`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Balance.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Balance.js
 var BalanceResource = class extends StripeResource {
   /**
    * Retrieves the current account balance, based on the authentication that was used to make the request.
@@ -79583,7 +80093,7 @@ var BalanceResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/BalanceSettings.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/BalanceSettings.js
 var BalanceSettingResource = class extends StripeResource {
   /**
    * Retrieves balance settings for a given connected account.
@@ -79601,12 +80111,12 @@ var BalanceSettingResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/BalanceTransactions.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/BalanceTransactions.js
 var BalanceTransactionResource = class extends StripeResource {
   /**
-   * Returns a list of transactions that have contributed to the Stripe account balance (e.g., charges, transfers, and so forth). The transactions are returned in sorted order, with the most recent transactions appearing first.
+   * Returns a list of transactions that have contributed to the Stripe account balance (for example, charges, transfers, and so on). The transactions return in sorted order, with the most recent transactions appearing first.
    *
-   * Note that this endpoint was previously called “Balance history” and used the path /v1/balance/history.
+   * The previous name of this endpoint was “Balance history,” and it used the path /v1/balance/history.
    */
   list(params, options) {
     return this._makeRequest("GET", "/v1/balance_transactions", params, options, {
@@ -79619,11 +80129,11 @@ var BalanceTransactionResource = class extends StripeResource {
    * Note that this endpoint previously used the path /v1/balance/history/:id.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/balance_transactions/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/balance_transactions/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Charges.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Charges.js
 var ChargeResource = class extends StripeResource {
   /**
    * Returns a list of charges you've previously created. The charges are returned in sorted order, with the most recent charges appearing first.
@@ -79645,13 +80155,13 @@ var ChargeResource = class extends StripeResource {
    * Retrieves the details of a charge that has previously been created. Supply the unique charge ID that was returned from your previous request, and Stripe will return the corresponding charge information. The same information is returned when creating or refunding the charge.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/charges/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/charges/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the specified charge by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/charges/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/charges/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Search for charges you've previously created using Stripe's [Search Query Language](https://docs.stripe.com/docs/search#search-query-language).
@@ -79672,21 +80182,21 @@ var ChargeResource = class extends StripeResource {
    * Don't use this method to capture a PaymentIntent-initiated charge. Use [Capture a PaymentIntent](https://docs.stripe.com/docs/api/payment_intents/capture).
    */
   capture(id, params, options) {
-    return this._makeRequest("POST", `/v1/charges/${id}/capture`, params, options);
+    return this._makeRequest("POST", `/v1/charges/${encodeURIComponent(id)}/capture`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/ConfirmationTokens.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/ConfirmationTokens.js
 var ConfirmationTokenResource2 = class extends StripeResource {
   /**
    * Retrieves an existing ConfirmationToken object
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/confirmation_tokens/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/confirmation_tokens/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/CountrySpecs.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/CountrySpecs.js
 var CountrySpecResource = class extends StripeResource {
   /**
    * Lists all Country Spec objects available in the API.
@@ -79700,29 +80210,29 @@ var CountrySpecResource = class extends StripeResource {
    * Returns a Country Spec for a given Country code.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/country_specs/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/country_specs/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Coupons.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Coupons.js
 var CouponResource = class extends StripeResource {
   /**
    * You can delete coupons via the [coupon management](https://dashboard.stripe.com/coupons) page of the Stripe dashboard. However, deleting a coupon does not affect any customers who have already applied the coupon; it means that new customers can't redeem the coupon. You can also delete coupons via the API.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/coupons/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/coupons/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves the coupon with the given ID.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/coupons/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/coupons/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the metadata of a coupon. Other coupon details (currency, duration, amount_off) are, by design, not editable.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/coupons/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/coupons/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Returns a list of your coupons.
@@ -79742,7 +80252,7 @@ var CouponResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/CreditNotes.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/CreditNotes.js
 var CreditNoteResource = class extends StripeResource {
   /**
    * Returns a list of credit notes.
@@ -79796,6 +80306,8 @@ var CreditNoteResource = class extends StripeResource {
    *
    * You may issue multiple credit notes for an invoice. Each credit note may increment the invoice's pre_payment_credit_notes_amount,
    * post_payment_credit_notes_amount, or both, depending on the invoice's amount_remaining at the time of credit note creation.
+   *
+   * For invoices that also have refunds created through the [Refund API](https://docs.stripe.com/docs/api/refunds), the credit note API subtracts those refund amounts from the maximum creditable amount. This prevents the combined credit notes and refunds from exceeding the invoice amount. If you use both, ensure the combined total does not exceed the invoice's paid amount.
    */
   create(params, options) {
     return this._makeRequest("POST", "/v1/credit_notes", params, options, {
@@ -79839,7 +80351,7 @@ var CreditNoteResource = class extends StripeResource {
    * Retrieves the credit note object with the given identifier.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/credit_notes/${id}`, params, options, {
+    return this._makeRequest("GET", `/v1/credit_notes/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -79868,7 +80380,7 @@ var CreditNoteResource = class extends StripeResource {
    * Updates an existing credit note.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/credit_notes/${id}`, params, options, {
+    return this._makeRequest("POST", `/v1/credit_notes/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -79938,7 +80450,7 @@ var CreditNoteResource = class extends StripeResource {
    * Marks a credit note as void. Learn more about [voiding credit notes](https://docs.stripe.com/docs/billing/invoices/credit-notes#voiding).
    */
   voidCreditNote(id, params, options) {
-    return this._makeRequest("POST", `/v1/credit_notes/${id}/void`, params, options, {
+    return this._makeRequest("POST", `/v1/credit_notes/${encodeURIComponent(id)}/void`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -80004,7 +80516,7 @@ var CreditNoteResource = class extends StripeResource {
    * When retrieving a credit note, you'll get a lines property containing the first handful of those items. There is also a URL where you can retrieve the full (paginated) list of line items.
    */
   listLineItems(id, params, options) {
-    return this._makeRequest("GET", `/v1/credit_notes/${id}/lines`, params, options, {
+    return this._makeRequest("GET", `/v1/credit_notes/${encodeURIComponent(id)}/lines`, params, options, {
       methodType: "list",
       responseSchema: {
         kind: "object",
@@ -80027,19 +80539,19 @@ var CreditNoteResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Customers.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Customers.js
 var CustomerResource2 = class extends StripeResource {
   /**
    * Permanently deletes a customer. It cannot be undone. Also immediately cancels any active subscriptions on the customer.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/customers/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/customers/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves a Customer object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/customers/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/customers/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the specified customer by setting the values of the parameters passed. Any parameters not provided are left unchanged. For example, if you pass the source parameter, that becomes the customer's active source (such as a card) to be used for all charges in the future. When you update a customer to a new valid card source by passing the source parameter: for each of the customer's current subscriptions, if the subscription bills automatically and is in the past_due state, then the latest open invoice for the subscription with automatic collection enabled is retried. This retry doesn't count as an automatic retry, and doesn't affect the next regularly scheduled payment for the invoice. Changing the default_source for a customer doesn't trigger this behavior.
@@ -80047,7 +80559,7 @@ var CustomerResource2 = class extends StripeResource {
    * This request accepts mostly the same arguments as the customer creation call.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/customers/${id}`, params, options, {
+    return this._makeRequest("POST", `/v1/customers/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -80107,11 +80619,15 @@ var CustomerResource2 = class extends StripeResource {
                                             fields: {
                                               flat_amount_decimal: {
                                                 kind: "nullable",
-                                                inner: { kind: "decimal_string" }
+                                                inner: {
+                                                  kind: "decimal_string"
+                                                }
                                               },
                                               unit_amount_decimal: {
                                                 kind: "nullable",
-                                                inner: { kind: "decimal_string" }
+                                                inner: {
+                                                  kind: "decimal_string"
+                                                }
                                               }
                                             }
                                           }
@@ -80163,7 +80679,7 @@ var CustomerResource2 = class extends StripeResource {
    * Removes the currently applied discount on a customer.
    */
   deleteDiscount(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/customers/${id}/discount`, params, options);
+    return this._makeRequest("DELETE", `/v1/customers/${encodeURIComponent(id)}/discount`, params, options);
   }
   /**
    * Returns a list of your customers. The customers are returned sorted by creation date, with the most recent customers appearing first.
@@ -80546,7 +81062,7 @@ var CustomerResource2 = class extends StripeResource {
    * Returns a list of transactions that updated the customer's [balances](https://docs.stripe.com/docs/billing/customer/balance).
    */
   listBalanceTransactions(id, params, options) {
-    return this._makeRequest("GET", `/v1/customers/${id}/balance_transactions`, params, options, {
+    return this._makeRequest("GET", `/v1/customers/${encodeURIComponent(id)}/balance_transactions`, params, options, {
       methodType: "list"
     });
   }
@@ -80554,37 +81070,37 @@ var CustomerResource2 = class extends StripeResource {
    * Creates an immutable transaction that updates the customer's credit [balance](https://docs.stripe.com/docs/billing/customer/balance).
    */
   createBalanceTransaction(id, params, options) {
-    return this._makeRequest("POST", `/v1/customers/${id}/balance_transactions`, params, options);
+    return this._makeRequest("POST", `/v1/customers/${encodeURIComponent(id)}/balance_transactions`, params, options);
   }
   /**
    * Retrieves a specific customer balance transaction that updated the customer's [balances](https://docs.stripe.com/docs/billing/customer/balance).
    */
   retrieveBalanceTransaction(customerId, id, params, options) {
-    return this._makeRequest("GET", `/v1/customers/${customerId}/balance_transactions/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/customers/${encodeURIComponent(customerId)}/balance_transactions/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Most credit balance transaction fields are immutable, but you may update its description and metadata.
    */
   updateBalanceTransaction(customerId, id, params, options) {
-    return this._makeRequest("POST", `/v1/customers/${customerId}/balance_transactions/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/customers/${encodeURIComponent(customerId)}/balance_transactions/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves a customer's cash balance.
    */
   retrieveCashBalance(id, params, options) {
-    return this._makeRequest("GET", `/v1/customers/${id}/cash_balance`, params, options);
+    return this._makeRequest("GET", `/v1/customers/${encodeURIComponent(id)}/cash_balance`, params, options);
   }
   /**
    * Changes the settings on a customer's cash balance.
    */
   updateCashBalance(id, params, options) {
-    return this._makeRequest("POST", `/v1/customers/${id}/cash_balance`, params, options);
+    return this._makeRequest("POST", `/v1/customers/${encodeURIComponent(id)}/cash_balance`, params, options);
   }
   /**
    * Returns a list of transactions that modified the customer's [cash balance](https://docs.stripe.com/docs/payments/customer-balance).
    */
   listCashBalanceTransactions(id, params, options) {
-    return this._makeRequest("GET", `/v1/customers/${id}/cash_balance_transactions`, params, options, {
+    return this._makeRequest("GET", `/v1/customers/${encodeURIComponent(id)}/cash_balance_transactions`, params, options, {
       methodType: "list"
     });
   }
@@ -80592,7 +81108,7 @@ var CustomerResource2 = class extends StripeResource {
    * Retrieves a specific cash balance transaction, which updated the customer's [cash balance](https://docs.stripe.com/docs/payments/customer-balance).
    */
   retrieveCashBalanceTransaction(customerId, id, params, options) {
-    return this._makeRequest("GET", `/v1/customers/${customerId}/cash_balance_transactions/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/customers/${encodeURIComponent(customerId)}/cash_balance_transactions/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieve funding instructions for a customer cash balance. If funding instructions do not yet exist for the customer, new
@@ -80600,13 +81116,13 @@ var CustomerResource2 = class extends StripeResource {
    * funding instructions will be retrieved. In other words, we will return the same funding instructions each time.
    */
   createFundingInstructions(id, params, options) {
-    return this._makeRequest("POST", `/v1/customers/${id}/funding_instructions`, params, options);
+    return this._makeRequest("POST", `/v1/customers/${encodeURIComponent(id)}/funding_instructions`, params, options);
   }
   /**
    * Returns a list of PaymentMethods for a given Customer
    */
   listPaymentMethods(id, params, options) {
-    return this._makeRequest("GET", `/v1/customers/${id}/payment_methods`, params, options, {
+    return this._makeRequest("GET", `/v1/customers/${encodeURIComponent(id)}/payment_methods`, params, options, {
       methodType: "list"
     });
   }
@@ -80614,13 +81130,13 @@ var CustomerResource2 = class extends StripeResource {
    * Retrieves a PaymentMethod object for a given Customer.
    */
   retrievePaymentMethod(customerId, id, params, options) {
-    return this._makeRequest("GET", `/v1/customers/${customerId}/payment_methods/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/customers/${encodeURIComponent(customerId)}/payment_methods/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * List sources for a specified customer.
    */
   listSources(id, params, options) {
-    return this._makeRequest("GET", `/v1/customers/${id}/sources`, params, options, {
+    return this._makeRequest("GET", `/v1/customers/${encodeURIComponent(id)}/sources`, params, options, {
       methodType: "list"
     });
   }
@@ -80632,49 +81148,49 @@ var CustomerResource2 = class extends StripeResource {
    * To change the default, you should [update the customer](https://docs.stripe.com/api/customers/update) to have a new default_source.
    */
   createSource(id, params, options) {
-    return this._makeRequest("POST", `/v1/customers/${id}/sources`, params, options);
+    return this._makeRequest("POST", `/v1/customers/${encodeURIComponent(id)}/sources`, params, options);
   }
   /**
    * Retrieve a specified source for a given customer.
    */
   retrieveSource(customerId, id, params, options) {
-    return this._makeRequest("GET", `/v1/customers/${customerId}/sources/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/customers/${encodeURIComponent(customerId)}/sources/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Update a specified source for a given customer.
    */
   updateSource(customerId, id, params, options) {
-    return this._makeRequest("POST", `/v1/customers/${customerId}/sources/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/customers/${encodeURIComponent(customerId)}/sources/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Delete a specified source for a given customer.
    */
   deleteSource(customerId, id, params, options) {
-    return this._makeRequest("DELETE", `/v1/customers/${customerId}/sources/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/customers/${encodeURIComponent(customerId)}/sources/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Verify a specified bank account for a given customer.
    */
   verifySource(customerId, id, params, options) {
-    return this._makeRequest("POST", `/v1/customers/${customerId}/sources/${id}/verify`, params, options);
+    return this._makeRequest("POST", `/v1/customers/${encodeURIComponent(customerId)}/sources/${encodeURIComponent(id)}/verify`, params, options);
   }
   /**
    * Deletes an existing tax_id object.
    */
   deleteTaxId(customerId, id, params, options) {
-    return this._makeRequest("DELETE", `/v1/customers/${customerId}/tax_ids/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/customers/${encodeURIComponent(customerId)}/tax_ids/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves the tax_id object with the given identifier.
    */
   retrieveTaxId(customerId, id, params, options) {
-    return this._makeRequest("GET", `/v1/customers/${customerId}/tax_ids/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/customers/${encodeURIComponent(customerId)}/tax_ids/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Returns a list of tax IDs for a customer.
    */
   listTaxIds(id, params, options) {
-    return this._makeRequest("GET", `/v1/customers/${id}/tax_ids`, params, options, {
+    return this._makeRequest("GET", `/v1/customers/${encodeURIComponent(id)}/tax_ids`, params, options, {
       methodType: "list"
     });
   }
@@ -80682,11 +81198,11 @@ var CustomerResource2 = class extends StripeResource {
    * Creates a new tax_id object for a customer.
    */
   createTaxId(id, params, options) {
-    return this._makeRequest("POST", `/v1/customers/${id}/tax_ids`, params, options);
+    return this._makeRequest("POST", `/v1/customers/${encodeURIComponent(id)}/tax_ids`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/CustomerSessions.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/CustomerSessions.js
 var CustomerSessionResource = class extends StripeResource {
   /**
    * Creates a Customer Session object that includes a single-use client secret that you can use on your front-end to grant client-side API access for certain customer resources.
@@ -80696,7 +81212,7 @@ var CustomerSessionResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Disputes.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Disputes.js
 var DisputeResource2 = class extends StripeResource {
   /**
    * Returns a list of your disputes.
@@ -80710,7 +81226,7 @@ var DisputeResource2 = class extends StripeResource {
    * Retrieves the dispute with the given ID.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/disputes/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/disputes/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * When you get a dispute, contacting your customer is always the best first step. If that doesn't work, you can submit evidence to help us resolve the dispute in your favor. You can do this in your [dashboard](https://dashboard.stripe.com/disputes), but if you prefer, you can use the API to submit evidence programmatically.
@@ -80718,7 +81234,7 @@ var DisputeResource2 = class extends StripeResource {
    * Depending on your dispute type, different evidence fields will give you a better chance of winning your dispute. To figure out which evidence fields to provide, see our [guide to dispute types](https://docs.stripe.com/docs/disputes/categories).
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/disputes/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/disputes/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Closing the dispute for a charge indicates that you do not have any evidence to submit and are essentially dismissing the dispute, acknowledging it as lost.
@@ -80726,17 +81242,17 @@ var DisputeResource2 = class extends StripeResource {
    * The status of the dispute will change from needs_response to lost. Closing a dispute is irreversible.
    */
   close(id, params, options) {
-    return this._makeRequest("POST", `/v1/disputes/${id}/close`, params, options);
+    return this._makeRequest("POST", `/v1/disputes/${encodeURIComponent(id)}/close`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/EphemeralKeys.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/EphemeralKeys.js
 var EphemeralKeyResource = class extends StripeResource {
   /**
    * Invalidates a short-lived API key for a given resource.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/ephemeral_keys/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/ephemeral_keys/${encodeURIComponent(id)}`, params, options);
   }
   create(params, options) {
     return this._makeRequest("POST", "/v1/ephemeral_keys", params, options, {
@@ -80749,7 +81265,7 @@ var EphemeralKeyResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Events.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Events.js
 var EventResource2 = class extends StripeResource {
   /**
    * List events, going back up to 30 days. Each event data is rendered according to Stripe API version at its creation time, specified in [event object](https://docs.stripe.com/api/events/object) api_version attribute (not according to your current Stripe API version or Stripe-Version header).
@@ -80763,11 +81279,11 @@ var EventResource2 = class extends StripeResource {
    * Retrieves the details of an event if it was created in the last 30 days. Supply the unique identifier of the event, which you might have received in a webhook.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/events/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/events/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/ExchangeRates.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/ExchangeRates.js
 var ExchangeRateResource = class extends StripeResource {
   /**
    * [Deprecated] The ExchangeRate APIs are deprecated. Please use the [FX Quotes API](https://docs.stripe.com/payments/currencies/localize-prices/fx-quotes-api) instead.
@@ -80787,11 +81303,11 @@ var ExchangeRateResource = class extends StripeResource {
    * @deprecated
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/exchange_rates/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/exchange_rates/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/multipart.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/multipart.js
 var multipartDataGenerator = (method, data, headers) => {
   const segno = (Math.round(Math.random() * 1e16) + Math.round(Math.random() * 1e16)).toString();
   headers["Content-Type"] = `multipart/form-data; boundary=${segno}`;
@@ -80842,7 +81358,7 @@ function multipartRequestDataProcessor(method, data, headers, callback) {
   }).catch((err) => callback(err, null));
 }
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Files.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Files.js
 var FileResource = class extends StripeResource {
   constructor() {
     super(...arguments);
@@ -80873,11 +81389,11 @@ var FileResource = class extends StripeResource {
    * Retrieves the details of an existing file object. After you supply a unique file ID, Stripe returns the corresponding file object. Learn how to [access file contents](https://docs.stripe.com/docs/file-upload#download-file-contents).
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/files/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/files/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/FileLinks.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/FileLinks.js
 var FileLinkResource = class extends StripeResource {
   /**
    * Returns a list of file links.
@@ -80897,29 +81413,29 @@ var FileLinkResource = class extends StripeResource {
    * Retrieves the file link with the given ID.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/file_links/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/file_links/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates an existing file link object. Expired links can no longer be updated.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/file_links/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/file_links/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Invoices.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Invoices.js
 var InvoiceResource = class extends StripeResource {
   /**
    * Permanently deletes a one-off invoice draft. This cannot be undone. Attempts to delete invoices that are no longer in a draft state will fail; once an invoice has been finalized or if an invoice is for a subscription, it must be [voided](https://docs.stripe.com/api/invoices/void).
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/invoices/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/invoices/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves the invoice with the given ID.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/invoices/${id}`, params, options, {
+    return this._makeRequest("GET", `/v1/invoices/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -80965,7 +81481,7 @@ var InvoiceResource = class extends StripeResource {
    * auto_advance=false.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/invoices/${id}`, params, options, {
+    return this._makeRequest("POST", `/v1/invoices/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -81150,7 +81666,7 @@ var InvoiceResource = class extends StripeResource {
    * Adds multiple line items to an invoice. This is only possible when an invoice is still a draft.
    */
   addLines(id, params, options) {
-    return this._makeRequest("POST", `/v1/invoices/${id}/add_lines`, params, options, {
+    return this._makeRequest("POST", `/v1/invoices/${encodeURIComponent(id)}/add_lines`, params, options, {
       requestSchema: {
         kind: "object",
         fields: {
@@ -81218,7 +81734,7 @@ var InvoiceResource = class extends StripeResource {
    * See: [Partial payments](https://docs.stripe.com/docs/invoicing/partial-payments) to learn more.
    */
   attachPayment(id, params, options) {
-    return this._makeRequest("POST", `/v1/invoices/${id}/attach_payment`, params, options, {
+    return this._makeRequest("POST", `/v1/invoices/${encodeURIComponent(id)}/attach_payment`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -81259,7 +81775,7 @@ var InvoiceResource = class extends StripeResource {
    * Stripe automatically finalizes drafts before sending and attempting payment on invoices. However, if you'd like to finalize a draft invoice manually, you can do so using this method.
    */
   finalizeInvoice(id, params, options) {
-    return this._makeRequest("POST", `/v1/invoices/${id}/finalize`, params, options, {
+    return this._makeRequest("POST", `/v1/invoices/${encodeURIComponent(id)}/finalize`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -81300,7 +81816,7 @@ var InvoiceResource = class extends StripeResource {
    * Marking an invoice as uncollectible is useful for keeping track of bad debts that can be written off for accounting purposes.
    */
   markUncollectible(id, params, options) {
-    return this._makeRequest("POST", `/v1/invoices/${id}/mark_uncollectible`, params, options, {
+    return this._makeRequest("POST", `/v1/invoices/${encodeURIComponent(id)}/mark_uncollectible`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -81341,7 +81857,7 @@ var InvoiceResource = class extends StripeResource {
    * Stripe automatically creates and then attempts to collect payment on invoices for customers on subscriptions according to your [subscriptions settings](https://dashboard.stripe.com/account/billing/automatic). However, if you'd like to attempt payment on an invoice out of the normal collection schedule or for some other reason, you can do so.
    */
   pay(id, params, options) {
-    return this._makeRequest("POST", `/v1/invoices/${id}/pay`, params, options, {
+    return this._makeRequest("POST", `/v1/invoices/${encodeURIComponent(id)}/pay`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -81382,7 +81898,7 @@ var InvoiceResource = class extends StripeResource {
    * Removes multiple line items from an invoice. This is only possible when an invoice is still a draft.
    */
   removeLines(id, params, options) {
-    return this._makeRequest("POST", `/v1/invoices/${id}/remove_lines`, params, options, {
+    return this._makeRequest("POST", `/v1/invoices/${encodeURIComponent(id)}/remove_lines`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -81425,7 +81941,7 @@ var InvoiceResource = class extends StripeResource {
    * Requests made in test-mode result in no emails being sent, despite sending an invoice.sent event.
    */
   sendInvoice(id, params, options) {
-    return this._makeRequest("POST", `/v1/invoices/${id}/send`, params, options, {
+    return this._makeRequest("POST", `/v1/invoices/${encodeURIComponent(id)}/send`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -81466,7 +81982,7 @@ var InvoiceResource = class extends StripeResource {
    * Updates multiple line items on an invoice. This is only possible when an invoice is still a draft.
    */
   updateLines(id, params, options) {
-    return this._makeRequest("POST", `/v1/invoices/${id}/update_lines`, params, options, {
+    return this._makeRequest("POST", `/v1/invoices/${encodeURIComponent(id)}/update_lines`, params, options, {
       requestSchema: {
         kind: "object",
         fields: {
@@ -81527,7 +82043,7 @@ var InvoiceResource = class extends StripeResource {
    * Consult with local regulations to determine whether and how an invoice might be amended, canceled, or voided in the jurisdiction you're doing business in. You might need to [issue another invoice or <a href="/api/credit_notes/create">credit note](https://docs.stripe.com/api/invoices/create) instead. Stripe recommends that you consult with your legal counsel for advice specific to your business.
    */
   voidInvoice(id, params, options) {
-    return this._makeRequest("POST", `/v1/invoices/${id}/void`, params, options, {
+    return this._makeRequest("POST", `/v1/invoices/${encodeURIComponent(id)}/void`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -81694,7 +82210,7 @@ var InvoiceResource = class extends StripeResource {
    * When retrieving an invoice, you'll get a lines property containing the total count of line items and the first handful of those items. There is also a URL where you can retrieve the full (paginated) list of line items.
    */
   listLineItems(id, params, options) {
-    return this._makeRequest("GET", `/v1/invoices/${id}/lines`, params, options, {
+    return this._makeRequest("GET", `/v1/invoices/${encodeURIComponent(id)}/lines`, params, options, {
       methodType: "list",
       responseSchema: {
         kind: "object",
@@ -81734,7 +82250,7 @@ var InvoiceResource = class extends StripeResource {
    * Updating an invoice's line item is only possible before the invoice is finalized.
    */
   updateLineItem(invoiceId, id, params, options) {
-    return this._makeRequest("POST", `/v1/invoices/${invoiceId}/lines/${id}`, params, options, {
+    return this._makeRequest("POST", `/v1/invoices/${encodeURIComponent(invoiceId)}/lines/${encodeURIComponent(id)}`, params, options, {
       requestSchema: {
         kind: "object",
         fields: {
@@ -81770,19 +82286,19 @@ var InvoiceResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/InvoiceItems.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/InvoiceItems.js
 var InvoiceItemResource = class extends StripeResource {
   /**
    * Deletes an invoice item, removing it from an invoice. Deleting invoice items is only possible when they're not attached to invoices, or if it's attached to a draft invoice.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/invoiceitems/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/invoiceitems/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves the invoice item with the given ID.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/invoiceitems/${id}`, params, options, {
+    return this._makeRequest("GET", `/v1/invoiceitems/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -81807,7 +82323,7 @@ var InvoiceItemResource = class extends StripeResource {
    * Updates the amount or description of an invoice item on an upcoming invoice. Updating an invoice item is only possible before the invoice it's attached to is closed.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/invoiceitems/${id}`, params, options, {
+    return this._makeRequest("POST", `/v1/invoiceitems/${encodeURIComponent(id)}`, params, options, {
       requestSchema: {
         kind: "object",
         fields: {
@@ -81911,7 +82427,7 @@ var InvoiceItemResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/InvoicePayments.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/InvoicePayments.js
 var InvoicePaymentResource = class extends StripeResource {
   /**
    * When retrieving an invoice, there is an includable payments property containing the first handful of those items. There is also a URL where you can retrieve the full (paginated) list of payments.
@@ -81925,11 +82441,11 @@ var InvoicePaymentResource = class extends StripeResource {
    * Retrieves the invoice payment with the given ID.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/invoice_payments/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/invoice_payments/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/InvoiceRenderingTemplates.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/InvoiceRenderingTemplates.js
 var InvoiceRenderingTemplateResource = class extends StripeResource {
   /**
    * List all templates, ordered by creation date, with the most recently created template appearing first.
@@ -81943,33 +82459,33 @@ var InvoiceRenderingTemplateResource = class extends StripeResource {
    * Retrieves an invoice rendering template with the given ID. It by default returns the latest version of the template. Optionally, specify a version to see previous versions.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/invoice_rendering_templates/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/invoice_rendering_templates/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the status of an invoice rendering template to ‘archived' so no new Stripe objects (customers, invoices, etc.) can reference it. The template can also no longer be updated. However, if the template is already set on a Stripe object, it will continue to be applied on invoices generated by it.
    */
   archive(id, params, options) {
-    return this._makeRequest("POST", `/v1/invoice_rendering_templates/${id}/archive`, params, options);
+    return this._makeRequest("POST", `/v1/invoice_rendering_templates/${encodeURIComponent(id)}/archive`, params, options);
   }
   /**
    * Unarchive an invoice rendering template so it can be used on new Stripe objects again.
    */
   unarchive(id, params, options) {
-    return this._makeRequest("POST", `/v1/invoice_rendering_templates/${id}/unarchive`, params, options);
+    return this._makeRequest("POST", `/v1/invoice_rendering_templates/${encodeURIComponent(id)}/unarchive`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Mandates.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Mandates.js
 var MandateResource = class extends StripeResource {
   /**
    * Retrieves a Mandate object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/mandates/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/mandates/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/OAuth.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/OAuth.js
 var OAuthResource = class extends StripeResource {
   constructor() {
     super(...arguments);
@@ -81978,9 +82494,9 @@ var OAuthResource = class extends StripeResource {
   authorizeUrl(params, options) {
     params = params || {};
     options = options || {};
-    let path3 = "oauth/authorize";
+    let path4 = "oauth/authorize";
     if (options.express) {
-      path3 = `express/${path3}`;
+      path4 = `express/${path4}`;
     }
     if (!params.response_type) {
       params.response_type = "code";
@@ -81992,7 +82508,7 @@ var OAuthResource = class extends StripeResource {
       params.scope = "read_write";
     }
     const connectHost = this._stripe.resolveBaseAddress("connect");
-    return `https://${connectHost}/${path3}?${queryStringifyRequestData(params)}`;
+    return `https://${connectHost}/${path4}?${queryStringifyRequestData(params)}`;
   }
   token(params, options) {
     return this._makeRequest("POST", "/oauth/token", params, options, {
@@ -82009,7 +82525,7 @@ var OAuthResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/PaymentAttemptRecords.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/PaymentAttemptRecords.js
 var PaymentAttemptRecordResource = class extends StripeResource {
   /**
    * List all the Payment Attempt Records attached to the specified Payment Record.
@@ -82023,11 +82539,11 @@ var PaymentAttemptRecordResource = class extends StripeResource {
    * Retrieves a Payment Attempt Record with the given ID
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/payment_attempt_records/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/payment_attempt_records/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/PaymentIntents.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/PaymentIntents.js
 var PaymentIntentResource = class extends StripeResource {
   /**
    * Returns a list of PaymentIntents.
@@ -82060,7 +82576,7 @@ var PaymentIntentResource = class extends StripeResource {
    * If you retrieve a PaymentIntent with a publishable key, it only returns a subset of properties. Refer to the [payment intent](https://docs.stripe.com/api#payment_intent_object) object reference for more details.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/payment_intents/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/payment_intents/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates properties on a PaymentIntent object without confirming.
@@ -82072,7 +82588,7 @@ var PaymentIntentResource = class extends StripeResource {
    * the [confirm API](https://docs.stripe.com/docs/api/payment_intents/confirm) instead.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_intents/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/payment_intents/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Search for PaymentIntents you've previously created using Stripe's [Search Query Language](https://docs.stripe.com/docs/search#search-query-language).
@@ -82089,7 +82605,7 @@ var PaymentIntentResource = class extends StripeResource {
    * Manually reconcile the remaining amount for a customer_balance PaymentIntent.
    */
   applyCustomerBalance(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_intents/${id}/apply_customer_balance`, params, options);
+    return this._makeRequest("POST", `/v1/payment_intents/${encodeURIComponent(id)}/apply_customer_balance`, params, options);
   }
   /**
    * You can cancel a PaymentIntent object when it's in one of these statuses: requires_payment_method, requires_capture, requires_confirmation, requires_action or, [in rare cases](https://docs.stripe.com/docs/payments/intents), processing.
@@ -82099,7 +82615,7 @@ var PaymentIntentResource = class extends StripeResource {
    * You can directly cancel the PaymentIntent for a Checkout Session only when the PaymentIntent has a status of requires_capture. Otherwise, you must [expire the Checkout Session](https://docs.stripe.com/docs/api/checkout/sessions/expire).
    */
   cancel(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_intents/${id}/cancel`, params, options);
+    return this._makeRequest("POST", `/v1/payment_intents/${encodeURIComponent(id)}/cancel`, params, options);
   }
   /**
    * Capture the funds of an existing uncaptured PaymentIntent when its status is requires_capture.
@@ -82109,7 +82625,7 @@ var PaymentIntentResource = class extends StripeResource {
    * Learn more about [separate authorization and capture](https://docs.stripe.com/docs/payments/capture-later).
    */
   capture(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_intents/${id}/capture`, params, options);
+    return this._makeRequest("POST", `/v1/payment_intents/${encodeURIComponent(id)}/capture`, params, options);
   }
   /**
    * Confirm that your customer intends to pay with current or provided
@@ -82144,7 +82660,7 @@ var PaymentIntentResource = class extends StripeResource {
    * transition the PaymentIntent to the canceled state.
    */
   confirm(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_intents/${id}/confirm`, params, options);
+    return this._makeRequest("POST", `/v1/payment_intents/${encodeURIComponent(id)}/confirm`, params, options);
   }
   /**
    * Perform an incremental authorization on an eligible
@@ -82170,28 +82686,30 @@ var PaymentIntentResource = class extends StripeResource {
    * Each PaymentIntent can have a maximum of 10 incremental authorization attempts, including declines.
    * After it's captured, a PaymentIntent can no longer be incremented.
    *
-   * Learn more about [incremental authorizations](https://docs.stripe.com/docs/terminal/features/incremental-authorizations).
+   * Learn more about incremental authorizations with
+   * [in-person payments](https://docs.stripe.com/docs/terminal/features/incremental-authorizations) and
+   * [online payments](https://docs.stripe.com/docs/payments/incremental-authorization?platform=web&ui=elements).
    */
   incrementAuthorization(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_intents/${id}/increment_authorization`, params, options);
+    return this._makeRequest("POST", `/v1/payment_intents/${encodeURIComponent(id)}/increment_authorization`, params, options);
   }
   /**
    * Verifies microdeposits on a PaymentIntent object.
    */
   verifyMicrodeposits(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_intents/${id}/verify_microdeposits`, params, options);
+    return this._makeRequest("POST", `/v1/payment_intents/${encodeURIComponent(id)}/verify_microdeposits`, params, options);
   }
   /**
    * Lists all LineItems of a given PaymentIntent.
    */
   listAmountDetailsLineItems(id, params, options) {
-    return this._makeRequest("GET", `/v1/payment_intents/${id}/amount_details_line_items`, params, options, {
+    return this._makeRequest("GET", `/v1/payment_intents/${encodeURIComponent(id)}/amount_details_line_items`, params, options, {
       methodType: "list"
     });
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/PaymentLinks.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/PaymentLinks.js
 var PaymentLinkResource = class extends StripeResource {
   /**
    * Returns a list of your payment links.
@@ -82385,7 +82903,7 @@ var PaymentLinkResource = class extends StripeResource {
    * Retrieve a payment link.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/payment_links/${id}`, params, options, {
+    return this._makeRequest("GET", `/v1/payment_links/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -82466,7 +82984,7 @@ var PaymentLinkResource = class extends StripeResource {
    * Updates a payment link.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_links/${id}`, params, options, {
+    return this._makeRequest("POST", `/v1/payment_links/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -82547,7 +83065,7 @@ var PaymentLinkResource = class extends StripeResource {
    * When retrieving a payment link, there is an includable line_items property containing the first handful of those items. There is also a URL where you can retrieve the full (paginated) list of line items.
    */
   listLineItems(id, params, options) {
-    return this._makeRequest("GET", `/v1/payment_links/${id}/line_items`, params, options, {
+    return this._makeRequest("GET", `/v1/payment_links/${encodeURIComponent(id)}/line_items`, params, options, {
       methodType: "list",
       responseSchema: {
         kind: "object",
@@ -82622,7 +83140,7 @@ var PaymentLinkResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/PaymentMethods.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/PaymentMethods.js
 var PaymentMethodResource = class extends StripeResource {
   /**
    * Returns a list of all PaymentMethods.
@@ -82644,13 +83162,13 @@ var PaymentMethodResource = class extends StripeResource {
    * Retrieves a PaymentMethod object attached to the StripeAccount. To retrieve a payment method attached to a Customer, you should use [Retrieve a Customer's PaymentMethods](https://docs.stripe.com/docs/api/payment_methods/customer)
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/payment_methods/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/payment_methods/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates a PaymentMethod object. A PaymentMethod must be attached to a customer to be updated.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_methods/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/payment_methods/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Attaches a PaymentMethod object to a Customer.
@@ -82668,17 +83186,17 @@ var PaymentMethodResource = class extends StripeResource {
    * on the Customer to the PaymentMethod's ID.
    */
   attach(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_methods/${id}/attach`, params, options);
+    return this._makeRequest("POST", `/v1/payment_methods/${encodeURIComponent(id)}/attach`, params, options);
   }
   /**
    * Detaches a PaymentMethod object from a Customer. After a PaymentMethod is detached, it can no longer be used for a payment or re-attached to a Customer.
    */
   detach(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_methods/${id}/detach`, params, options);
+    return this._makeRequest("POST", `/v1/payment_methods/${encodeURIComponent(id)}/detach`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/PaymentMethodConfigurations.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/PaymentMethodConfigurations.js
 var PaymentMethodConfigurationResource = class extends StripeResource {
   /**
    * List payment method configurations
@@ -82698,17 +83216,17 @@ var PaymentMethodConfigurationResource = class extends StripeResource {
    * Retrieve payment method configuration
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/payment_method_configurations/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/payment_method_configurations/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Update payment method configuration
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_method_configurations/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/payment_method_configurations/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/PaymentMethodDomains.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/PaymentMethodDomains.js
 var PaymentMethodDomainResource = class extends StripeResource {
   /**
    * Lists the details of existing payment method domains.
@@ -82728,13 +83246,13 @@ var PaymentMethodDomainResource = class extends StripeResource {
    * Retrieves the details of an existing payment method domain.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/payment_method_domains/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/payment_method_domains/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates an existing payment method domain.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_method_domains/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/payment_method_domains/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Some payment methods might require additional steps to register a domain. If the requirements weren't satisfied when the domain was created, the payment method will be inactive on the domain.
@@ -82745,58 +83263,58 @@ var PaymentMethodDomainResource = class extends StripeResource {
    * Related guides: [Payment method domains](https://docs.stripe.com/docs/payments/payment-methods/pmd-registration).
    */
   validate(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_method_domains/${id}/validate`, params, options);
+    return this._makeRequest("POST", `/v1/payment_method_domains/${encodeURIComponent(id)}/validate`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/PaymentRecords.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/PaymentRecords.js
 var PaymentRecordResource = class extends StripeResource {
   /**
    * Retrieves a Payment Record with the given ID
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/payment_records/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/payment_records/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Report a new payment attempt on the specified Payment Record. A new payment
    *  attempt can only be specified if all other payment attempts are canceled or failed.
    */
   reportPaymentAttempt(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_records/${id}/report_payment_attempt`, params, options);
+    return this._makeRequest("POST", `/v1/payment_records/${encodeURIComponent(id)}/report_payment_attempt`, params, options);
   }
   /**
    * Report that the most recent payment attempt on the specified Payment Record
    *  was canceled.
    */
   reportPaymentAttemptCanceled(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_records/${id}/report_payment_attempt_canceled`, params, options);
+    return this._makeRequest("POST", `/v1/payment_records/${encodeURIComponent(id)}/report_payment_attempt_canceled`, params, options);
   }
   /**
    * Report that the most recent payment attempt on the specified Payment Record
    *  failed or errored.
    */
   reportPaymentAttemptFailed(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_records/${id}/report_payment_attempt_failed`, params, options);
+    return this._makeRequest("POST", `/v1/payment_records/${encodeURIComponent(id)}/report_payment_attempt_failed`, params, options);
   }
   /**
    * Report that the most recent payment attempt on the specified Payment Record
    *  was guaranteed.
    */
   reportPaymentAttemptGuaranteed(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_records/${id}/report_payment_attempt_guaranteed`, params, options);
+    return this._makeRequest("POST", `/v1/payment_records/${encodeURIComponent(id)}/report_payment_attempt_guaranteed`, params, options);
   }
   /**
    * Report informational updates on the specified Payment Record.
    */
   reportPaymentAttemptInformational(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_records/${id}/report_payment_attempt_informational`, params, options);
+    return this._makeRequest("POST", `/v1/payment_records/${encodeURIComponent(id)}/report_payment_attempt_informational`, params, options);
   }
   /**
    * Report that the most recent payment attempt on the specified Payment Record
    *  was refunded.
    */
   reportRefund(id, params, options) {
-    return this._makeRequest("POST", `/v1/payment_records/${id}/report_refund`, params, options);
+    return this._makeRequest("POST", `/v1/payment_records/${encodeURIComponent(id)}/report_refund`, params, options);
   }
   /**
    * Report a new Payment Record. You may report a Payment Record as it is
@@ -82808,7 +83326,7 @@ var PaymentRecordResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Payouts.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Payouts.js
 var PayoutResource = class extends StripeResource {
   /**
    * Returns a list of existing payouts sent to third-party bank accounts or payouts that Stripe sent to you. The payouts return in sorted order, with the most recently created payouts appearing first.
@@ -82832,19 +83350,19 @@ var PayoutResource = class extends StripeResource {
    * Retrieves the details of an existing payout. Supply the unique payout ID from either a payout creation request or the payout list. Stripe returns the corresponding payout information.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/payouts/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/payouts/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the specified payout by setting the values of the parameters you pass. We don't change parameters that you don't provide. This request only accepts the metadata as arguments.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/payouts/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/payouts/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * You can cancel a previously created payout if its status is pending. Stripe refunds the funds to your available balance. You can't cancel automatic Stripe payouts.
    */
   cancel(id, params, options) {
-    return this._makeRequest("POST", `/v1/payouts/${id}/cancel`, params, options);
+    return this._makeRequest("POST", `/v1/payouts/${encodeURIComponent(id)}/cancel`, params, options);
   }
   /**
    * Reverses a payout by debiting the destination bank account. At this time, you can only reverse payouts for connected accounts to US and Canadian bank accounts. If the payout is manual and in the pending status, use /v1/payouts/:id/cancel instead.
@@ -82852,23 +83370,23 @@ var PayoutResource = class extends StripeResource {
    * By requesting a reversal through /v1/payouts/:id/reverse, you confirm that the authorized signatory of the selected bank account authorizes the debit on the bank account and that no other authorization is required.
    */
   reverse(id, params, options) {
-    return this._makeRequest("POST", `/v1/payouts/${id}/reverse`, params, options);
+    return this._makeRequest("POST", `/v1/payouts/${encodeURIComponent(id)}/reverse`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Plans.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Plans.js
 var PlanResource = class extends StripeResource {
   /**
    * Deleting plans means new subscribers can't be added. Existing subscribers aren't affected.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/plans/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/plans/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves the plan with the given ID.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/plans/${id}`, params, options, {
+    return this._makeRequest("GET", `/v1/plans/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -82897,7 +83415,7 @@ var PlanResource = class extends StripeResource {
    * Updates the specified plan by setting the values of the parameters passed. Any parameters not provided are left unchanged. By design, you cannot change a plan's ID, amount, currency, or billing cycle.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/plans/${id}`, params, options, {
+    return this._makeRequest("POST", `/v1/plans/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -83010,7 +83528,7 @@ var PlanResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Prices.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Prices.js
 var PriceResource = class extends StripeResource {
   /**
    * Returns a list of your active prices, excluding [inline prices](https://docs.stripe.com/docs/products-prices/pricing-models#inline-pricing). For the list of inactive prices, set active to false.
@@ -83180,7 +83698,7 @@ var PriceResource = class extends StripeResource {
    * Retrieves the price with the given ID.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/prices/${id}`, params, options, {
+    return this._makeRequest("GET", `/v1/prices/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -83240,7 +83758,7 @@ var PriceResource = class extends StripeResource {
    * Updates the specified price by setting the values of the parameters passed. Any parameters not provided are left unchanged.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/prices/${id}`, params, options, {
+    return this._makeRequest("POST", `/v1/prices/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -83370,25 +83888,25 @@ var PriceResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Products.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Products.js
 var ProductResource2 = class extends StripeResource {
   /**
    * Delete a product. Deleting a product is only possible if it has no prices associated with it. Additionally, deleting a product with type=good is only possible if it has no SKUs associated with it.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/products/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/products/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves the details of an existing product. Supply the unique product ID from either a product creation request or the product list, and Stripe will return the corresponding product information.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/products/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/products/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the specific product by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/products/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/products/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Returns a list of your products. The products are returned sorted by creation date, with the most recently created products appearing first.
@@ -83450,19 +83968,19 @@ var ProductResource2 = class extends StripeResource {
    * Deletes the feature attachment to a product
    */
   deleteFeature(productId, id, params, options) {
-    return this._makeRequest("DELETE", `/v1/products/${productId}/features/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/products/${encodeURIComponent(productId)}/features/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves a product_feature, which represents a feature attachment to a product
    */
   retrieveFeature(productId, id, params, options) {
-    return this._makeRequest("GET", `/v1/products/${productId}/features/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/products/${encodeURIComponent(productId)}/features/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieve a list of features for a product
    */
   listFeatures(id, params, options) {
-    return this._makeRequest("GET", `/v1/products/${id}/features`, params, options, {
+    return this._makeRequest("GET", `/v1/products/${encodeURIComponent(id)}/features`, params, options, {
       methodType: "list"
     });
   }
@@ -83470,11 +83988,11 @@ var ProductResource2 = class extends StripeResource {
    * Creates a product_feature, which represents a feature attachment to a product
    */
   createFeature(id, params, options) {
-    return this._makeRequest("POST", `/v1/products/${id}/features`, params, options);
+    return this._makeRequest("POST", `/v1/products/${encodeURIComponent(id)}/features`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/PromotionCodes.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/PromotionCodes.js
 var PromotionCodeResource = class extends StripeResource {
   /**
    * Returns a list of your promotion codes.
@@ -83494,17 +84012,17 @@ var PromotionCodeResource = class extends StripeResource {
    * Retrieves the promotion code with the given ID. In order to retrieve a promotion code by the customer-facing code use [list](https://docs.stripe.com/docs/api/promotion_codes/list) with the desired code.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/promotion_codes/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/promotion_codes/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the specified promotion code by setting the values of the parameters passed. Most fields are, by design, not editable.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/promotion_codes/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/promotion_codes/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Quotes.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Quotes.js
 var QuoteResource = class extends StripeResource {
   /**
    * Returns a list of your quotes.
@@ -83722,7 +84240,7 @@ var QuoteResource = class extends StripeResource {
    * Retrieves the quote with the given ID.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/quotes/${id}`, params, options, {
+    return this._makeRequest("GET", `/v1/quotes/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -83757,11 +84275,15 @@ var QuoteResource = class extends StripeResource {
                                             fields: {
                                               flat_amount_decimal: {
                                                 kind: "nullable",
-                                                inner: { kind: "decimal_string" }
+                                                inner: {
+                                                  kind: "decimal_string"
+                                                }
                                               },
                                               unit_amount_decimal: {
                                                 kind: "nullable",
-                                                inner: { kind: "decimal_string" }
+                                                inner: {
+                                                  kind: "decimal_string"
+                                                }
                                               }
                                             }
                                           }
@@ -83813,7 +84335,7 @@ var QuoteResource = class extends StripeResource {
    * A quote models prices and services for a customer.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/quotes/${id}`, params, options, {
+    return this._makeRequest("POST", `/v1/quotes/${encodeURIComponent(id)}`, params, options, {
       requestSchema: {
         kind: "object",
         fields: {
@@ -83865,11 +84387,15 @@ var QuoteResource = class extends StripeResource {
                                             fields: {
                                               flat_amount_decimal: {
                                                 kind: "nullable",
-                                                inner: { kind: "decimal_string" }
+                                                inner: {
+                                                  kind: "decimal_string"
+                                                }
                                               },
                                               unit_amount_decimal: {
                                                 kind: "nullable",
-                                                inner: { kind: "decimal_string" }
+                                                inner: {
+                                                  kind: "decimal_string"
+                                                }
                                               }
                                             }
                                           }
@@ -83921,7 +84447,7 @@ var QuoteResource = class extends StripeResource {
    * Accepts the specified quote.
    */
   accept(id, params, options) {
-    return this._makeRequest("POST", `/v1/quotes/${id}/accept`, params, options, {
+    return this._makeRequest("POST", `/v1/quotes/${encodeURIComponent(id)}/accept`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -84016,7 +84542,7 @@ var QuoteResource = class extends StripeResource {
    * Cancels the quote.
    */
   cancel(id, params, options) {
-    return this._makeRequest("POST", `/v1/quotes/${id}/cancel`, params, options, {
+    return this._makeRequest("POST", `/v1/quotes/${encodeURIComponent(id)}/cancel`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -84111,7 +84637,7 @@ var QuoteResource = class extends StripeResource {
    * Finalizes the quote.
    */
   finalizeQuote(id, params, options) {
-    return this._makeRequest("POST", `/v1/quotes/${id}/finalize`, params, options, {
+    return this._makeRequest("POST", `/v1/quotes/${encodeURIComponent(id)}/finalize`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -84206,7 +84732,7 @@ var QuoteResource = class extends StripeResource {
    * Download the PDF for a finalized quote. Explanation for special handling can be found [here](https://docs.stripe.com/quotes/overview#quote_pdf)
    */
   pdf(id, params, options) {
-    return this._makeRequest("GET", `/v1/quotes/${id}/pdf`, params, options, {
+    return this._makeRequest("GET", `/v1/quotes/${encodeURIComponent(id)}/pdf`, params, options, {
       apiBase: "files",
       streaming: true
     });
@@ -84215,7 +84741,7 @@ var QuoteResource = class extends StripeResource {
    * When retrieving a quote, there is an includable [computed.upfront.line_items](https://stripe.com/docs/api/quotes/object#quote_object-computed-upfront-line_items) property containing the first handful of those items. There is also a URL where you can retrieve the full (paginated) list of upfront line items.
    */
   listComputedUpfrontLineItems(id, params, options) {
-    return this._makeRequest("GET", `/v1/quotes/${id}/computed_upfront_line_items`, params, options, {
+    return this._makeRequest("GET", `/v1/quotes/${encodeURIComponent(id)}/computed_upfront_line_items`, params, options, {
       methodType: "list",
       responseSchema: {
         kind: "object",
@@ -84292,7 +84818,7 @@ var QuoteResource = class extends StripeResource {
    * When retrieving a quote, there is an includable line_items property containing the first handful of those items. There is also a URL where you can retrieve the full (paginated) list of line items.
    */
   listLineItems(id, params, options) {
-    return this._makeRequest("GET", `/v1/quotes/${id}/line_items`, params, options, {
+    return this._makeRequest("GET", `/v1/quotes/${encodeURIComponent(id)}/line_items`, params, options, {
       methodType: "list",
       responseSchema: {
         kind: "object",
@@ -84367,7 +84893,7 @@ var QuoteResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Refunds.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Refunds.js
 var RefundResource2 = class extends StripeResource {
   /**
    * Returns a list of all refunds you created. We return the refunds in sorted order, with the most recent refunds appearing first. The 10 most recent refunds are always available by default on the Charge object.
@@ -84397,7 +84923,7 @@ var RefundResource2 = class extends StripeResource {
    * Retrieves the details of an existing refund.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/refunds/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/refunds/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the refund that you specify by setting the values of the passed parameters. Any parameters that you don't provide remain unchanged.
@@ -84405,7 +84931,7 @@ var RefundResource2 = class extends StripeResource {
    * This request only accepts metadata as an argument.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/refunds/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/refunds/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Cancels a refund with a status of requires_action.
@@ -84413,11 +84939,11 @@ var RefundResource2 = class extends StripeResource {
    * You can't cancel refunds in other states. Only refunds for payment methods that require customer action can enter the requires_action state.
    */
   cancel(id, params, options) {
-    return this._makeRequest("POST", `/v1/refunds/${id}/cancel`, params, options);
+    return this._makeRequest("POST", `/v1/refunds/${encodeURIComponent(id)}/cancel`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Reviews.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Reviews.js
 var ReviewResource = class extends StripeResource {
   /**
    * Returns a list of Review objects that have open set to true. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
@@ -84431,17 +84957,17 @@ var ReviewResource = class extends StripeResource {
    * Retrieves a Review object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/reviews/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/reviews/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Approves a Review object, closing it and removing it from the list of reviews.
    */
   approve(id, params, options) {
-    return this._makeRequest("POST", `/v1/reviews/${id}/approve`, params, options);
+    return this._makeRequest("POST", `/v1/reviews/${encodeURIComponent(id)}/approve`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/SetupAttempts.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/SetupAttempts.js
 var SetupAttemptResource = class extends StripeResource {
   /**
    * Returns a list of SetupAttempts that associate with a provided SetupIntent.
@@ -84453,7 +84979,7 @@ var SetupAttemptResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/SetupIntents.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/SetupIntents.js
 var SetupIntentResource = class extends StripeResource {
   /**
    * Returns a list of SetupIntents.
@@ -84480,13 +85006,13 @@ var SetupIntentResource = class extends StripeResource {
    * When retrieved with a publishable key, only a subset of properties will be returned. Please refer to the [SetupIntent](https://docs.stripe.com/api#setup_intent_object) object reference for more details.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/setup_intents/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/setup_intents/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates a SetupIntent object.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/setup_intents/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/setup_intents/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * You can cancel a SetupIntent object when it's in one of these statuses: requires_payment_method, requires_confirmation, or requires_action.
@@ -84494,7 +85020,7 @@ var SetupIntentResource = class extends StripeResource {
    * After you cancel it, setup is abandoned and any operations on the SetupIntent fail with an error. You can't cancel the SetupIntent for a Checkout Session. [Expire the Checkout Session](https://docs.stripe.com/docs/api/checkout/sessions/expire) instead.
    */
   cancel(id, params, options) {
-    return this._makeRequest("POST", `/v1/setup_intents/${id}/cancel`, params, options);
+    return this._makeRequest("POST", `/v1/setup_intents/${encodeURIComponent(id)}/cancel`, params, options);
   }
   /**
    * Confirm that your customer intends to set up the current or
@@ -84513,17 +85039,17 @@ var SetupIntentResource = class extends StripeResource {
    * confirmation limit is reached.
    */
   confirm(id, params, options) {
-    return this._makeRequest("POST", `/v1/setup_intents/${id}/confirm`, params, options);
+    return this._makeRequest("POST", `/v1/setup_intents/${encodeURIComponent(id)}/confirm`, params, options);
   }
   /**
    * Verifies microdeposits on a SetupIntent object.
    */
   verifyMicrodeposits(id, params, options) {
-    return this._makeRequest("POST", `/v1/setup_intents/${id}/verify_microdeposits`, params, options);
+    return this._makeRequest("POST", `/v1/setup_intents/${encodeURIComponent(id)}/verify_microdeposits`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/ShippingRates.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/ShippingRates.js
 var ShippingRateResource = class extends StripeResource {
   /**
    * Returns a list of your shipping rates.
@@ -84543,23 +85069,23 @@ var ShippingRateResource = class extends StripeResource {
    * Returns the shipping rate object with the given ID.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/shipping_rates/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/shipping_rates/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates an existing shipping rate object.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/shipping_rates/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/shipping_rates/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Sources.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Sources.js
 var SourceResource = class extends StripeResource {
   /**
    * Retrieves an existing source object. Supply the unique source ID from a source creation request and Stripe will return the corresponding up-to-date source object information.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/sources/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/sources/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the specified source by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
@@ -84567,7 +85093,7 @@ var SourceResource = class extends StripeResource {
    * This request accepts the metadata and owner as arguments. It is also possible to update type specific information for selected payment methods. Please refer to our [payment method guides](https://docs.stripe.com/docs/sources) for more detail.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/sources/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/sources/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Creates a new source object.
@@ -84579,29 +85105,29 @@ var SourceResource = class extends StripeResource {
    * Verify a given source.
    */
   verify(id, params, options) {
-    return this._makeRequest("POST", `/v1/sources/${id}/verify`, params, options);
+    return this._makeRequest("POST", `/v1/sources/${encodeURIComponent(id)}/verify`, params, options);
   }
   /**
    * List source transactions for a given source.
    */
   listSourceTransactions(id, params, options) {
-    return this._makeRequest("GET", `/v1/sources/${id}/source_transactions`, params, options, {
+    return this._makeRequest("GET", `/v1/sources/${encodeURIComponent(id)}/source_transactions`, params, options, {
       methodType: "list"
     });
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Subscriptions.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Subscriptions.js
 var SubscriptionResource = class extends StripeResource {
   /**
-   * Cancels a customer's subscription immediately. The customer won't be charged again for the subscription. After it's canceled, you can no longer update the subscription or its [metadata](https://docs.stripe.com/metadata).
+   * Cancels a customer's subscription immediately. The customer won't be charged again for the subscription. After it's canceled, the subscription is largely immutable. You can still update its [metadata](https://docs.stripe.com/metadata) and cancellation_details.
    *
-   * Any pending invoice items that you've created are still charged at the end of the period, unless manually [deleted](https://docs.stripe.com/api/invoiceitems/delete). If you've set the subscription to cancel at the end of the period, any pending prorations are also left in place and collected at the end of the period. But if the subscription is set to cancel immediately, pending prorations are removed if invoice_now and prorate are both set to true.
+   * Any pending invoice items that you've created are still charged at the end of the period, unless manually [deleted](https://docs.stripe.com/api/invoiceitems/delete). If you've set the subscription to cancel at the end of the period, any pending prorations are also left in place and collected at the end of the period. But if the subscription is set to cancel immediately, pending prorations are removed if invoice_now and prorate are both set to false.
    *
    * By default, upon subscription cancellation, Stripe stops automatic collection of all finalized invoices for the customer. This is intended to prevent unexpected payment attempts after the customer has canceled a subscription. However, you can resume automatic collection of the invoices manually after subscription cancellation to have us proceed. Or, you could check for unpaid invoices before allowing the customer to cancel the subscription at all.
    */
   cancel(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/subscriptions/${id}`, params, options, {
+    return this._makeRequest("DELETE", `/v1/subscriptions/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -84704,7 +85230,7 @@ var SubscriptionResource = class extends StripeResource {
    * Retrieves the subscription with the given ID.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/subscriptions/${id}`, params, options, {
+    return this._makeRequest("GET", `/v1/subscriptions/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -84827,7 +85353,7 @@ var SubscriptionResource = class extends StripeResource {
    * Updating the quantity on a subscription many times in an hour may result in [rate limiting. If you need to bill for a frequently changing quantity, consider integrating <a href="/docs/billing/subscriptions/usage-based">usage-based billing](https://docs.stripe.com/docs/rate-limits) instead.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/subscriptions/${id}`, params, options, {
+    return this._makeRequest("POST", `/v1/subscriptions/${encodeURIComponent(id)}`, params, options, {
       requestSchema: {
         kind: "object",
         fields: {
@@ -84959,7 +85485,7 @@ var SubscriptionResource = class extends StripeResource {
    * Removes the currently applied discount on a subscription.
    */
   deleteDiscount(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/subscriptions/${id}/discount`, params, options);
+    return this._makeRequest("DELETE", `/v1/subscriptions/${encodeURIComponent(id)}/discount`, params, options);
   }
   /**
    * By default, returns a list of subscriptions that have not been canceled. In order to list canceled subscriptions, specify status=canceled.
@@ -85330,7 +85856,7 @@ var SubscriptionResource = class extends StripeResource {
    * Upgrade the billing_mode of an existing subscription.
    */
   migrate(id, params, options) {
-    return this._makeRequest("POST", `/v1/subscriptions/${id}/migrate`, params, options, {
+    return this._makeRequest("POST", `/v1/subscriptions/${encodeURIComponent(id)}/migrate`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -85430,10 +85956,10 @@ var SubscriptionResource = class extends StripeResource {
     });
   }
   /**
-   * Initiates resumption of a paused subscription, optionally resetting the billing cycle anchor and creating prorations. If no resumption invoice is generated, the subscription becomes active immediately. If a resumption invoice is generated, the subscription remains paused until the invoice is paid or marked uncollectible. If the invoice isn't paid by the expiration date, it is voided and the subscription remains paused. You can only resume subscriptions with collection_method set to charge_automatically. send_invoice subscriptions are not supported.
+   * Initiates resumption of a paused subscription, optionally resetting the billing cycle anchor and creating prorations. Resume is only available for subscriptions that use charge_automatically collection. If Stripe doesn't generate a resumption invoice, the subscription becomes active immediately. When a resumption invoice is generated, Stripe finalizes it immediately. If the invoice is paid or marked uncollectible, the subscription becomes active. If the invoice is manually voided, the subscription stays paused. If there is no payment attempt within 23 hours, Stripe voids the invoice and the subscription stays paused. Learn more about [resuming subscriptions](https://docs.stripe.com/docs/billing/subscriptions/pause#resume-subscriptions).
    */
   resume(id, params, options) {
-    return this._makeRequest("POST", `/v1/subscriptions/${id}/resume`, params, options, {
+    return this._makeRequest("POST", `/v1/subscriptions/${encodeURIComponent(id)}/resume`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -85534,19 +86060,19 @@ var SubscriptionResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/SubscriptionItems.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/SubscriptionItems.js
 var SubscriptionItemResource = class extends StripeResource {
   /**
    * Deletes an item from the subscription. Removing a subscription item from a subscription will not cancel the subscription.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/subscription_items/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/subscription_items/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves the subscription item with the given ID.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/subscription_items/${id}`, params, options, {
+    return this._makeRequest("GET", `/v1/subscription_items/${encodeURIComponent(id)}`, params, options, {
       responseSchema: {
         kind: "object",
         fields: {
@@ -85636,7 +86162,7 @@ var SubscriptionItemResource = class extends StripeResource {
    * Updates the plan or quantity of an item on a current subscription.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/subscription_items/${id}`, params, options, {
+    return this._makeRequest("POST", `/v1/subscription_items/${encodeURIComponent(id)}`, params, options, {
       requestSchema: {
         kind: "object",
         fields: {
@@ -85931,7 +86457,7 @@ var SubscriptionItemResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/SubscriptionSchedules.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/SubscriptionSchedules.js
 var SubscriptionScheduleResource = class extends StripeResource {
   /**
    * Retrieves the list of your subscription schedules.
@@ -85993,13 +86519,13 @@ var SubscriptionScheduleResource = class extends StripeResource {
    * Retrieves the details of an existing subscription schedule. You only need to supply the unique subscription schedule identifier that was returned upon subscription schedule creation.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/subscription_schedules/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/subscription_schedules/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates an existing subscription schedule.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/subscription_schedules/${id}`, params, options, {
+    return this._makeRequest("POST", `/v1/subscription_schedules/${encodeURIComponent(id)}`, params, options, {
       requestSchema: {
         kind: "object",
         fields: {
@@ -86047,17 +86573,17 @@ var SubscriptionScheduleResource = class extends StripeResource {
    * Cancels a subscription schedule and its associated subscription immediately (if the subscription schedule has an active subscription). A subscription schedule can only be canceled if its status is not_started or active.
    */
   cancel(id, params, options) {
-    return this._makeRequest("POST", `/v1/subscription_schedules/${id}/cancel`, params, options);
+    return this._makeRequest("POST", `/v1/subscription_schedules/${encodeURIComponent(id)}/cancel`, params, options);
   }
   /**
    * Releases the subscription schedule immediately, which will stop scheduling of its phases, but leave any existing subscription in place. A schedule can only be released if its status is not_started or active. If the subscription schedule is currently associated with a subscription, releasing it will remove its subscription property and set the subscription's ID to the released_subscription property.
    */
   release(id, params, options) {
-    return this._makeRequest("POST", `/v1/subscription_schedules/${id}/release`, params, options);
+    return this._makeRequest("POST", `/v1/subscription_schedules/${encodeURIComponent(id)}/release`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TaxCodes.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TaxCodes.js
 var TaxCodeResource = class extends StripeResource {
   /**
    * A list of [all tax codes available](https://stripe.com/docs/tax/tax-categories) to add to Products in order to allow specific tax calculations.
@@ -86071,23 +86597,23 @@ var TaxCodeResource = class extends StripeResource {
    * Retrieves the details of an existing tax code. Supply the unique tax code ID and Stripe will return the corresponding tax code information.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/tax_codes/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/tax_codes/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TaxIds.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TaxIds.js
 var TaxIdResource = class extends StripeResource {
   /**
    * Deletes an existing account or customer tax_id object.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/tax_ids/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/tax_ids/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves an account or customer tax_id object.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/tax_ids/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/tax_ids/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Returns a list of tax IDs.
@@ -86105,7 +86631,7 @@ var TaxIdResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TaxRates.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TaxRates.js
 var TaxRateResource = class extends StripeResource {
   /**
    * Returns a list of your tax rates. Tax rates are returned sorted by creation date, with the most recently created tax rates appearing first.
@@ -86125,23 +86651,23 @@ var TaxRateResource = class extends StripeResource {
    * Retrieves a tax rate with the given ID
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/tax_rates/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/tax_rates/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates an existing tax rate.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/tax_rates/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/tax_rates/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Tokens.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Tokens.js
 var TokenResource2 = class extends StripeResource {
   /**
    * Retrieves the token with the given ID.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/tokens/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/tokens/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Creates a single-use token that represents a bank account's details.
@@ -86152,7 +86678,7 @@ var TokenResource2 = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Topups.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Topups.js
 var TopupResource = class extends StripeResource {
   /**
    * Returns a list of top-ups.
@@ -86172,23 +86698,23 @@ var TopupResource = class extends StripeResource {
    * Retrieves the details of a top-up that has previously been created. Supply the unique top-up ID that was returned from your previous request, and Stripe will return the corresponding top-up information.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/topups/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/topups/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the metadata of a top-up. Other top-up details are not editable by design.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/topups/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/topups/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Cancels a top-up. Only pending top-ups can be canceled.
    */
   cancel(id, params, options) {
-    return this._makeRequest("POST", `/v1/topups/${id}/cancel`, params, options);
+    return this._makeRequest("POST", `/v1/topups/${encodeURIComponent(id)}/cancel`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Transfers.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Transfers.js
 var TransferResource = class extends StripeResource {
   /**
    * Returns a list of existing transfers sent to connected accounts. The transfers are returned in sorted order, with the most recently created transfers appearing first.
@@ -86208,7 +86734,7 @@ var TransferResource = class extends StripeResource {
    * Retrieves the details of an existing transfer. Supply the unique transfer ID from either a transfer creation request or the transfer list, and Stripe will return the corresponding transfer information.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/transfers/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/transfers/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the specified transfer by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
@@ -86216,13 +86742,13 @@ var TransferResource = class extends StripeResource {
    * This request accepts only metadata as an argument.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/transfers/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/transfers/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * You can see a list of the reversals belonging to a specific transfer. Note that the 10 most recent reversals are always available by default on the transfer object. If you need more than those 10, you can use this API method and the limit and starting_after parameters to page through additional reversals.
    */
   listReversals(id, params, options) {
-    return this._makeRequest("GET", `/v1/transfers/${id}/reversals`, params, options, {
+    return this._makeRequest("GET", `/v1/transfers/${encodeURIComponent(id)}/reversals`, params, options, {
       methodType: "list"
     });
   }
@@ -86234,13 +86760,13 @@ var TransferResource = class extends StripeResource {
    * Once entirely reversed, a transfer can't be reversed again. This method will return an error when called on an already-reversed transfer, or when trying to reverse more money than is left on a transfer.
    */
   createReversal(id, params, options) {
-    return this._makeRequest("POST", `/v1/transfers/${id}/reversals`, params, options);
+    return this._makeRequest("POST", `/v1/transfers/${encodeURIComponent(id)}/reversals`, params, options);
   }
   /**
    * By default, you can see the 10 most recent reversals stored directly on the transfer object, but you can also retrieve details about a specific reversal stored on the transfer.
    */
   retrieveReversal(transferId, id, params, options) {
-    return this._makeRequest("GET", `/v1/transfers/${transferId}/reversals/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/transfers/${encodeURIComponent(transferId)}/reversals/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the specified reversal by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
@@ -86248,29 +86774,29 @@ var TransferResource = class extends StripeResource {
    * This request only accepts metadata and description as arguments.
    */
   updateReversal(transferId, id, params, options) {
-    return this._makeRequest("POST", `/v1/transfers/${transferId}/reversals/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/transfers/${encodeURIComponent(transferId)}/reversals/${encodeURIComponent(id)}`, params, options);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/WebhookEndpoints.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/WebhookEndpoints.js
 var WebhookEndpointResource = class extends StripeResource {
   /**
    * You can also delete webhook endpoints via the [webhook endpoint management](https://dashboard.stripe.com/account/webhooks) page of the Stripe dashboard.
    */
   del(id, params, options) {
-    return this._makeRequest("DELETE", `/v1/webhook_endpoints/${id}`, params, options);
+    return this._makeRequest("DELETE", `/v1/webhook_endpoints/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Retrieves the webhook endpoint with the given ID.
    */
   retrieve(id, params, options) {
-    return this._makeRequest("GET", `/v1/webhook_endpoints/${id}`, params, options);
+    return this._makeRequest("GET", `/v1/webhook_endpoints/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Updates the webhook endpoint. You may edit the url, the list of enabled_events, and the status of your endpoint.
    */
   update(id, params, options) {
-    return this._makeRequest("POST", `/v1/webhook_endpoints/${id}`, params, options);
+    return this._makeRequest("POST", `/v1/webhook_endpoints/${encodeURIComponent(id)}`, params, options);
   }
   /**
    * Returns a list of your webhook endpoints.
@@ -86288,7 +86814,7 @@ var WebhookEndpointResource = class extends StripeResource {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources.js
 var Apps = resourceNamespace("apps", { Secrets: SecretResource });
 var Billing = resourceNamespace("billing", {
   Alerts: AlertResource,
@@ -86405,6 +86931,11 @@ var V2 = resourceNamespace("v2", {
     MeterEventStream: MeterEventStreamResource,
     MeterEvents: MeterEventResource2
   }),
+  Commerce: resourceNamespace("commerce", {
+    ProductCatalog: resourceNamespace("productCatalog", {
+      Imports: ImportResource
+    })
+  }),
   Core: resourceNamespace("core", {
     AccountLinks: AccountLinkResource,
     AccountTokens: AccountTokenResource,
@@ -86414,7 +86945,7 @@ var V2 = resourceNamespace("v2", {
   })
 });
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Apps/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Apps/index.js
 var Apps2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86422,7 +86953,7 @@ var Apps2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Billing/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Billing/index.js
 var Billing2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86436,7 +86967,7 @@ var Billing2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/BillingPortal/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/BillingPortal/index.js
 var BillingPortal2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86445,7 +86976,7 @@ var BillingPortal2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Checkout/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Checkout/index.js
 var Checkout2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86453,7 +86984,7 @@ var Checkout2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Climate/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Climate/index.js
 var Climate2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86463,7 +86994,7 @@ var Climate2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Entitlements/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Entitlements/index.js
 var Entitlements2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86472,7 +87003,7 @@ var Entitlements2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/FinancialConnections/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/FinancialConnections/index.js
 var FinancialConnections2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86482,7 +87013,7 @@ var FinancialConnections2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Forwarding/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Forwarding/index.js
 var Forwarding2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86490,7 +87021,7 @@ var Forwarding2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Identity/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Identity/index.js
 var Identity2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86499,7 +87030,7 @@ var Identity2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Issuing/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Issuing/index.js
 var Issuing2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86514,7 +87045,7 @@ var Issuing2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Radar/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Radar/index.js
 var Radar2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86525,7 +87056,7 @@ var Radar2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Reporting/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Reporting/index.js
 var Reporting2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86534,7 +87065,7 @@ var Reporting2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Sigma/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Sigma/index.js
 var Sigma2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86542,7 +87073,7 @@ var Sigma2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Tax/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Tax/index.js
 var Tax2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86554,7 +87085,7 @@ var Tax2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Terminal/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Terminal/index.js
 var Terminal2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86566,7 +87097,7 @@ var Terminal2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Issuing/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/Issuing/index.js
 var Issuing3 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86577,7 +87108,7 @@ var Issuing3 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Terminal/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/Terminal/index.js
 var Terminal3 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86585,7 +87116,7 @@ var Terminal3 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/Treasury/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/Treasury/index.js
 var Treasury2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86597,7 +87128,7 @@ var Treasury2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/TestHelpers/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/TestHelpers/index.js
 var TestHelpers2 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86611,7 +87142,7 @@ var TestHelpers2 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/Treasury/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/Treasury/index.js
 var Treasury3 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86628,7 +87159,7 @@ var Treasury3 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Billing/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/V2/Billing/index.js
 var Billing3 = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86639,7 +87170,23 @@ var Billing3 = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/Core/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/V2/Commerce/ProductCatalog/index.js
+var ProductCatalog = class {
+  constructor(stripe) {
+    this.stripe = stripe;
+    this.imports = new ImportResource(stripe);
+  }
+};
+
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/V2/Commerce/index.js
+var Commerce = class {
+  constructor(stripe) {
+    this.stripe = stripe;
+    this.productCatalog = new ProductCatalog(stripe);
+  }
+};
+
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/V2/Core/index.js
 var Core = class {
   constructor(stripe) {
     this.stripe = stripe;
@@ -86651,16 +87198,17 @@ var Core = class {
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/resources/V2/index.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/resources/V2/index.js
 var V22 = class {
   constructor(stripe) {
     this.stripe = stripe;
     this.billing = new Billing3(stripe);
+    this.commerce = new Commerce(stripe);
     this.core = new Core(stripe);
   }
 };
 
-// ../../node_modules/.pnpm/stripe@22.1.1_@types+node@25.6.2/node_modules/stripe/esm/stripe.esm.node.js
+// ../../node_modules/.pnpm/stripe@22.3.2_@types+node@25.9.5/node_modules/stripe/esm/stripe.esm.node.js
 var DEFAULT_HOST = "api.stripe.com";
 var DEFAULT_PORT = "443";
 var DEFAULT_BASE_PATH = "/v1/";
@@ -86701,6 +87249,17 @@ var Stripe = class _Stripe {
     _Stripe.createFetchHttpClient = platformFunctions.createFetchHttpClient;
     _Stripe.createNodeCryptoProvider = platformFunctions.createNodeCryptoProvider;
     _Stripe.createSubtleCryptoProvider = platformFunctions.createSubtleCryptoProvider;
+    const env = platformFunctions.getEnv();
+    const runtimeVersion = platformFunctions.getRuntimeVersion();
+    _Stripe.aiAgent = env ? detectAIAgent(env) : "";
+    _Stripe.AI_AGENT = _Stripe.aiAgent;
+    _Stripe.USER_AGENT = {
+      bindings_version: _Stripe.PACKAGE_VERSION,
+      lang: "node",
+      typescript: false,
+      ...runtimeVersion ? { lang_version: runtimeVersion } : {},
+      ..._Stripe.aiAgent ? { ai_agent: _Stripe.aiAgent } : {}
+    };
   }
   constructor(key, config2 = {}) {
     this._authenticator = null;
@@ -86832,8 +87391,8 @@ var Stripe = class _Stripe {
    * @param params - The parameters to include in the request body.
    * @param options - Additional request options.
    */
-  rawRequest(method, path3, params, options) {
-    return this._requestSender._rawRequest(method, path3, params, options);
+  rawRequest(method, path4, params, options) {
+    return this._requestSender._rawRequest(method, path4, params, options);
   }
   /**
    * @private
@@ -87115,16 +87674,14 @@ var Stripe = class _Stripe {
     return eventNotification;
   }
 };
-Stripe.PACKAGE_VERSION = "22.1.1";
+Stripe.PACKAGE_VERSION = "22.3.2";
 Stripe.API_VERSION = ApiVersion;
-Stripe.aiAgent = typeof process !== "undefined" && process.env ? detectAIAgent(process.env) : "";
-Stripe.AI_AGENT = Stripe.aiAgent;
+Stripe.aiAgent = "";
+Stripe.AI_AGENT = "";
 Stripe.USER_AGENT = {
   bindings_version: Stripe.PACKAGE_VERSION,
   lang: "node",
-  typescript: false,
-  ...determineProcessUserAgentProperties(),
-  ...Stripe.aiAgent ? { ai_agent: Stripe.aiAgent } : {}
+  typescript: false
 };
 Stripe.StripeResource = StripeResource;
 Stripe.resources = resources_exports3;
@@ -87139,7 +87696,6 @@ Stripe.initialize(new NodePlatformFunctions());
 var stripe_esm_node_default = Stripe;
 
 // src/routes/stripe.ts
-var import_jsonwebtoken2 = __toESM(require_jsonwebtoken(), 1);
 var router12 = (0, import_express12.Router)();
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -87152,49 +87708,27 @@ var PHONE_EMAIL_DOMAIN2 = "phone.smakvarlden.local";
 function isDeliverableEmail(email3) {
   return !email3.endsWith(`@${PHONE_EMAIL_DOMAIN2}`) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email3);
 }
-function getSecret2() {
-  return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
-}
-async function getAuthenticatedUser(req) {
-  const header = req.headers.authorization;
-  if (!header?.startsWith("Bearer ")) return null;
-  try {
-    const payload = import_jsonwebtoken2.default.verify(header.slice(7), getSecret2());
-    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, payload.id));
-    return user ?? null;
-  } catch {
-    return null;
-  }
+function getAppOrigin(req) {
+  const configured = process.env.PUBLIC_APP_URL ?? process.env.URL;
+  if (configured) return configured.replace(/\/$/, "");
+  const proto = req.headers["x-forwarded-proto"]?.split(",")[0] ?? req.protocol ?? "https";
+  const host = req.headers["x-forwarded-host"]?.split(",")[0] ?? req.headers.host ?? "localhost";
+  return `${proto}://${host}`;
 }
 router12.post("/checkout", async (req, res) => {
   const stripe = getStripe();
   if (!stripe) return res.status(503).json({ error: "Stripe inte konfigurerat." });
-  const user = await getAuthenticatedUser(req);
+  const user = req.user;
   if (!user) return res.status(401).json({ error: "Ej inloggad" });
-  const origin = req.headers.origin ?? "https://smakvarlden.se";
+  const origin = getAppOrigin(req);
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       ...isDeliverableEmail(user.email) ? { customer_email: user.email } : {},
       metadata: { user_id: String(user.id), name: user.name },
       phone_number_collection: { enabled: true },
-      line_items: [
-        {
-          price_data: {
-            currency: "sek",
-            product_data: {
-              name: "Smakv\xE4rlden Pro Early Access",
-              description: "7 dagar gratis, sedan founder price: obegr\xE4nsade recept, AI-verktyg och analytics."
-            },
-            unit_amount: PLAN_PRICE_SEK,
-            recurring: { interval: "month" }
-          },
-          quantity: 1
-        }
-      ],
-      subscription_data: {
-        trial_period_days: PLAN_TRIAL_DAYS
-      },
+      line_items: [{ price_data: { currency: "sek", product_data: { name: "Smakv\xE4rlden Pro Early Access", description: "7 dagar gratis, sedan founder price: obegr\xE4nsade recept, AI-verktyg och analytics." }, unit_amount: PLAN_PRICE_SEK, recurring: { interval: "month" } }, quantity: 1 }],
+      subscription_data: { trial_period_days: PLAN_TRIAL_DAYS },
       success_url: `${origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/upgrade?payment=cancelled`,
       locale: "sv",
@@ -87227,24 +87761,17 @@ router12.post("/webhook", async (req, res) => {
     const session = event.data.object;
     const userId = parseInt(session.metadata?.user_id ?? "0", 10);
     const customerId = typeof session.customer === "string" ? session.customer : "";
-    if (userId > 0) {
-      await db.update(usersTable).set({
-        plan: "pro",
-        stripeCustomerId: customerId || null
-      }).where(eq(usersTable.id, userId));
-    }
+    if (userId > 0) await db.update(usersTable).set({ plan: "pro", stripeCustomerId: customerId || null }).where(eq(usersTable.id, userId));
   }
   if (event.type === "customer.subscription.deleted") {
     const sub = event.data.object;
     const customerId = typeof sub.customer === "string" ? sub.customer : "";
-    if (customerId) {
-      await db.update(usersTable).set({ plan: "free" }).where(eq(usersTable.stripeCustomerId, customerId));
-    }
+    if (customerId) await db.update(usersTable).set({ plan: "free" }).where(eq(usersTable.stripeCustomerId, customerId));
   }
   return res.json({ received: true });
 });
 router12.get("/status", async (req, res) => {
-  const user = await getAuthenticatedUser(req);
+  const user = req.user;
   if (!user) return res.status(401).json({ error: "Ej inloggad" });
   return res.json({ plan: user.plan ?? "free" });
 });
@@ -87436,18 +87963,19 @@ var demo_default = router13;
 var router14 = (0, import_express14.Router)();
 router14.use(health_default);
 router14.use(auth_default);
-router14.use(ai_default);
-router14.use(scb_default);
-router14.use("/recipes", recipes_default);
-router14.use("/ingredients", ingredients_default);
-router14.use("/dashboard", dashboard_default);
+router14.use("/stripe/webhook", stripe_default);
 router14.use("/community", community_default);
-router14.use("/svinn", svinn_default);
-router14.use("/market", market_default);
-router14.use("/spoonacular", spoonacular_default);
-router14.use("/stripe", stripe_default);
-router14.use("/starter", demo_default);
-router14.use("/demo", demo_default);
+router14.use("/recipes", requireAuth, recipes_default);
+router14.use("/ingredients", requireAuth, ingredients_default);
+router14.use("/dashboard", requireAuth, dashboard_default);
+router14.use("/svinn", requireAuth, svinn_default);
+router14.use("/market", requireAuth, market_default);
+router14.use("/spoonacular", requireAuth, spoonacular_default);
+router14.use("/starter", requireAuth, demo_default);
+router14.use("/demo", requireAuth, demo_default);
+router14.use("/ai", requireAuth, requireAdmin, ai_default);
+router14.use("/scb", requireAuth, requireAdmin, scb_default);
+router14.use("/stripe", requireAuth, stripe_default);
 var routes_default = router14;
 
 // src/lib/logger.ts
@@ -87530,8 +88058,6 @@ var app_default = app;
 
 // src/lambda.ts
 var expressHandler = (0, import_serverless_http.default)(app_default, { basePath: "/.netlify/functions/api" });
-var PHONE_EMAIL_DOMAIN3 = "phone.smakvarlden.local";
-var EMAIL_RE2 = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function json3(statusCode, body) {
   return {
     statusCode,
@@ -87540,7 +88066,9 @@ function json3(statusCode, body) {
   };
 }
 function getSecret3() {
-  return process.env.SESSION_SECRET ?? "smakvarlden-dev-secret-2025";
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) throw new Error("SESSION_SECRET environment variable is required but was not set.");
+  return secret;
 }
 function signToken2(user) {
   return import_jsonwebtoken3.default.sign({ id: user.id, email: user.email, role: user.role }, getSecret3(), {
@@ -87550,37 +88078,18 @@ function signToken2(user) {
   });
 }
 function verifyToken2(token) {
-  const decoded = import_jsonwebtoken3.default.decode(token);
-  if (!decoded?.iss && !decoded?.aud) return import_jsonwebtoken3.default.verify(token, getSecret3());
   return import_jsonwebtoken3.default.verify(token, getSecret3(), {
     issuer: "smakvarlden",
     audience: "smakvarlden-app"
   });
 }
 function publicContact2(email3) {
-  if (!email3.endsWith(`@${PHONE_EMAIL_DOMAIN3}`)) return email3;
-  const digits = email3.slice("phone.".length, -`@${PHONE_EMAIL_DOMAIN3}`.length);
+  if (!email3.endsWith(`@${PHONE_EMAIL_DOMAIN}`)) return email3;
+  const digits = email3.slice("phone.".length, -`@${PHONE_EMAIL_DOMAIN}`.length);
   return `+${digits}`;
 }
 function formatUser2(u) {
   return { id: u.id, name: u.name, email: publicContact2(u.email), role: u.role, plan: u.plan, createdAt: u.createdAt.toISOString() };
-}
-function normalizeEmail2(value) {
-  const email3 = value.trim().toLowerCase();
-  return EMAIL_RE2.test(email3) ? email3 : null;
-}
-function normalizePhone2(value) {
-  const compact = value.trim().replace(/[()\s-]/g, "");
-  const withPlus = compact.startsWith("00") ? `+${compact.slice(2)}` : compact.startsWith("0") ? `+46${compact.slice(1)}` : compact;
-  return /^\+[1-9]\d{7,14}$/.test(withPlus) ? withPlus : null;
-}
-function contactToStorageEmail2(value) {
-  if (typeof value !== "string") return null;
-  const email3 = normalizeEmail2(value);
-  if (email3) return email3;
-  const phone = normalizePhone2(value);
-  if (phone) return `phone.${phone.slice(1)}@${PHONE_EMAIL_DOMAIN3}`;
-  return null;
 }
 function validatePassword2(password) {
   if (typeof password !== "string") return "Fyll i l\xF6senord.";
@@ -87617,11 +88126,11 @@ function parseBody(event) {
   }
 }
 function requestPath(event) {
-  const path3 = event.rawPath ?? event.path ?? "/";
-  if (path3.startsWith("/.netlify/functions/api")) {
-    return path3.slice("/.netlify/functions/api".length) || "/";
+  const path4 = event.rawPath ?? event.path ?? "/";
+  if (path4.startsWith("/.netlify/functions/api")) {
+    return path4.slice("/.netlify/functions/api".length) || "/";
   }
-  return path3;
+  return path4;
 }
 function requestMethod(event) {
   return (event.httpMethod ?? event.requestContext?.http?.method ?? "GET").toUpperCase();
@@ -87632,25 +88141,45 @@ function getSupabaseCredentials2() {
   if (!url2 || !anonKey) return null;
   return { url: url2, anonKey };
 }
+async function randomPasswordHash2() {
+  return bcryptjs_default.hash(import_node_crypto2.default.randomBytes(32).toString("base64url"), 12);
+}
+async function claimUnverifiedAccount2(existing, name) {
+  const passwordHash = await randomPasswordHash2();
+  const [updated] = await db.update(usersTable).set({
+    passwordHash,
+    emailVerified: true,
+    name: name.trim().slice(0, 80) || existing.name
+  }).where(eq(usersTable.id, existing.id)).returning();
+  return updated;
+}
 async function findOrCreateSupabaseUser2(profile) {
-  const email3 = profile.email ? normalizeEmail2(profile.email) : null;
-  const storageEmail = email3 ?? contactToStorageEmail2(profile.phone) ?? `supabase.${profile.id}@${PHONE_EMAIL_DOMAIN3}`;
+  assertSupabaseIdentityVerified(profile);
+  const normalizedEmail = profile.email ? normalizeEmail(profile.email) : null;
+  const storageEmail = normalizedEmail ?? contactToStorageEmail(profile.phone) ?? `supabase.${profile.id}@${PHONE_EMAIL_DOMAIN}`;
   const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
-  if (existing) return existing;
-  const fallbackName = email3?.split("@")[0] ?? profile.phone ?? "Smakv\xE4rlden anv\xE4ndare";
+  const fallbackName = normalizedEmail?.split("@")[0] ?? profile.phone ?? "Smakv\xE4rlden anv\xE4ndare";
+  const oauthName = (profile.user_metadata?.full_name ?? profile.user_metadata?.name ?? fallbackName).trim().slice(0, 80);
+  if (existing) {
+    if (shouldClaimUnverifiedPasswordAccount(existing)) {
+      return claimUnverifiedAccount2(existing, oauthName);
+    }
+    return existing;
+  }
   const isFirstUser = (await db.select().from(usersTable).limit(1)).length === 0;
-  const passwordHash = await bcryptjs_default.hash(import_node_crypto2.default.randomBytes(32).toString("base64url"), 12);
+  const passwordHash = await randomPasswordHash2();
   const [user] = await db.insert(usersTable).values({
-    name: (profile.user_metadata?.full_name ?? profile.user_metadata?.name ?? fallbackName).trim().slice(0, 80),
+    name: oauthName,
     email: storageEmail,
     passwordHash,
-    role: isFirstUser ? "admin" : "user"
+    role: isFirstUser ? "admin" : "user",
+    emailVerified: true
   }).returning();
   return user;
 }
 async function login(body) {
   const { email: email3, identifier, phone, password } = body;
-  const storageEmail = contactToStorageEmail2(identifier ?? email3 ?? phone);
+  const storageEmail = contactToStorageEmail(identifier ?? email3 ?? phone);
   if (!storageEmail || !password) return json3(400, { error: "Fyll i e-post/telefon och l\xF6senord." });
   const [user] = await db.select().from(usersTable).where(eq(usersTable.email, storageEmail));
   if (!user) return json3(401, { error: "Felaktiga inloggningsuppgifter." });
@@ -87660,7 +88189,7 @@ async function login(body) {
 }
 async function register(body) {
   const { name, email: email3, contact, identifier, phone, password } = body;
-  const storageEmail = contactToStorageEmail2(email3 ?? contact ?? identifier ?? phone);
+  const storageEmail = contactToStorageEmail(email3 ?? contact ?? identifier ?? phone);
   if (typeof name !== "string" || name.trim().length < 2 || !storageEmail || !password) {
     return json3(400, { error: "Fyll i namn, e-post eller telefonnummer och l\xF6senord." });
   }
@@ -87674,7 +88203,8 @@ async function register(body) {
     name: name.trim().slice(0, 80),
     email: storageEmail,
     passwordHash,
-    role: isFirstUser ? "admin" : "user"
+    role: isFirstUser ? "admin" : "user",
+    emailVerified: false
   }).returning();
   return json3(201, { token: signToken2(user), user: formatUser2(user) });
 }
@@ -87706,18 +88236,21 @@ async function supabase(body) {
     const profile = await userResponse.json();
     const user = await findOrCreateSupabaseUser2(profile);
     return json3(200, { token: signToken2(user), user: formatUser2(user) });
-  } catch {
+  } catch (err) {
+    if (err instanceof Error && /verifierad|verifierat/i.test(err.message)) {
+      return json3(403, { error: err.message });
+    }
     return json3(500, { error: "Kunde inte verifiera Supabase-session." });
   }
 }
 async function handler(event, context) {
   const method = requestMethod(event);
-  const path3 = requestPath(event);
+  const path4 = requestPath(event);
   const body = parseBody(event);
-  if (method === "POST" && path3 === "/api/auth/login") return login(body);
-  if (method === "POST" && path3 === "/api/auth/register") return register(body);
-  if (method === "POST" && path3 === "/api/auth/supabase") return supabase(body);
-  if (method === "GET" && path3 === "/api/auth/me") return me(event);
+  if (method === "POST" && path4 === "/api/auth/login") return login(body);
+  if (method === "POST" && path4 === "/api/auth/register") return register(body);
+  if (method === "POST" && path4 === "/api/auth/supabase") return supabase(body);
+  if (method === "GET" && path4 === "/api/auth/me") return me(event);
   return expressHandler(event, context);
 }
 // Annotate the CommonJS export names for ESM import in node:
@@ -87797,6 +88330,7 @@ on-finished/index.js:
    * MIT Licensed
    *)
 
+content-type/dist/index.js:
 content-type/index.js:
   (*!
    * content-type
