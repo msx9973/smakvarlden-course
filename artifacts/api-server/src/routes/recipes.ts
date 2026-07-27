@@ -10,7 +10,7 @@ import {
   DeleteRecipeParams,
   GetTopPerformingRecipesQueryParams,
 } from "@workspace/api-zod";
-import { ingredientIdsIn } from "../lib/ingredientIdLookup";
+import { idsIn } from "../lib/ingredientIdLookup";
 
 const router = Router();
 
@@ -50,7 +50,7 @@ router.post("/", async (req, res) => {
   if (ingredients && ingredients.length > 0) {
     const ingredientIds = ingredients.map((i) => i.ingredientId);
     const ingRows = await db.select().from(ingredientsTable).where(
-      ingredientIdsIn(ingredientIds)
+      idsIn(ingredientsTable.id, ingredientIds)
     );
     const priceMap = new Map(ingRows.map((r) => [r.id, parseFloat(String(r.currentPriceSek))]));
     totalCostSek = ingredients.reduce((sum, i) => {

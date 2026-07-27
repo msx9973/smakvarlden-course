@@ -1,13 +1,13 @@
-import { inArray, SQL } from "drizzle-orm";
-import { ingredientsTable } from "@workspace/db";
+import { type SQL, inArray } from "drizzle-orm";
+import type { AnyColumn } from "drizzle-orm";
 
 /**
- * Build a WHERE condition that matches ingredient rows by id.
+ * Match rows whose column value is in `ids`.
  *
- * Prefer this over `sql\`id = ANY(${ids})\``: drizzle expands a JS array in
+ * Prefer this over `sql\`\${col} = ANY(\${ids})\``: drizzle expands a JS array in
  * `sql` templates to a row constructor `(1,2,3)`, which Postgres rejects for
  * ANY/ALL (those require a real array on the right-hand side).
  */
-export function ingredientIdsIn(ids: number[]): SQL {
-  return inArray(ingredientsTable.id, ids);
+export function idsIn(column: AnyColumn, ids: number[]): SQL {
+  return inArray(column, ids);
 }
