@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, recipesTable, recipeIngredientsTable, ingredientsTable, activityLogTable } from "@workspace/db";
-import { eq, ilike, and, desc, sql } from "drizzle-orm";
+import { eq, ilike, and, desc } from "drizzle-orm";
 import {
   CreateRecipeBody,
   ListRecipesQueryParams,
@@ -10,6 +10,7 @@ import {
   DeleteRecipeParams,
   GetTopPerformingRecipesQueryParams,
 } from "@workspace/api-zod";
+import { ingredientIdsIn } from "../lib/ingredientIdLookup";
 
 const router = Router();
 
@@ -49,7 +50,7 @@ router.post("/", async (req, res) => {
   if (ingredients && ingredients.length > 0) {
     const ingredientIds = ingredients.map((i) => i.ingredientId);
     const ingRows = await db.select().from(ingredientsTable).where(
-      sql`${ingredientsTable.id} = ANY(${ingredientIds})`
+      ingredientIdsIn(ingredientIds)
     );
     const priceMap = new Map(ingRows.map((r) => [r.id, parseFloat(String(r.currentPriceSek))]));
     totalCostSek = ingredients.reduce((sum, i) => {
