@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db, ingredientsTable, recipeIngredientsTable, recipesTable, activityLogTable } from "@workspace/db";
-import { inArray } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
+import { computeDemoRecipeEconomics } from "../lib/demoRecipeEconomics";
 
 const router = Router();
 
@@ -147,30 +148,64 @@ router.post("/seed", async (_req, res) => {
   const existingRecipeNames = new Set(existingRecipes.map((row) => row.name));
   let createdRecipes = 0;
 
-  for (const recipe of demoRecipes) {
-    if (existingRecipeNames.has(recipe.name)) continue;
+  let repairedRecipes = 0;
 
-    const totalCostSek = recipe.ingredients.reduce((sum, [name, quantity]) => {
-      const ingredient = ingredientByName.get(String(name));
-      return sum + (ingredient ? Number(ingredient.currentPriceSek) * Number(quantity) : 0);
-    }, 0);
-    const profitMarginPct = recipe.sellingPriceSek > 0
-      ? ((recipe.sellingPriceSek - totalCostSek) / recipe.sellingPriceSek) * 100
-      : 0;
+  for (const recipe of demoRecipes) {
+    const totalCostSek = Math.round(
+      recipe.ingredients.reduce((sum, [name, quantity]) => {
+        const ingredient = ingredientByName.get(String(name));
+        return sum + (ingredient ? Number(ingredient.currentPriceSek) * Number(quantity) : 0);
+      }, 0) * 100,
+    ) / 100;
+    const { totalSellingPriceSek, profitMarginPct } = computeDemoRecipeEconomics({
+      perPortionSellingPriceSek: recipe.sellingPriceSek,
+      servings: recipe.servings,
+      totalCostSek,
+    });
+    const ingredientsJson = recipe.ingredients.map(([name, amount, unit]) => ({
+      name: String(name),
+      amount: Number(amount),
+      unit: String(unit),
+    }));
+
+    if (existingRecipeNames.has(recipe.name)) {
+      // Heal prior buggy seeds that stored per-portion price as the batch total.
+      const [existing] = await db
+        .select({
+          id: recipesTable.id,
+          sellingPriceSek: recipesTable.sellingPriceSek,
+        })
+        .from(recipesTable)
+        .where(eq(recipesTable.name, recipe.name))
+        .limit(1);
+      if (
+        existing &&
+        parseFloat(String(existing.sellingPriceSek)) === recipe.sellingPriceSek
+      ) {
+        await db
+          .update(recipesTable)
+          .set({
+            totalCostSek: String(totalCostSek),
+            sellingPriceSek: String(totalSellingPriceSek),
+            profitMarginPct: String(profitMarginPct),
+            ingredientsJson,
+            updatedAt: new Date(),
+          })
+          .where(eq(recipesTable.id, existing.id));
+        repairedRecipes += 1;
+      }
+      continue;
+    }
 
     const [insertedRecipe] = await db.insert(recipesTable).values({
       name: recipe.name,
       description: recipe.description,
       category: recipe.category,
       servings: recipe.servings,
-      totalCostSek: String(Math.round(totalCostSek * 100) / 100),
-      sellingPriceSek: String(recipe.sellingPriceSek),
-      profitMarginPct: String(Math.round(profitMarginPct * 100) / 100),
-      ingredientsJson: recipe.ingredients.map(([name, amount, unit]) => ({
-        name: String(name),
-        amount: Number(amount),
-        unit: String(unit),
-      })),
+      totalCostSek: String(totalCostSek),
+      sellingPriceSek: String(totalSellingPriceSek),
+      profitMarginPct: String(profitMarginPct),
+      ingredientsJson,
     }).returning();
 
     await db.insert(recipeIngredientsTable).values(
@@ -188,17 +223,18 @@ router.post("/seed", async (_req, res) => {
     createdRecipes += 1;
   }
 
-  if (ingredientsToInsert.length || createdRecipes) {
+  if (ingredientsToInsert.length || createdRecipes || repairedRecipes) {
     await db.insert(activityLogTable).values({
       type: "recipe_created",
       title: "Startdata laddad",
-      subtitle: `${ingredientsToInsert.length} ingredienser · ${createdRecipes} recept`,
+      subtitle: `${ingredientsToInsert.length} ingredienser · ${createdRecipes} recept · ${repairedRecipes} reparerade`,
     });
   }
 
   return res.status(201).json({
     ingredientsCreated: ingredientsToInsert.length,
     recipesCreated: createdRecipes,
+    recipesRepaired: repairedRecipes,
   });
 });
 
