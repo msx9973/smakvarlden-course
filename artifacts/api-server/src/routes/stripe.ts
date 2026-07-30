@@ -2,6 +2,7 @@ import { Router, type Request } from "express";
 import Stripe from "stripe";
 import { db, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { decideStripeCheckout } from "../lib/stripeCheckout";
 
 const router = Router();
 
@@ -32,15 +33,30 @@ router.post("/checkout", async (req, res) => {
   if (!stripe) return res.status(503).json({ error: "Stripe inte konfigurerat." });
   const user = req.user;
   if (!user) return res.status(401).json({ error: "Ej inloggad" });
+
+  const decision = decideStripeCheckout(
+    {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      plan: user.plan ?? "free",
+      stripeCustomerId: user.stripeCustomerId ?? null,
+    },
+    { trialDays: PLAN_TRIAL_DAYS, isDeliverableEmail },
+  );
+  if (!decision.ok) return res.status(decision.status).json({ error: decision.error });
+
   const origin = getAppOrigin(req);
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      ...(isDeliverableEmail(user.email) ? { customer_email: user.email } : {}),
+      ...decision.customerParams,
       metadata: { user_id: String(user.id), name: user.name },
       phone_number_collection: { enabled: true },
       line_items: [{ price_data: { currency: "sek", product_data: { name: "Smakvärlden Pro Early Access", description: "7 dagar gratis, sedan founder price: obegränsade recept, AI-verktyg och analytics." }, unit_amount: PLAN_PRICE_SEK, recurring: { interval: "month" } }, quantity: 1 }],
-      subscription_data: { trial_period_days: PLAN_TRIAL_DAYS },
+      ...(decision.trialDays != null
+        ? { subscription_data: { trial_period_days: decision.trialDays } }
+        : {}),
       success_url: `${origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/upgrade?payment=cancelled`,
       locale: "sv",
