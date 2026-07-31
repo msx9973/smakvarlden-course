@@ -3,33 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Upload, FileText, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { parseCSV, type CsvRow } from "@/lib/parseCSV";
 
-export type CsvRow = Record<string, string>;
-
-function parseCSV(text: string): { headers: string[]; rows: CsvRow[] } {
-  const lines = text.trim().split(/\r?\n/);
-  if (lines.length < 2) return { headers: [], rows: [] };
-
-  const parseRow = (line: string): string[] => {
-    const out: string[] = [];
-    let cur = "";
-    let inQ = false;
-    for (const ch of line) {
-      if (ch === '"') { inQ = !inQ; continue; }
-      if (ch === "," && !inQ) { out.push(cur.trim()); cur = ""; continue; }
-      cur += ch;
-    }
-    out.push(cur.trim());
-    return out;
-  };
-
-  const headers = parseRow(lines[0]);
-  const rows = lines.slice(1).filter(Boolean).map((l) => {
-    const vals = parseRow(l);
-    return Object.fromEntries(headers.map((h, i) => [h, vals[i] ?? ""]));
-  });
-  return { headers, rows };
-}
+export type { CsvRow };
 
 interface ImportDialogProps {
   open: boolean;
