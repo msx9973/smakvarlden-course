@@ -1,5 +1,6 @@
 import { Router } from "express";
 import Anthropic from "@anthropic-ai/sdk";
+import { buildChatMessages } from "../lib/aiMessages";
 
 const router = Router();
 
@@ -39,13 +40,7 @@ router.post("/ai/chat", async (req, res) => {
   const { message, history = [], lang = "sv" } = req.body ?? {};
   if (!message?.trim()) return res.status(400).json({ error: "Meddelande saknas." });
 
-  const messages: Anthropic.MessageParam[] = [
-    ...history.slice(-10).map((h: { role: string; content: string }) => ({
-      role: h.role as "user" | "assistant",
-      content: h.content,
-    })),
-    { role: "user", content: message },
-  ];
+  const messages = buildChatMessages(history, message);
 
   try {
     const response = await client.messages.create({

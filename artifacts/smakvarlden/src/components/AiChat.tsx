@@ -55,7 +55,12 @@ export function AiChat() {
     setMessages(newMessages);
     setLoading(true);
     try {
-      const reply = await fetchAI(msg, messages.slice(-10), lang);
+      // Drop the seeded assistant greeting and the current user turn (sent as `message`).
+      const prior = newMessages
+        .slice(0, -1)
+        .filter((m, i) => i !== 0 || m.role !== "assistant")
+        .slice(-10);
+      const reply = await fetchAI(msg, prior, lang);
       setMessages([...newMessages, { role: "assistant", content: reply }]);
     } catch (e: unknown) {
       const errMsg = e instanceof Error ? e.message : isEn ? "An error occurred" : "Fel uppstod";
