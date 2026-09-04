@@ -69474,6 +69474,32 @@ Always respond in English, concisely and professionally. Be specific and practic
 
 Svara alltid p\xE5 svenska, kortfattat och professionellt. Var specifik och praktisk. Inkludera g\xE4rna ungef\xE4rliga kostnader i SEK n\xE4r du f\xF6resl\xE5r ingredienser.`;
 }
+function buildChatMessages(history, message) {
+  const raw = Array.isArray(history) ? history.slice(-10) : [];
+  const turns = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const role = item.role;
+    const content = typeof item.content === "string" ? item.content.trim() : "";
+    if (role !== "user" && role !== "assistant" || !content) continue;
+    const last = turns[turns.length - 1];
+    if (last && last.role === role) {
+      last.content = `${last.content}
+
+${content}`;
+      continue;
+    }
+    turns.push({ role, content });
+  }
+  while (turns.length > 0 && turns[0].role !== "user") turns.shift();
+  const trimmed = message.trim();
+  const last = turns[turns.length - 1];
+  if (last?.role === "user") last.content = `${last.content}
+
+${trimmed}`;
+  else turns.push({ role: "user", content: trimmed });
+  return turns;
+}
 router7.post("/ai/chat", async (req, res) => {
   const client = getClient();
   if (!client) {
@@ -69481,13 +69507,7 @@ router7.post("/ai/chat", async (req, res) => {
   }
   const { message, history = [], lang = "sv" } = req.body ?? {};
   if (!message?.trim()) return res.status(400).json({ error: "Meddelande saknas." });
-  const messages = [
-    ...history.slice(-10).map((h) => ({
-      role: h.role,
-      content: h.content
-    })),
-    { role: "user", content: message }
-  ];
+  const messages = buildChatMessages(history, message);
   try {
     const response = await client.messages.create({
       model: "claude-haiku-4-5",
